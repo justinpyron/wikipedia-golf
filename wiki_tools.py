@@ -35,20 +35,18 @@ EXCLUDE_SELECTORS = (
     "script",
 )
 
-EXCLUDE_SECTIONS = frozenset(
-    {
-        "See also",
-        "Notes",
-        "References",
-        "Works cited",
-        "Further reading",
-        "External links",
-        "Bibliography",
-        "Citations",
-        "Sources",
-        "Footnotes",
-        "Explanatory notes",
-    }
+EXCLUDE_SECTIONS = (
+    "See also",
+    "Notes",
+    "References",
+    "Works cited",
+    "Further reading",
+    "External links",
+    "Bibliography",
+    "Citations",
+    "Sources",
+    "Footnotes",
+    "Explanatory notes",
 )
 
 NON_ARTICLE_PREFIXES = (
@@ -122,14 +120,14 @@ def find_articles(query: str, limit: int = 5) -> list[ArticleSearchResult]:
     ]
 
 
-def fetch_article(key: str, follow_redirects: bool = True) -> Article | None:
+def fetch_article(key: str) -> Article | None:
     """Fetch a Wikipedia article and return its cleaned HTML content.
 
     Wikilinks in `content` use href="./Article_Key" (URL-encoded), the
     same form accepted by this function's `key` parameter, so callers
     can chain extracted hrefs back into fetch_article directly.
     """
-    data = _request_with_html(key, follow_redirects)
+    data = _request_with_html(key)
     if data is None:
         return None
     soup = BeautifulSoup(data["html"], "lxml")
@@ -146,12 +144,11 @@ def fetch_article(key: str, follow_redirects: bool = True) -> Article | None:
     )
 
 
-def _request_with_html(key: str, follow_redirects: bool) -> dict | None:
+def _request_with_html(key: str) -> dict | None:
     """GET /page/{key}/with_html and return the JSON payload."""
     url = f"{BASE_URL}/page/{quote(key, safe='')}/with_html"
-    params = {} if follow_redirects else {"redirect": "no"}
     try:
-        response = httpx.get(url, params=params, headers=HEADERS)
+        response = httpx.get(url, headers=HEADERS)
         response.raise_for_status()
         return response.json()
     except httpx.HTTPError as e:
