@@ -146,6 +146,8 @@ def fetch_article(key: str) -> Article | None:
 
 def _request_with_html(key: str) -> dict | None:
     """GET /page/{key}/with_html and return the JSON payload."""
+    # safe="" ensures characters like "/" and "?" in titles (e.g. "AC/DC")
+    # are percent-encoded so they aren't parsed as URL structure.
     url = f"{BASE_URL}/page/{quote(key, safe='')}/with_html"
     try:
         response = httpx.get(url, headers=HEADERS)
@@ -176,14 +178,26 @@ def _strip_non_article_links(soup: Tag) -> None:
     for a in soup.find_all("a"):
         href = a.get("href", "")
         classes = a.get("class") or []
+
+        # Red links (class="new") point to articles that don't exist yet —
+        # following them would 404. External links and in-page anchors don't
+        # start with "./" and aren't navigable Wikipedia articles.
         is_red_link = "new" in classes
         if not href.startswith("./") or is_red_link:
             a.unwrap()
             continue
+
+        # Hrefs like "./File:Example.jpg" or "./Category:Physics" point to
+        # non-article namespaces. unquote is needed because Parsoid
+        # percent-encodes characters like ":" (e.g. "Help%3AContents").
         target = unquote(href[2:])
         if target.startswith(NON_ARTICLE_PREFIXES):
             a.unwrap()
             continue
+
+        # Strip section fragments (e.g. "./Einstein#Legacy" -> "./Einstein")
+        # so the href is a clean article key that can be fed back into
+        # fetch_article.
         a["href"] = href.split("#", 1)[0]
 
 
