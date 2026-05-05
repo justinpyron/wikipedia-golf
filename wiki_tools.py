@@ -132,8 +132,8 @@ def fetch_article(key: str) -> Article | None:
         return None
     soup = BeautifulSoup(data["html"], "lxml")
     body = soup.body or soup
-    _strip_non_prose_elements(body)
-    _strip_non_prose_sections(body)
+    _strip_elements_by_selector(body)
+    _strip_sections_by_heading(body)
     _strip_non_article_links(body)
     _simplify_attributes(body)
     return Article(
@@ -156,15 +156,15 @@ def _request_with_html(key: str) -> dict | None:
         return None
 
 
-def _strip_non_prose_elements(soup: Tag) -> None:
-    """Remove non-prose containers (infoboxes, navboxes, references, etc.)."""
+def _strip_elements_by_selector(soup: Tag) -> None:
+    """Remove elements matching CSS selectors in EXCLUDE_SELECTORS."""
     for selector in EXCLUDE_SELECTORS:
         for el in soup.select(selector):
             el.decompose()
 
 
-def _strip_non_prose_sections(soup: Tag) -> None:
-    """Remove <section> elements whose direct heading is in EXCLUDE_SECTIONS."""
+def _strip_sections_by_heading(soup: Tag) -> None:
+    """Remove entire <section> blocks whose heading text is in EXCLUDE_SECTIONS."""
     for section in soup.find_all("section"):
         heading = section.find(["h2", "h3", "h4", "h5", "h6"], recursive=False)
         if heading and heading.get_text(strip=True) in EXCLUDE_SECTIONS:
