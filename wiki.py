@@ -234,20 +234,20 @@ def _unwrap_invalid_links(soup: Tag) -> None:
     """Unwrap non-article and red wikilinks."""
     for a in soup.find_all("a"):
         href = a.get("href", "")
-        classes = a.get("class") or []
 
         # Red links (class="new") point to articles that don't exist yet —
         # following them would 404. External links and in-page anchors don't
         # start with "./" and aren't navigable Wikipedia articles.
-        is_red_link = "new" in classes
-        if not href.startswith("./") or is_red_link:
+        is_external_link = not href.startswith("./")
+        is_red_link = "new" in (a.get("class") or [])
+        if is_external_link or is_red_link:
             a.unwrap()
             continue
 
         # Hrefs like "./File:Example.jpg" or "./Category:Physics" point to
         # non-article namespaces. unquote is needed because Parsoid
         # percent-encodes characters like ":" (e.g. "Help%3AContents").
-        target = unquote(href[2:])
+        target = unquote(href[2:])  # strip the "./" prefix + unquote
         if target.startswith(NON_ARTICLE_PREFIXES):
             a.unwrap()
             continue
