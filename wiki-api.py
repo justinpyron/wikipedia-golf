@@ -162,6 +162,47 @@ def fetch_article(key: str) -> Article | None:
     )
 
 
+def fetch_article_links(key: str) -> ArticleLinks | None:
+    """Fetch a Wikipedia article and extract all unique navigable wikilinks."""
+    data = _request_with_html(key)
+    if data is None:
+        return None
+    soup = BeautifulSoup(data["html"], "lxml")
+    body = soup.body or soup
+
+    _strip_elements_by_selector(body)
+    _strip_sections_by_heading(body)
+    _strip_non_article_links(body)
+
+    links: list[ArticleLink] = []
+    seen_keys: set[str] = set()
+
+    for a in body.find_all("a", href=True):
+        href = a["href"]
+        # _strip_non_article_links ensures article links start with "./"
+        if not href.startswith("./"):
+            continue
+
+        article_key = unquote(href[2:])
+        if article_key in seen_keys:
+            continue
+        seen_keys.add(article_key)
+
+        text = a.get_text(strip=True)
+        title = a.get("title", "")
+        if not text:
+            continue
+
+        links.append(ArticleLink(key=article_key, text=text, title=title))
+
+    return ArticleLinks(
+        id=data["id"],
+        key=data["key"],
+        title=data["title"],
+        links=links,
+    )
+
+
 def _request_with_html(key: str) -> dict | None:
     """GET /page/{key}/with_html and return the JSON payload."""
     # safe="" ensures characters like "/" and "?" in titles (e.g. "AC/DC")
