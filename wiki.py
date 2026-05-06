@@ -10,6 +10,7 @@ import httpx
 from bs4 import BeautifulSoup, Tag
 from markdownify import markdownify
 from pydantic import BaseModel
+from tabulate import tabulate
 
 BASE_URL = "https://en.wikipedia.org/w/rest.php/v1"
 HEADERS = {"User-Agent": "WikipediaGolf (justinpyron@gmail.com)"}
@@ -103,6 +104,13 @@ class ArticleLinks(BaseModel):
     key: str
     title: str
     links: list[ArticleLink]
+
+    def to_markdown_table(self, omit: list[str] | None = None) -> str:
+        """Return a markdown table of the links."""
+        data = [link.model_dump(exclude=set(omit or [])) for link in self.links]
+        if not data:
+            return ""
+        return tabulate(data, headers="keys", tablefmt="github")
 
 
 def find_articles(query: str, limit: int = 5) -> list[ArticleSearchResult]:
