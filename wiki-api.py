@@ -88,6 +88,23 @@ class Article(BaseModel):
     content: str
 
 
+class ArticleLink(BaseModel):
+    """A single wikilink extracted from an article."""
+
+    key: str
+    text: str
+    title: str
+
+
+class ArticleLinks(BaseModel):
+    """All navigable wikilinks found in a Wikipedia article."""
+
+    id: int
+    key: str
+    title: str
+    links: list[ArticleLink]
+
+
 def find_articles(query: str, limit: int = 5) -> list[ArticleSearchResult]:
     """Search Wikipedia for articles matching the query.
 
