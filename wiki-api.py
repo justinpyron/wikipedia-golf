@@ -267,23 +267,6 @@ def _to_markdown(soup: Tag) -> str:
     return md.strip()
 
 
-# _simplify_attributes was previously used to strip noisy Parsoid bookkeeping
-# attributes from every tag when the output format was HTML. Now that we
-# convert to Markdown, attributes are discarded entirely by markdownify,
-# making this step unnecessary.
-#
-# _STRIP_ATTRS = ("class", "id", "data-mw", "typeof", "about", "style", "rel")
-#
-# def _simplify_attributes(soup: Tag) -> None:
-#     """Strip noisy bookkeeping attributes from every tag."""
-#     for tag in soup.descendants:
-#         if not isinstance(tag, Tag):
-#             continue
-#         for attr in list(tag.attrs):
-#             if attr in _STRIP_ATTRS or attr.startswith("data-"):
-#                 del tag.attrs[attr]
-
-
 # TODO: Write a function that simply extracts all the links inside the article (no matter where
 # they come from in the article). Package them in a nice format amenable for LLMs to
 # consume, such as in a markdown table with columns "link", "text", and "description". Make sure
