@@ -152,7 +152,8 @@ def fetch_article(key: str) -> Article | None:
     body = soup.body or soup
     _strip_elements_by_selector(body)
     _strip_sections_by_heading(body)
-    _strip_non_article_links(body)
+    _unwrap_invalid_links(body)
+    _normalize_article_hrefs(body)
     content = _to_markdown(body)
     return Article(
         id=data["id"],
@@ -172,17 +173,14 @@ def fetch_article_links(key: str) -> ArticleLinks | None:
 
     _strip_elements_by_selector(body)
     _strip_sections_by_heading(body)
-    _strip_non_article_links(body)
+    _unwrap_invalid_links(body)
+    _normalize_article_hrefs(body)
 
     links: list[ArticleLink] = []
     seen_keys: set[str] = set()
 
     for a in body.find_all("a", href=True):
         href = a["href"]
-        # _strip_non_article_links ensures article links start with "./"
-        if not href.startswith("./"):
-            continue
-
         article_key = unquote(href[2:])
         if article_key in seen_keys:
             continue
@@ -232,8 +230,8 @@ def _strip_sections_by_heading(soup: Tag) -> None:
             section.decompose()
 
 
-def _strip_non_article_links(soup: Tag) -> None:
-    """Unwrap non-article and red wikilinks; normalize article hrefs."""
+def _unwrap_invalid_links(soup: Tag) -> None:
+    """Unwrap non-article and red wikilinks."""
     for a in soup.find_all("a"):
         href = a.get("href", "")
         classes = a.get("class") or []
@@ -254,6 +252,11 @@ def _strip_non_article_links(soup: Tag) -> None:
             a.unwrap()
             continue
 
+
+def _normalize_article_hrefs(soup: Tag) -> None:
+    """Strip section fragments from valid article links."""
+    for a in soup.find_all("a"):
+        href = a.get("href", "")
         # Strip section fragments (e.g. "./Einstein#Legacy" -> "./Einstein")
         # so the href is a clean article key that can be fed back into
         # fetch_article.
