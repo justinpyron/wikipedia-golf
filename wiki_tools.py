@@ -231,3 +231,9 @@ def _to_markdown(soup: Tag) -> str:
 #         for attr in list(tag.attrs):
 #             if attr in _STRIP_ATTRS or attr.startswith("data-"):
 #                 del tag.attrs[attr]
+
+
+# TODO: Write a function that simply extracts all the links inside the article (no matter where
+# they come from in the article). Package them in a nice format amenable for LLMs to
+# consume, such as in a markdown table with columns "link", "text", and "description". Make sure
+# to include the "title" attribute of the link as the description.
