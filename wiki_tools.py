@@ -3,10 +3,12 @@
 Reference: https://www.mediawiki.org/wiki/API:REST_API/Reference
 """
 
+import re
 from urllib.parse import quote, unquote
 
 import httpx
 from bs4 import BeautifulSoup, Tag
+from markdownify import markdownify
 from pydantic import BaseModel
 
 BASE_URL = "https://en.wikipedia.org/w/rest.php/v1"
@@ -60,8 +62,6 @@ NON_ARTICLE_PREFIXES = (
     "Special:",
     "Talk:",
 )
-
-STRIP_ATTRS = ("class", "id", "data-mw", "typeof", "about", "style", "rel")
 
 
 class ArticleSearchResult(BaseModel):
@@ -121,11 +121,12 @@ def find_articles(query: str, limit: int = 5) -> list[ArticleSearchResult]:
 
 
 def fetch_article(key: str) -> Article | None:
-    """Fetch a Wikipedia article and return its cleaned HTML content.
+    """Fetch a Wikipedia article and return its content as cleaned Markdown.
 
-    Wikilinks in `content` use href="./Article_Key" (URL-encoded), the
-    same form accepted by this function's `key` parameter, so callers
-    can chain extracted hrefs back into fetch_article directly.
+    Wikilinks in `content` use the form [label](./Article_Key), where the
+    href is the same form accepted by this function's `key` parameter
+    (after stripping the "./" prefix), so callers can chain extracted
+    hrefs back into fetch_article directly.
     """
     data = _request_with_html(key)
     if data is None:
@@ -135,12 +136,13 @@ def fetch_article(key: str) -> Article | None:
     _strip_elements_by_selector(body)
     _strip_sections_by_heading(body)
     _strip_non_article_links(body)
-    _simplify_attributes(body)
+    _strip_noisy_link_attributes(body)
+    content = _to_markdown(body)
     return Article(
         id=data["id"],
         key=data["key"],
         title=data["title"],
-        content=body.decode_contents(),
+        content=content,
     )
 
 
@@ -201,11 +203,31 @@ def _strip_non_article_links(soup: Tag) -> None:
         a["href"] = href.split("#", 1)[0]
 
 
-def _simplify_attributes(soup: Tag) -> None:
-    """Strip noisy bookkeeping attributes from every tag."""
-    for tag in soup.descendants:
-        if not isinstance(tag, Tag):
-            continue
-        for attr in list(tag.attrs):
-            if attr in STRIP_ATTRS or attr.startswith("data-"):
-                del tag.attrs[attr]
+def _strip_noisy_link_attributes(soup: Tag) -> None:
+    """Remove attributes like title that add noise to the Markdown output."""
+    for a in soup.find_all("a"):
+        a.attrs.pop("title", None)
+
+
+def _to_markdown(soup: Tag) -> str:
+    """Convert cleaned HTML to Markdown and normalize whitespace."""
+    md = markdownify(str(soup), heading_style="ATX", strip=["section"])
+    md = re.sub(r"\n{3,}", "\n\n", md)
+    return md.strip()
+
+
+# _simplify_attributes was previously used to strip noisy Parsoid bookkeeping
+# attributes from every tag when the output format was HTML. Now that we
+# convert to Markdown, attributes are discarded entirely by markdownify,
+# making this step unnecessary.
+#
+# _STRIP_ATTRS = ("class", "id", "data-mw", "typeof", "about", "style", "rel")
+#
+# def _simplify_attributes(soup: Tag) -> None:
+#     """Strip noisy bookkeeping attributes from every tag."""
+#     for tag in soup.descendants:
+#         if not isinstance(tag, Tag):
+#             continue
+#         for attr in list(tag.attrs):
+#             if attr in _STRIP_ATTRS or attr.startswith("data-"):
+#                 del tag.attrs[attr]
