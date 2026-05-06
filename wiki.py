@@ -276,9 +276,3 @@ def _to_markdown(soup: Tag) -> str:
     md = markdownify(str(soup), heading_style="ATX", strip=["section"])
     md = re.sub(r"\n{3,}", "\n\n", md)
     return md.strip()
-
-
-# TODO: Write a function that simply extracts all the links inside the article (no matter where
-# they come from in the article). Package them in a nice format amenable for LLMs to
-# consume, such as in a markdown table with columns "link", "text", and "description". Make sure
-# to include the "title" attribute of the link as the description.
