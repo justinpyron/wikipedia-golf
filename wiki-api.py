@@ -153,7 +153,6 @@ def fetch_article(key: str) -> Article | None:
     _strip_elements_by_selector(body)
     _strip_sections_by_heading(body)
     _strip_non_article_links(body)
-    _strip_noisy_link_attributes(body)
     content = _to_markdown(body)
     return Article(
         id=data["id"],
@@ -218,12 +217,6 @@ def _strip_non_article_links(soup: Tag) -> None:
         # so the href is a clean article key that can be fed back into
         # fetch_article.
         a["href"] = href.split("#", 1)[0]
-
-
-def _strip_noisy_link_attributes(soup: Tag) -> None:
-    """Remove attributes like title that add noise to the Markdown output."""
-    for a in soup.find_all("a"):
-        a.attrs.pop("title", None)
 
 
 def _to_markdown(soup: Tag) -> str:
