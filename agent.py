@@ -67,11 +67,10 @@ async def get_links(ctx: RunContext[WikiGolfDeps], key: str) -> str:
     result = fetch_article_links(key)
     if result is None:
         raise ModelRetry(f"Could not fetch links for '{key}'. Try a different key.")
-
     ctx.deps.path.append(key)
-    out = result.to_markdown_table(omit=["title"])
 
     # Check if destination is in the links to help the agent notice victory
+    out = result.to_markdown_table(omit=["title"])
     dst = ctx.deps.destination
     if dst in {link.key for link in result.links}:
         out += f"\n\nVICTORY CONDITION MET: The destination '{dst}' is available in the links above!"
