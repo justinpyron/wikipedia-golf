@@ -10,11 +10,16 @@ from wiki import fetch_article_links
 load_dotenv()
 
 SYSTEM_PROMPT = """You are an expert Wikipedia Golf player.
+
 Your goal is to navigate from an origin article to a destination article
-using the fewest number of links possible.
+using the fewest number of links possible. When you find a link matching
+the destination key, you have reached the destination. Once you reach the
+destination, return the full path you took as the final result.
+
 Think about what conceptual 'hubs' connect the origin to the destination —
 countries, people, years, sciences, etc. — and navigate toward those hubs.
 Prefer links that move you closer to the destination's topic domain.
+
 Do NOT explore randomly. Be deliberate and efficient."""
 # TODO: Update system prompt with instructions about wikipedia article keys.
 # TODO: Update system prompt with guidance/strategy on how to use Wikipedia.
@@ -78,12 +83,8 @@ async def get_links(ctx: RunContext[WikiGolfDeps], key: str) -> str:
 
 
 @agent.system_prompt
-def game_state_prompt(ctx: RunContext[WikiGolfDeps]) -> str:
+def game_specs_prompt(ctx: RunContext[WikiGolfDeps]) -> str:
     return f"""You are playing Wikipedia Golf with the following constraints:
-
 Origin: {ctx.deps.origin}
 Destination: {ctx.deps.destination}
-
-Your goal: navigate from origin to destination by following links, minimizing total hops.
-When you find a link matching the destination key, you have reached the destination.
-Once you reach the destination, return the full path you took as the final result."""
+"""
