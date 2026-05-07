@@ -74,6 +74,9 @@ async def get_links(ctx: RunContext[WikiGolfDeps], key: str) -> str:
     return out
 
 
+# TODO: If victory condition is met, print ctx.deps.path so LLM can use it to construct the final answer.
+
+
 @agent.system_prompt
 def game_state_prompt(ctx: RunContext[WikiGolfDeps]) -> str:
     return f"""You are playing Wikipedia Golf with the following constraints:
