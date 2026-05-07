@@ -1,13 +1,12 @@
 import asyncio
 import sys
 from dataclasses import dataclass, field
-from typing import Annotated
 
 from pydantic import BaseModel, model_validator
 from pydantic_ai import Agent, ModelRetry, RunContext, UsageLimits
 from pydantic_ai.models.openai import OpenAIChatModel
 
-from wiki import ArticleLinks, fetch_article_links
+from wiki import fetch_article_links
 
 SYSTEM_PROMPT = """You are an expert Wikipedia Golf player.
 Your goal is to navigate from an origin article to a destination article
@@ -17,11 +16,12 @@ countries, people, years, sciences, etc. — and navigate toward those hubs.
 Prefer links that move you closer to the destination's topic domain.
 Do NOT explore randomly. Be deliberate and efficient."""
 # TODO: Update system prompt with instructions about wikipedia article keys.
-# TODO: Update system prompt with guidance/strategy on how to use Wikipedia. E.g.: there must be an exact match; being close is not sufficient; if you get close, keep searching.
+# TODO: Update system prompt with guidance/strategy on how to use Wikipedia.
+# E.g.: there must be an exact match; being close is not sufficient.
 
 
-REQUEST_LIMIT = 20
-DEFAULT_MODEL = "openai:gpt-4o"
+REQUEST_LIMIT = 10
+DEFAULT_MODEL = "openai:gpt-5.4-mini"
 
 
 @dataclass
@@ -33,17 +33,6 @@ class WikiGolfDeps:
 
 class WikiGolfOutput(BaseModel):
     path: list[str]
-    steps: int
-
-    @model_validator(mode="after")
-    def validate_result(self) -> "WikiGolfOutput":
-        if not self.path:
-            raise ValueError("Path cannot be empty")
-        if self.steps != len(self.path) - 1:
-            raise ValueError(
-                f"Steps ({self.steps}) must be len(path) - 1 ({len(self.path) - 1})"
-            )
-        return self
 
 
 agent = Agent(
@@ -120,7 +109,6 @@ if __name__ == "__main__":
             )
             print("\nSuccess!")
             print(f"Path: {' -> '.join(result.path)}")
-            print(f"Total steps: {result.steps}")
         except Exception as e:
             print(f"\nAn error occurred: {e}")
 
