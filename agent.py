@@ -1,10 +1,8 @@
-import asyncio
-import sys
 from dataclasses import dataclass, field
 
 from dotenv import load_dotenv
 from pydantic import BaseModel
-from pydantic_ai import Agent, ModelRetry, RunContext, UsageLimits
+from pydantic_ai import Agent, ModelRetry, RunContext
 from pydantic_ai.models.openai import OpenAIChatModel
 
 from wiki import fetch_article_links
@@ -85,40 +83,3 @@ Destination: {ctx.deps.destination}
 Your goal: navigate from origin to destination by following links, minimizing total hops.
 When you find a link matching the destination key, you have reached the destination.
 Once you reach the destination, return the full path you took as the final result."""
-
-
-async def play_wikipedia_golf(
-    origin: str, destination: str, model: str
-) -> WikiGolfOutput:
-    deps = WikiGolfDeps(origin=origin, destination=destination)
-    # The origin is the first step in the path
-    result = await agent.run(
-        f"Play Wikipedia Golf. Start from the origin article: {origin}",
-        deps=deps,
-        model=model,
-        usage_limits=UsageLimits(request_limit=REQUEST_LIMIT),
-    )
-    return result.output
-
-
-if __name__ == "__main__":
-    if len(sys.argv) < 3:
-        print("Usage: python agent.py <origin_key> <destination_key> [model]")
-        sys.exit(1)
-
-    origin_key = sys.argv[1]
-    destination_key = sys.argv[2]
-    model_name = sys.argv[3] if len(sys.argv) > 3 else DEFAULT_MODEL
-
-    async def main():
-        print(f"Starting Wikipedia Golf: {origin_key} -> {destination_key}")
-        try:
-            result = await play_wikipedia_golf(
-                origin_key, destination_key, model=model_name
-            )
-            print("\nSuccess!")
-            print(f"Path: {' -> '.join(result.path)}")
-        except Exception as e:
-            print(f"\nAn error occurred: {e}")
-
-    asyncio.run(main())
