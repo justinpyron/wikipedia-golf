@@ -42,6 +42,8 @@ class WikiGolfOutput(BaseModel):
     path: list[str]
 
 
+# TODO: Is this necessary? Maybe just pull the path from deps.path?
+
 agent = Agent(
     DEFAULT_MODEL,
     deps_type=WikiGolfDeps,
@@ -87,4 +89,5 @@ async def get_links(ctx: RunContext[WikiGolfDeps], key: str) -> str:
     return out
 
 
-# TODO: If victory condition is met, print ctx.deps.path so LLM can use it to construct the final answer.
+# TODO: If victory condition is met, print ctx.deps.path so LLM can use it to construct the
+# final answer. NOTE: Maybe not necessary if we can just pull the path from deps.path?
