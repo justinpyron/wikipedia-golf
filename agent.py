@@ -50,6 +50,14 @@ agent = Agent(
 )
 
 
+@agent.system_prompt
+def game_specs_prompt(ctx: RunContext[WikiGolfDeps]) -> str:
+    return f"""You are playing Wikipedia Golf with the following constraints:
+Origin: {ctx.deps.origin}
+Destination: {ctx.deps.destination}
+"""
+
+
 @agent.tool(retries=TOOL_RETRIES)
 async def get_links(ctx: RunContext[WikiGolfDeps], key: str) -> str:
     """Fetch all navigable links from a Wikipedia article.
@@ -80,11 +88,3 @@ async def get_links(ctx: RunContext[WikiGolfDeps], key: str) -> str:
 
 
 # TODO: If victory condition is met, print ctx.deps.path so LLM can use it to construct the final answer.
-
-
-@agent.system_prompt
-def game_specs_prompt(ctx: RunContext[WikiGolfDeps]) -> str:
-    return f"""You are playing Wikipedia Golf with the following constraints:
-Origin: {ctx.deps.origin}
-Destination: {ctx.deps.destination}
-"""
