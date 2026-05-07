@@ -18,6 +18,7 @@ Prefer links that move you closer to the destination's topic domain.
 Do NOT explore randomly. Be deliberate and efficient."""
 
 REQUEST_LIMIT = 20
+DEFAULT_MODEL = "openai:gpt-4o"
 
 
 @dataclass
@@ -43,7 +44,7 @@ class WikiGolfResult(BaseModel):
 
 
 agent = Agent(
-    "openai:gpt-4o",
+    DEFAULT_MODEL,
     deps_type=WikiGolfDeps,
     output_type=WikiGolfResult,
     system_prompt=SYSTEM_PROMPT,
@@ -116,7 +117,7 @@ if __name__ == "__main__":
 
     origin_key = sys.argv[1]
     destination_key = sys.argv[2]
-    model_name = sys.argv[3] if len(sys.argv) > 3 else "openai:gpt-4o"
+    model_name = sys.argv[3] if len(sys.argv) > 3 else DEFAULT_MODEL
 
     async def main():
         print(f"Starting Wikipedia Golf: {origin_key} -> {destination_key}")
