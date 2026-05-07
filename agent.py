@@ -2,11 +2,14 @@ import asyncio
 import sys
 from dataclasses import dataclass, field
 
+from dotenv import load_dotenv
 from pydantic import BaseModel, model_validator
 from pydantic_ai import Agent, ModelRetry, RunContext, UsageLimits
 from pydantic_ai.models.openai import OpenAIChatModel
 
 from wiki import fetch_article_links
+
+load_dotenv()
 
 SYSTEM_PROMPT = """You are an expert Wikipedia Golf player.
 Your goal is to navigate from an origin article to a destination article
