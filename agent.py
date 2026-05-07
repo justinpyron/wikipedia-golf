@@ -3,7 +3,7 @@ import sys
 from dataclasses import dataclass, field
 
 from dotenv import load_dotenv
-from pydantic import BaseModel, model_validator
+from pydantic import BaseModel
 from pydantic_ai import Agent, ModelRetry, RunContext, UsageLimits
 from pydantic_ai.models.openai import OpenAIChatModel
 
