@@ -22,6 +22,7 @@ Do NOT explore randomly. Be deliberate and efficient."""
 
 
 REQUEST_LIMIT = 10
+TOOL_RETRIES = 3
 DEFAULT_MODEL = "openai:gpt-5.4-mini"
 
 
@@ -44,7 +45,7 @@ agent = Agent(
 )
 
 
-@agent.tool(retries=3)
+@agent.tool(retries=TOOL_RETRIES)
 async def get_links(ctx: RunContext[WikiGolfDeps], key: str) -> str:
     """Fetch all navigable links from a Wikipedia article.
 
@@ -63,7 +64,7 @@ async def get_links(ctx: RunContext[WikiGolfDeps], key: str) -> str:
     ctx.deps.path.append(key)
 
     # Check if destination is in the links to help the agent notice victory
-    out = result.to_markdown_table(omit=["title"])
+    out = result.to_markdown_table(omit=["text", "title"])
     dst = ctx.deps.destination
     if dst in {link.key for link in result.links}:
         out += f"\n\nVICTORY CONDITION MET: The destination '{dst}' is available in the links above!"
