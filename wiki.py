@@ -173,6 +173,7 @@ def fetch_article(key: str) -> Article | None:
 
 def fetch_article_links(key: str) -> ArticleLinks | None:
     """Fetch a Wikipedia article and extract all unique navigable wikilinks."""
+    print(f"Fetching article links for key: `{key}`")  # TODO: Delete after testing
     data = _request_with_html(key)
     if data is None:
         return None
@@ -215,7 +216,7 @@ def _request_with_html(key: str) -> dict | None:
     # are percent-encoded so they aren't parsed as URL structure.
     url = f"{BASE_URL}/page/{quote(key, safe='')}/with_html"
     try:
-        response = httpx.get(url, headers=HEADERS)
+        response = httpx.get(url, headers=HEADERS, follow_redirects=True)
         response.raise_for_status()
         return response.json()
     except httpx.HTTPError as e:
@@ -276,9 +277,3 @@ def _to_markdown(soup: Tag) -> str:
     md = markdownify(str(soup), heading_style="ATX", strip=["section"])
     md = re.sub(r"\n{3,}", "\n\n", md)
     return md.strip()
-
-
-# TODO: Write a function that simply extracts all the links inside the article (no matter where
-# they come from in the article). Package them in a nice format amenable for LLMs to
-# consume, such as in a markdown table with columns "link", "text", and "description". Make sure
-# to include the "title" attribute of the link as the description.
