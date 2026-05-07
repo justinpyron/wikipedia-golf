@@ -28,12 +28,12 @@ class WikiGolfDeps:
     path: list[str] = field(default_factory=list)
 
 
-class WikiGolfResult(BaseModel):
+class WikiGolfOutput(BaseModel):
     path: list[str]
     steps: int
 
     @model_validator(mode="after")
-    def validate_result(self) -> "WikiGolfResult":
+    def validate_result(self) -> "WikiGolfOutput":
         if not self.path:
             raise ValueError("Path cannot be empty")
         if self.steps != len(self.path) - 1:
@@ -46,11 +46,12 @@ class WikiGolfResult(BaseModel):
 agent = Agent(
     DEFAULT_MODEL,
     deps_type=WikiGolfDeps,
-    output_type=WikiGolfResult,
+    output_type=WikiGolfOutput,
     system_prompt=SYSTEM_PROMPT,
 )
 
 
+# TODO: Update docstring to proper format that provides tool spec (arg descriptions)
 @agent.tool
 async def get_links(ctx: RunContext[WikiGolfDeps], key: str) -> str:
     """Fetch all navigable links from a Wikipedia article.
@@ -98,7 +99,7 @@ Once you reach the destination, return the full path you took as the final resul
 
 async def play_wikipedia_golf(
     origin: str, destination: str, model: str
-) -> WikiGolfResult:
+) -> WikiGolfOutput:
     deps = WikiGolfDeps(origin=origin, destination=destination)
     # The origin is the first step in the path
     result = await agent.run(
