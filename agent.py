@@ -9,6 +9,16 @@ from pydantic_ai.models.openai import OpenAIChatModel
 
 from wiki import ArticleLinks, fetch_article_links
 
+SYSTEM_PROMPT = """You are an expert Wikipedia Golf player.
+Your goal is to navigate from an origin article to a destination article
+using the fewest number of links possible.
+Think about what conceptual 'hubs' connect the origin to the destination —
+countries, people, years, sciences, etc. — and navigate toward those hubs.
+Prefer links that move you closer to the destination's topic domain.
+Do NOT explore randomly. Be deliberate and efficient."""
+
+REQUEST_LIMIT = 20
+
 
 @dataclass
 class WikiGolfDeps:
@@ -32,21 +42,11 @@ class WikiGolfResult(BaseModel):
         return self
 
 
-# We use a placeholder model name as the user wants to toggle models later.
-# The actual model can be passed at runtime.
 agent = Agent(
     "openai:gpt-4o",
     deps_type=WikiGolfDeps,
     output_type=WikiGolfResult,
-    system_prompt=(
-        "You are an expert Wikipedia Golf player. "
-        "Your goal is to navigate from an origin article to a destination article "
-        "using the fewest number of links possible. "
-        "Think about what conceptual 'hubs' connect the origin to the destination — "
-        "countries, people, years, sciences, etc. — and navigate toward those hubs. "
-        "Prefer links that move you closer to the destination's topic domain. "
-        "Do NOT explore randomly. Be deliberate and efficient."
-    ),
+    system_prompt=SYSTEM_PROMPT,
 )
 
 
@@ -96,7 +96,7 @@ Once you reach the destination, return the full path you took as the final resul
 
 
 async def play_wikipedia_golf(
-    origin: str, destination: str, model: str = "openai:gpt-4o"
+    origin: str, destination: str, model: str
 ) -> WikiGolfResult:
     deps = WikiGolfDeps(origin=origin, destination=destination)
     # The origin is the first step in the path
@@ -104,7 +104,7 @@ async def play_wikipedia_golf(
         f"Play Wikipedia Golf. Start from the origin article: {origin}",
         deps=deps,
         model=model,
-        usage_limits=UsageLimits(request_limit=20),
+        usage_limits=UsageLimits(request_limit=REQUEST_LIMIT),
     )
     return result.output
 
