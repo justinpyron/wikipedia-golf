@@ -54,16 +54,13 @@ agent = Agent(
 )
 
 
-# TODO: Update docstring to proper format that provides tool spec (arg descriptions)
-# TODO: Print destination key + link path so far for agent to have context?
 @agent.tool
 async def get_links(ctx: RunContext[WikiGolfDeps], key: str) -> str:
     """Fetch all navigable links from a Wikipedia article.
 
-    Call this to see which pages you can navigate to from the given article.
-    The 'key' should be the identifier for the article.
+    Args:
+        key: The Wikipedia article key (identifier) to fetch links from.
     """
-
     result = fetch_article_links(key)
     if result is None:
         raise ModelRetry(f"Could not fetch links for '{key}'. Try a different key.")
