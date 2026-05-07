@@ -16,6 +16,9 @@ Think about what conceptual 'hubs' connect the origin to the destination —
 countries, people, years, sciences, etc. — and navigate toward those hubs.
 Prefer links that move you closer to the destination's topic domain.
 Do NOT explore randomly. Be deliberate and efficient."""
+# TODO: Update system prompt with instructions about wikipedia article keys.
+# TODO: Update system prompt with guidance/strategy on how to use Wikipedia. E.g.: there must be an exact match; being close is not sufficient; if you get close, keep searching.
+
 
 REQUEST_LIMIT = 20
 DEFAULT_MODEL = "openai:gpt-4o"
@@ -52,6 +55,7 @@ agent = Agent(
 
 
 # TODO: Update docstring to proper format that provides tool spec (arg descriptions)
+# TODO: Print destination key + link path so far for agent to have context?
 @agent.tool
 async def get_links(ctx: RunContext[WikiGolfDeps], key: str) -> str:
     """Fetch all navigable links from a Wikipedia article.
@@ -59,23 +63,22 @@ async def get_links(ctx: RunContext[WikiGolfDeps], key: str) -> str:
     Call this to see which pages you can navigate to from the given article.
     The 'key' should be the identifier for the article.
     """
-    # Path tracking: append the key we are currently exploring
-    if not ctx.deps.path or ctx.deps.path[-1] != key:
-        ctx.deps.path.append(key)
 
     result = fetch_article_links(key)
     if result is None:
         raise ModelRetry(f"Could not fetch links for '{key}'. Try a different key.")
 
-    # Check if destination is in the links to help the agent notice victory
-    link_keys = {link.key for link in result.links}
-    if ctx.deps.destination in link_keys:
-        return (
-            f"VICTORY CONDITION MET: The destination '{ctx.deps.destination}' is available in the links below!\n\n"
-            + result.to_markdown_table(omit=["title"])
-        )
+    ctx.deps.path.append(key)
+    out = result.to_markdown_table(omit=["title"])
 
-    return result.to_markdown_table(omit=["title"])
+    # Check if destination is in the links to help the agent notice victory
+    dst = ctx.deps.destination
+    if dst in {link.key for link in result.links}:
+        out += f"\n\nVICTORY CONDITION MET: The destination '{dst}' is available in the links above!"
+    else:
+        out += f"\n\nThe destination '{dst}' is not in the links above. Keep searching!"
+
+    return out
 
 
 @agent.system_prompt
