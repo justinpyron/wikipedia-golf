@@ -46,7 +46,7 @@ agent = Agent(
 )
 
 
-@agent.tool
+@agent.tool(retries=3)
 async def get_links(ctx: RunContext[WikiGolfDeps], key: str) -> str:
     """Fetch all navigable links from a Wikipedia article.
 
@@ -55,7 +55,13 @@ async def get_links(ctx: RunContext[WikiGolfDeps], key: str) -> str:
     """
     result = fetch_article_links(key)
     if result is None:
-        raise ModelRetry(f"Could not fetch links for '{key}'. Try a different key.")
+        raise ModelRetry(
+            (
+                f"Could not fetch links for '{key}'. "
+                "Try a different key. "
+                "The key must be the origin key or exist in the output of a previous tool call."
+            )
+        )
     ctx.deps.path.append(key)
 
     # Check if destination is in the links to help the agent notice victory
@@ -71,7 +77,7 @@ async def get_links(ctx: RunContext[WikiGolfDeps], key: str) -> str:
 
 @agent.system_prompt
 def game_state_prompt(ctx: RunContext[WikiGolfDeps]) -> str:
-    return f"""You are playing Wikipedia Golf.
+    return f"""You are playing Wikipedia Golf with the following constraints:
 
 Origin: {ctx.deps.origin}
 Destination: {ctx.deps.destination}
