@@ -80,17 +80,10 @@ async def get_links(ctx: RunContext[WikiGolfDeps], key: str) -> str:
 
 @agent.system_prompt
 def game_state_prompt(ctx: RunContext[WikiGolfDeps]) -> str:
-    deps = ctx.deps
-    path_str = (
-        " -> ".join(deps.path)
-        if deps.path
-        else "(none — start by fetching links from the origin)"
-    )
     return f"""You are playing Wikipedia Golf.
 
-Origin: {deps.origin}
-Destination: {deps.destination}
-Path so far: {path_str}
+Origin: {ctx.deps.origin}
+Destination: {ctx.deps.destination}
 
 Your goal: navigate from origin to destination by following links, minimizing total hops.
 When you find a link matching the destination key, you have reached the destination.
