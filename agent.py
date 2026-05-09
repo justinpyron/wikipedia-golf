@@ -4,6 +4,7 @@ from dataclasses import dataclass, field
 
 from pydantic import BaseModel
 from pydantic_ai import Agent, ModelRetry, RunContext
+from pydantic_ai.settings import ModelSettings
 
 from variants import AgentVariant
 from wiki import fetch_article_links
@@ -27,11 +28,16 @@ class WikiGolfInput(BaseModel):
 
 def build_agent(variant: AgentVariant) -> Agent[WikiGolfDeps, WikiGolfOutput]:
     """Construct a fully-configured Wikipedia Golf agent from a variant."""
+    model_settings: ModelSettings | None = None
+    if variant.temperature is not None:
+        model_settings = ModelSettings(temperature=variant.temperature)
+
     agent = Agent(
         variant.model,
         deps_type=WikiGolfDeps,
         output_type=WikiGolfOutput,
         system_prompt=variant.system_prompt,
+        model_settings=model_settings,
         instrument=True,
     )
 
