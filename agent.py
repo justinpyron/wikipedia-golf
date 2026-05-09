@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 
+import logfire
 from dotenv import load_dotenv
 from pydantic import BaseModel
 from pydantic_ai import Agent, ModelRetry, RunContext
@@ -8,6 +9,10 @@ from wiki import fetch_article_links
 
 load_dotenv()
 
+
+LOGFIRE_SERVICE_NAME = "wiki-golf-agent-dev"
+TOOL_RETRIES = 3
+DEFAULT_MODEL = "openai:gpt-5.4-mini"
 SYSTEM_PROMPT = """You are an expert Wikipedia Golf player.
 
 Your goal is to navigate from an origin article to a destination article
@@ -25,8 +30,8 @@ Do NOT explore randomly. Be deliberate and efficient."""
 # TOOD: Update with instructions about game rules: e.g.: there must be an exact match
 
 
-TOOL_RETRIES = 3
-DEFAULT_MODEL = "openai:gpt-5.4-mini"
+logfire.configure(environment="dev", service_name=LOGFIRE_SERVICE_NAME)
+logfire.instrument_httpx()
 
 
 # TODO: Add candidate_keys: list of keys seen in previous get_links tool call (reset each tool call).
@@ -47,6 +52,7 @@ agent = Agent(
     deps_type=WikiGolfDeps,
     output_type=WikiGolfOutput,
     system_prompt=SYSTEM_PROMPT,
+    instrument=True,
 )
 
 

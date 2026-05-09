@@ -173,7 +173,6 @@ def fetch_article(key: str) -> Article | None:
 
 def fetch_article_links(key: str) -> ArticleLinks | None:
     """Fetch a Wikipedia article and extract all unique navigable wikilinks."""
-    print(f"Fetching article links for key: `{key}`")  # TODO: Delete after testing
     data = _request_with_html(key)
     if data is None:
         return None
