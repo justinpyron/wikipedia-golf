@@ -3,7 +3,6 @@ from dataclasses import dataclass, field
 from dotenv import load_dotenv
 from pydantic import BaseModel
 from pydantic_ai import Agent, ModelRetry, RunContext
-from pydantic_ai.models.openai import OpenAIChatModel
 
 from wiki import fetch_article_links
 
@@ -21,15 +20,16 @@ countries, people, years, sciences, etc. — and navigate toward those hubs.
 Prefer links that move you closer to the destination's topic domain.
 
 Do NOT explore randomly. Be deliberate and efficient."""
-# TODO: Update system prompt with instructions about wikipedia article keys.
-# TODO: Update system prompt with guidance/strategy on how to use Wikipedia.
-# E.g.: there must be an exact match; being close is not sufficient.
+# TODO: Update with instructions about wikipedia article keys.
+# TODO: Update with guidance/strategy on how to intelligently navigate Wikipedia.
+# TOOD: Update with instructions about game rules: e.g.: there must be an exact match
 
 
 TOOL_RETRIES = 3
 DEFAULT_MODEL = "openai:gpt-5.4-mini"
 
 
+# TODO: Add candidate_keys: list of keys seen in previous get_links tool call (reset each tool call).
 @dataclass
 class WikiGolfDeps:
     origin: str
@@ -37,11 +37,10 @@ class WikiGolfDeps:
     path: list[str] = field(default_factory=list)
 
 
+# TODO: Is a structured output necessary? Pull path from deps.path mutated WikiGolfDeps object instead?
 class WikiGolfOutput(BaseModel):
     path: list[str]
 
-
-# TODO: Is this necessary? Maybe just pull the path from deps.path?
 
 agent = Agent(
     DEFAULT_MODEL,
@@ -59,6 +58,8 @@ Destination: {ctx.deps.destination}
 """
 
 
+# TODO: Instrument a check that the key is the origin key or exist in the output
+# of a previous tool call. Raise a ModelRetry if not.
 @agent.tool(retries=TOOL_RETRIES)
 async def get_links(ctx: RunContext[WikiGolfDeps], key: str) -> str:
     """Fetch all navigable links from a Wikipedia article.
@@ -86,7 +87,3 @@ async def get_links(ctx: RunContext[WikiGolfDeps], key: str) -> str:
         out += f"\n\nThe destination '{dst}' is not in the links above. Keep searching!"
 
     return out
-
-
-# TODO: If victory condition is met, print ctx.deps.path so LLM can use it to construct the
-# final answer. NOTE: Maybe not necessary if we can just pull the path from deps.path?
