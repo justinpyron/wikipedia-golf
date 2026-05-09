@@ -26,7 +26,6 @@ Do NOT explore randomly. Be deliberate and efficient."""
 # E.g.: there must be an exact match; being close is not sufficient.
 
 
-REQUEST_LIMIT = 10
 TOOL_RETRIES = 3
 DEFAULT_MODEL = "openai:gpt-5.4-mini"
 
