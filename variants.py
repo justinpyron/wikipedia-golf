@@ -11,7 +11,6 @@ class AgentVariant:
     user_prompt: str = "Go"
     tool_retries: int = 3
     temperature: float | None = None
-    max_steps: int | None = None
 
 
 BASELINE_SYSTEM_PROMPT = """\
