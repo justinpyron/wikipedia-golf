@@ -27,3 +27,7 @@ class AllValidLinksUsed(Evaluator):
 
     def evaluate(self, ctx: EvaluatorContext) -> bool:
         return not any(isinstance(m, ModelRetry) for m in ctx.trace.messages)
+
+
+# TODO: Are these functions using ctx properly? Will it have the RunContext object?
+# I think you need to pull from the `span_tree` instead...

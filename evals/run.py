@@ -11,7 +11,7 @@ from collections.abc import Awaitable, Callable
 import logfire
 from dotenv import load_dotenv
 
-from agent import WikiGolfInput, WikiGolfOutput, build_agent
+from agent import WikiGolfDeps, WikiGolfInput, WikiGolfOutput, build_agent
 from evals.datasets import DATASETS
 from variants import VARIANTS
 
@@ -24,8 +24,6 @@ def build_task(variant) -> Callable[[WikiGolfInput], Awaitable[WikiGolfOutput]]:
     agent = build_agent(variant)
 
     async def task(inputs: WikiGolfInput) -> WikiGolfOutput:
-        from agent import WikiGolfDeps
-
         deps = WikiGolfDeps(origin=inputs.origin, destination=inputs.destination)
         result = await agent.run(variant.user_prompt, deps=deps)
         return result.output
@@ -45,7 +43,7 @@ def main() -> None:
     dataset = DATASETS[args.dataset]
     task = build_task(variant)
 
-    report = asyncio.run(dataset.evaluate(task, name=variant.name))
+    report = asyncio.run(dataset.evaluate(task))
     report.print()
 
 
