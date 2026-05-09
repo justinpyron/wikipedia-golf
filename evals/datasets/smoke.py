@@ -2,10 +2,10 @@
 
 from pydantic_evals import Case, Dataset
 
-from agent import WikiGolfInput, WikiGolfOutput
 from evals.evaluators import AllValidLinksUsed, PathLength, ReachedDestination
+from evals.run import WikiGolfInput, WikiGolfResult
 
-dataset: Dataset[WikiGolfInput, WikiGolfOutput] = Dataset(
+dataset: Dataset[WikiGolfInput, WikiGolfResult] = Dataset(
     name="smoke",
     cases=[
         Case(

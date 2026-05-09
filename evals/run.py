@@ -12,8 +12,10 @@ from dataclasses import asdict
 
 import logfire
 from dotenv import load_dotenv
+from pydantic import BaseModel
+from pydantic_ai.messages import ModelMessage
 
-from agent import WikiGolfDeps, WikiGolfInput, WikiGolfOutput, build_agent
+from agent import WikiGolfDeps, build_agent
 from evals.datasets import DATASETS
 from variants import VARIANTS
 
@@ -21,14 +23,27 @@ load_dotenv()
 logfire.configure(service_name="wiki-golf-evals", environment="dev")
 
 
-def build_task(variant) -> Callable[[WikiGolfInput], Awaitable[WikiGolfOutput]]:
+class WikiGolfInput(BaseModel):
+    origin: str
+    destination: str
+
+
+class WikiGolfResult(BaseModel):
+    actual_path: list[str]
+    messages: list[ModelMessage]
+
+
+def build_task(variant) -> Callable[[WikiGolfInput], Awaitable[WikiGolfResult]]:
     """Build an eval-compatible async callable from a variant."""
     agent = build_agent(variant)
 
-    async def task(inputs: WikiGolfInput) -> WikiGolfOutput:
+    async def task(inputs: WikiGolfInput) -> WikiGolfResult:
         deps = WikiGolfDeps(origin=inputs.origin, destination=inputs.destination)
         result = await agent.run(variant.user_prompt, deps=deps)
-        return result.output
+        return WikiGolfResult(
+            actual_path=deps.path,
+            messages=result.all_messages(),
+        )
 
     return task
 
