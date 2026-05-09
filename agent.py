@@ -27,7 +27,8 @@ Prefer links that move you closer to the destination's topic domain.
 Do NOT explore randomly. Be deliberate and efficient."""
 # TODO: Update with instructions about wikipedia article keys.
 # TODO: Update with guidance/strategy on how to intelligently navigate Wikipedia.
-# TOOD: Update with instructions about game rules: e.g.: there must be an exact match
+# TODO: Update with instructions about game rules: e.g.: there must be an exact match
+# TODO: Instruct it to only call one tool per turn (enforce this mechanically?).
 
 
 logfire.configure(environment="dev", service_name=LOGFIRE_SERVICE_NAME)
