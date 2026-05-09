@@ -51,6 +51,13 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Run Wikipedia Golf evaluations")
     parser.add_argument("-d", "--dataset", required=True, choices=list(DATASETS.keys()))
     parser.add_argument("-v", "--variant", required=True, choices=variant_names)
+    parser.add_argument(
+        "-c",
+        "--max-concurrency",
+        type=int,
+        default=25,
+        help="Max number of concurrent eval cases (default: 25)",
+    )
     args = parser.parse_args()
 
     variant = next(v for v in VARIANTS if v.name == args.variant)
@@ -62,7 +69,9 @@ def main() -> None:
         "git_sha": get_git_sha(),
     }
 
-    report = asyncio.run(dataset.evaluate(task, metadata=metadata))
+    report = asyncio.run(
+        dataset.evaluate(task, metadata=metadata, max_concurrency=args.max_concurrency)
+    )
     report.print()
 
 
