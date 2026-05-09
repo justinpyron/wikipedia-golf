@@ -10,7 +10,7 @@ from wiki import fetch_article_links
 load_dotenv()
 
 
-LOGFIRE_SERVICE_NAME = "wiki-golf-agent-dev"
+LOGFIRE_SERVICE_NAME = "wiki-golf-agent"
 TOOL_RETRIES = 3
 DEFAULT_MODEL = "openai:gpt-5.4-mini"
 SYSTEM_PROMPT = """You are an expert Wikipedia Golf player.
@@ -31,7 +31,6 @@ Do NOT explore randomly. Be deliberate and efficient."""
 
 
 logfire.configure(environment="dev", service_name=LOGFIRE_SERVICE_NAME)
-logfire.instrument_httpx()
 
 
 # TODO: Add candidate_keys: list of keys seen in previous get_links tool call (reset each tool call).
