@@ -6,7 +6,9 @@ Usage:
 
 import argparse
 import asyncio
+import subprocess
 from collections.abc import Awaitable, Callable
+from dataclasses import asdict
 
 import logfire
 from dotenv import load_dotenv
@@ -31,6 +33,18 @@ def build_task(variant) -> Callable[[WikiGolfInput], Awaitable[WikiGolfOutput]]:
     return task
 
 
+def get_git_sha() -> str:
+    """Get the current git SHA."""
+    try:
+        return (
+            subprocess.check_output(["git", "rev-parse", "HEAD"])
+            .decode("ascii")
+            .strip()
+        )
+    except Exception:
+        return "unknown"
+
+
 def main() -> None:
     variant_names = [v.name for v in VARIANTS]
 
@@ -43,7 +57,12 @@ def main() -> None:
     dataset = DATASETS[args.dataset]
     task = build_task(variant)
 
-    report = asyncio.run(dataset.evaluate(task))
+    metadata = {
+        "variant": asdict(variant),
+        "git_sha": get_git_sha(),
+    }
+
+    report = asyncio.run(dataset.evaluate(task, metadata=metadata))
     report.print()
 
 
