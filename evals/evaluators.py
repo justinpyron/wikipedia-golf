@@ -8,16 +8,16 @@ class ReachedDestination(Evaluator):
     """Check if the agent's path ends at the destination."""
 
     def evaluate(self, ctx: EvaluatorContext) -> bool:
-        if not ctx.output.actual_path:
+        if not ctx.output.path:
             return False
-        return ctx.output.actual_path[-1] == ctx.inputs.destination
+        return ctx.output.path[-1] == ctx.inputs.destination
 
 
 class PathLength(Evaluator):
     """Return the number of hops in the agent's path."""
 
     def evaluate(self, ctx: EvaluatorContext) -> int:
-        return len(ctx.output.actual_path)
+        return len(ctx.output.path)
 
 
 class AllValidLinksUsed(Evaluator):

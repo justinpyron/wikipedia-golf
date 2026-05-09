@@ -23,25 +23,25 @@ load_dotenv()
 logfire.configure(service_name="wiki-golf-evals", environment="dev")
 
 
-class WikiGolfInput(BaseModel):
+class WikiGolfEvalInput(BaseModel):
     origin: str
     destination: str
 
 
-class WikiGolfResult(BaseModel):
-    actual_path: list[str]
+class WikiGolfEvalOutput(BaseModel):
+    path: list[str]
     messages: list[ModelMessage]
 
 
-def build_task(variant) -> Callable[[WikiGolfInput], Awaitable[WikiGolfResult]]:
+def build_task(variant) -> Callable[[WikiGolfEvalInput], Awaitable[WikiGolfEvalOutput]]:
     """Build an eval-compatible async callable from a variant."""
     agent = build_agent(variant)
 
-    async def task(inputs: WikiGolfInput) -> WikiGolfResult:
+    async def task(inputs: WikiGolfEvalInput) -> WikiGolfEvalOutput:
         deps = WikiGolfDeps(origin=inputs.origin, destination=inputs.destination)
         result = await agent.run(variant.user_prompt, deps=deps)
-        return WikiGolfResult(
-            actual_path=deps.path,
+        return WikiGolfEvalOutput(
+            path=deps.path,
             messages=result.all_messages(),
         )
 
