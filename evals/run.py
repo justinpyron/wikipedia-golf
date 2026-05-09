@@ -61,11 +61,19 @@ def get_git_sha() -> str:
 
 
 def main() -> None:
-    variant_names = [v.name for v in VARIANTS]
-
     parser = argparse.ArgumentParser(description="Run Wikipedia Golf evaluations")
-    parser.add_argument("-d", "--dataset", required=True, choices=list(DATASETS.keys()))
-    parser.add_argument("-v", "--variant", required=True, choices=variant_names)
+    parser.add_argument(
+        "-d",
+        "--dataset",
+        required=True,
+        choices=list(DATASETS.keys()),
+    )
+    parser.add_argument(
+        "-v",
+        "--variant",
+        required=True,
+        choices=[v.name for v in VARIANTS],
+    )
     parser.add_argument(
         "-c",
         "--max-concurrency",
@@ -75,8 +83,15 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    variant = next(v for v in VARIANTS if v.name == args.variant)
-    dataset = DATASETS[args.dataset]
+    try:
+        variant = VARIANTS[args.variant]
+    except KeyError:
+        raise KeyError(f"Variant '{args.variant}' does not exist in VARIANTS.")
+
+    try:
+        dataset = DATASETS[args.dataset]
+    except KeyError:
+        raise KeyError(f"Dataset '{args.dataset}' does not exist in DATASETS.")
     task = build_task(variant)
 
     metadata = {
