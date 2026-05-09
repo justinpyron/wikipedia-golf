@@ -29,8 +29,11 @@ class WikiGolfInput(BaseModel):
 def build_agent(variant: AgentVariant) -> Agent[WikiGolfDeps, WikiGolfOutput]:
     """Construct a fully-configured Wikipedia Golf agent from a variant."""
     model_settings: ModelSettings | None = None
-    if variant.temperature is not None:
-        model_settings = ModelSettings(temperature=variant.temperature)
+    if variant.temperature is not None or variant.thinking is not None:
+        model_settings = ModelSettings(
+            temperature=variant.temperature,
+            thinking=variant.thinking,
+        )
 
     agent = Agent(
         variant.model,

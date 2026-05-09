@@ -2,6 +2,8 @@
 
 from dataclasses import dataclass
 
+from pydantic_ai.settings import ThinkingLevel
+
 
 @dataclass(frozen=True)
 class AgentVariant:
@@ -11,6 +13,7 @@ class AgentVariant:
     user_prompt: str = "Go"
     tool_retries: int = 3
     temperature: float | None = None
+    thinking: ThinkingLevel | None = None
 
 
 BASELINE_SYSTEM_PROMPT = """\
