@@ -6,16 +6,31 @@ Usage:
 
 import argparse
 import asyncio
+from collections.abc import Awaitable, Callable
 
 import logfire
 from dotenv import load_dotenv
 
-from agent import build_task
+from agent import WikiGolfInput, WikiGolfOutput, build_agent
 from evals.datasets import DATASETS
 from variants import VARIANTS
 
 load_dotenv()
 logfire.configure(service_name="wiki-golf-evals", environment="dev")
+
+
+def build_task(variant) -> Callable[[WikiGolfInput], Awaitable[WikiGolfOutput]]:
+    """Build an eval-compatible async callable from a variant."""
+    agent = build_agent(variant)
+
+    async def task(inputs: WikiGolfInput) -> WikiGolfOutput:
+        from agent import WikiGolfDeps
+
+        deps = WikiGolfDeps(origin=inputs.origin, destination=inputs.destination)
+        result = await agent.run(variant.user_prompt, deps=deps)
+        return result.output
+
+    return task
 
 
 def main() -> None:

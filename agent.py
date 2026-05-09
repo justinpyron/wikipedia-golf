@@ -1,6 +1,5 @@
 """Factory for building Wikipedia Golf agents from variant configurations."""
 
-from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
 
 from pydantic import BaseModel
@@ -70,17 +69,3 @@ def build_agent(variant: AgentVariant) -> Agent[WikiGolfDeps, WikiGolfOutput]:
         return out
 
     return agent
-
-
-def build_task(
-    variant: AgentVariant,
-) -> Callable[[WikiGolfInput], Awaitable[WikiGolfOutput]]:
-    """Build an eval-compatible async callable from a variant."""
-    agent = build_agent(variant)
-
-    async def task(inputs: WikiGolfInput) -> WikiGolfOutput:
-        deps = WikiGolfDeps(origin=inputs.origin, destination=inputs.destination)
-        result = await agent.run(variant.user_prompt, deps=deps)
-        return result.output
-
-    return task
