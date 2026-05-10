@@ -9,21 +9,21 @@ dataset: Dataset[WikiGolfEvalInput, WikiGolfEvalOutput] = Dataset(
     name="smoke",
     cases=[
         Case(
-            name="python_to_guido",
+            name="case_1",
             inputs=WikiGolfEvalInput(
                 origin="Python_(programming_language)",
                 destination="Guido_van_Rossum",
             ),
         ),
         Case(
-            name="basketball_to_united_states",
+            name="case_2",
             inputs=WikiGolfEvalInput(
                 origin="Basketball",
                 destination="United_States",
             ),
         ),
         Case(
-            name="eiffel_tower_to_france",
+            name="case_3",
             inputs=WikiGolfEvalInput(
                 origin="Eiffel_Tower",
                 destination="France",
