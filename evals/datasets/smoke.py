@@ -2,7 +2,7 @@
 
 from pydantic_evals import Case, Dataset
 
-from evals.evaluators import AllValidLinksUsed, PathLength, ReachedDestination
+from evals.evaluators import AllValidLinksUsed, ReachedDestination, StepCount
 from evals.types import WikiGolfEvalInput, WikiGolfEvalOutput
 
 dataset: Dataset[WikiGolfEvalInput, WikiGolfEvalOutput] = Dataset(
@@ -30,5 +30,5 @@ dataset: Dataset[WikiGolfEvalInput, WikiGolfEvalOutput] = Dataset(
             ),
         ),
     ],
-    evaluators=[ReachedDestination(), PathLength(), AllValidLinksUsed()],
+    evaluators=[ReachedDestination(), StepCount(), AllValidLinksUsed()],
 )
