@@ -67,7 +67,7 @@ def build_agent(variant: AgentVariant) -> Agent[WikiGolfDeps, str]:
         # PHASE 2: Victory (destination reached - no fetch needed)
         if key == ctx.deps.destination:
             ctx.deps.path.append(key)
-            return f"VICTORY: Reached destination '{key}'. Path: {' -> '.join(ctx.deps.path)}"
+            return f"VICTORY: Reached destination '{key}'.\nPATH: {' -> '.join(ctx.deps.path)}"
 
         # PHASE 3: Fetch and advance
         try:
