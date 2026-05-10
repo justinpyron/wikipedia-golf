@@ -1,6 +1,7 @@
 """Factory for building Wikipedia Golf agents from variant configurations."""
 
-from pydantic import BaseModel, Field
+from dataclasses import dataclass, field
+
 from pydantic_ai import Agent, ModelRetry, RunContext
 from pydantic_ai.settings import ModelSettings
 
@@ -8,17 +9,14 @@ from variants import AgentVariant
 from wiki import fetch_article_links
 
 
-class WikiGolfDeps(BaseModel):
+@dataclass
+class WikiGolfDeps:
     origin: str
     destination: str
-    path: list[str] = Field(default_factory=list)
+    path: list[str] = field(default_factory=list)
 
 
-class WikiGolfOutput(BaseModel):
-    path: list[str]
-
-
-def build_agent(variant: AgentVariant) -> Agent[WikiGolfDeps, WikiGolfOutput]:
+def build_agent(variant: AgentVariant) -> Agent[WikiGolfDeps, str]:
     """Construct a fully-configured Wikipedia Golf agent from a variant."""
     model_settings: ModelSettings | None = None
     if variant.temperature is not None or variant.thinking is not None:
@@ -30,7 +28,6 @@ def build_agent(variant: AgentVariant) -> Agent[WikiGolfDeps, WikiGolfOutput]:
     agent = Agent(
         variant.model,
         deps_type=WikiGolfDeps,
-        output_type=WikiGolfOutput,
         system_prompt=variant.system_prompt,
         model_settings=model_settings,
         instrument=True,
