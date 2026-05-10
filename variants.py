@@ -47,6 +47,7 @@ an article and see its links.
 - Each subsequent move: choose one key from the current article's links
 - One tool call per turn: no parallel moves
 - After each move, summarize in 20 words or fewer why you chose that link
+- Game ends only when destination key appears in current article's link list. Continue play until this condition is satisfied.
 
 # Strategy
 Seek conceptual bridges that connect the origin to the destination: shared

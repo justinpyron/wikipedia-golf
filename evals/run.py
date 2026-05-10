@@ -12,6 +12,7 @@ from dataclasses import asdict
 
 import logfire
 from dotenv import load_dotenv
+from pydantic_ai import UsageLimits
 
 from agent import WikiGolfDeps, build_agent
 from evals.datasets import DATASETS
@@ -21,6 +22,12 @@ from variants import VARIANTS
 load_dotenv()
 logfire.configure(service_name="wiki-golf-evals", environment="dev")
 
+# Maximum number of tool calls (page visits) allowed per game
+MAX_TOOL_CALLS = 20
+
+# Maximum number of LLM requests (model turns) allowed per game
+MAX_LLM_REQUESTS = 30
+
 
 def build_task(variant) -> Callable[[WikiGolfEvalInput], Awaitable[WikiGolfEvalOutput]]:
     """Build an eval-compatible async callable from a variant."""
@@ -28,7 +35,14 @@ def build_task(variant) -> Callable[[WikiGolfEvalInput], Awaitable[WikiGolfEvalO
 
     async def task(inputs: WikiGolfEvalInput) -> WikiGolfEvalOutput:
         deps = WikiGolfDeps(origin=inputs.origin, destination=inputs.destination)
-        result = await agent.run(variant.user_prompt, deps=deps)
+        result = await agent.run(
+            variant.user_prompt,
+            deps=deps,
+            usage_limits=UsageLimits(
+                request_limit=MAX_LLM_REQUESTS,
+                tool_calls_limit=MAX_TOOL_CALLS,
+            ),
+        )
         return WikiGolfEvalOutput(
             path=deps.path,
             messages=result.all_messages(),

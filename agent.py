@@ -67,7 +67,12 @@ def build_agent(variant: AgentVariant) -> Agent[WikiGolfDeps, str]:
             if key not in ctx.deps.candidate_keys:
                 raise ModelRetry(
                     f"ILLEGAL MOVE: '{key}' is not available from the current page. "
-                    f"Valid keys: {sorted(ctx.deps.candidate_keys)}"
+                    f"Valid keys are listed in the output of the previous tool call."
+                )
+            if len(ctx.deps.path) > 0 and key == ctx.deps.path[-1]:
+                raise ModelRetry(
+                    f"REDUNDANT MOVE: Cannot navigate from '{key}' back to itself. "
+                    "Choose a different page from the available links."
                 )
 
         # PHASE 2: Victory (destination reached - no fetch needed)

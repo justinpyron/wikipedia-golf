@@ -13,11 +13,11 @@ class ReachedDestination(Evaluator):
         return ctx.output.path[-1] == ctx.inputs.destination
 
 
-class PathLength(Evaluator):
-    """Return the number of hops in the agent's path."""
+class StepCount(Evaluator):
+    """Return the number of steps (hops) between origin and destination."""
 
     def evaluate(self, ctx: EvaluatorContext) -> int:
-        return len(ctx.output.path)
+        return len(ctx.output.path) - 1
 
 
 class AllValidLinksUsed(Evaluator):
