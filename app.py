@@ -46,7 +46,7 @@ app = Dash(
 
 # Styles
 CONTAINER_STYLE = {
-    "maxWidth": "680px",
+    "maxWidth": "900px",
     "margin": "0 auto",
     "padding": "48px 24px",
     "backgroundColor": COLORS["whisper"],
