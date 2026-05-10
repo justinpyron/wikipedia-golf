@@ -37,16 +37,16 @@ def build_task(variant) -> Callable[[WikiGolfEvalInput], Awaitable[WikiGolfEvalO
     return task
 
 
-def get_git_sha() -> str:
-    """Get the current git SHA."""
+def get_git_info() -> tuple[str, str]:
+    """Get the current git SHA and commit subject atomically."""
     try:
-        return (
-            subprocess.check_output(["git", "rev-parse", "HEAD"])
-            .decode("ascii")
-            .strip()
-        )
+        output = subprocess.check_output(
+            ["git", "log", "-1", "--pretty=format:%H%n%s"], text=True
+        ).strip()
+        sha, msg = output.split("\n", 1)
+        return sha, msg
     except Exception:
-        return "unknown"
+        return "unknown", "unknown"
 
 
 def main() -> None:
@@ -83,9 +83,11 @@ def main() -> None:
         raise KeyError(f"Dataset '{args.dataset}' does not exist in DATASETS.")
     task = build_task(variant)
 
+    sha, msg = get_git_info()
     metadata = {
         "variant": asdict(variant),
-        "git_sha": get_git_sha(),
+        "git_sha": sha,
+        "git_commit_message": msg,
     }
 
     report = asyncio.run(
