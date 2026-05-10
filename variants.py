@@ -58,12 +58,12 @@ randomly.
 
 VARIANTS: list[AgentVariant] = [
     AgentVariant(
-        name="v0.0",
+        name="v0_0",
         model="openai:gpt-5.4-mini",
         system_prompt=SYSTEM_PROMPT_V0_0,
     ),
     AgentVariant(
-        name="v1.0",
+        name="v1_0",
         model="openai:gpt-5.4-mini",
         system_prompt=SYSTEM_PROMPT_V1_0,
     ),
