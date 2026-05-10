@@ -333,6 +333,8 @@ def create_article_card(
     """Create a clickable article suggestion card."""
     # Use dict-style ID for pattern-matching callbacks
     card_id = {"type": f"{prefix}-card", "index": index}
+    # Store data in data-* attributes (valid HTML/Dash props)
+    thumbnail_url = result.thumbnail.get("url") if result.thumbnail else ""
     return html.Div(
         [
             html.Div(
@@ -350,11 +352,11 @@ def create_article_card(
         id=card_id,
         style=RESULT_CARD_STYLE,
         n_clicks=0,
-        data={
-            "key": result.key,
-            "title": result.title,
-            "description": result.description,
-            "thumbnail": result.thumbnail.get("url") if result.thumbnail else None,
+        **{
+            "data-key": result.key,
+            "data-title": result.title,
+            "data-description": result.description or "",
+            "data-thumbnail": thumbnail_url,
         },
     )
 
@@ -580,22 +582,37 @@ def update_dest_results(query: str | None) -> tuple:
     Output("origin-results-container", "style", allow_duplicate=True),
     Output("origin-input", "value", allow_duplicate=True),
     Input({"type": "origin-card", "index": dash.ALL}, "n_clicks"),
-    State({"type": "origin-card", "index": dash.ALL}, "data"),
+    State({"type": "origin-card", "index": dash.ALL}, "data-key"),
+    State({"type": "origin-card", "index": dash.ALL}, "data-title"),
+    State({"type": "origin-card", "index": dash.ALL}, "data-description"),
+    State({"type": "origin-card", "index": dash.ALL}, "data-thumbnail"),
     prevent_initial_call=True,
 )
-def select_origin(n_clicks: list[int | None], data_list: list[dict | None]) -> tuple:
+def select_origin(
+    n_clicks: list[int | None],
+    keys: list[str | None],
+    titles: list[str | None],
+    descriptions: list[str | None],
+    thumbnails: list[str | None],
+) -> tuple:
     """Handle origin article selection."""
     ctx = dash.callback_context
     if not ctx.triggered:
         raise PreventUpdate
 
     # Find which card was clicked (n_clicks > 0)
-    for i, (clicks, data) in enumerate(zip(n_clicks, data_list)):
+    for i, clicks in enumerate(n_clicks):
         if clicks and clicks > 0:
+            data = {
+                "key": keys[i],
+                "title": titles[i],
+                "description": descriptions[i],
+                "thumbnail": thumbnails[i],
+            }
             return (
                 data,
                 {**RESULTS_CONTAINER_STYLE, "display": "none"},
-                data.get("title", ""),
+                titles[i] or "",
             )
 
     raise PreventUpdate
@@ -606,22 +623,37 @@ def select_origin(n_clicks: list[int | None], data_list: list[dict | None]) -> t
     Output("dest-results-container", "style", allow_duplicate=True),
     Output("dest-input", "value", allow_duplicate=True),
     Input({"type": "dest-card", "index": dash.ALL}, "n_clicks"),
-    State({"type": "dest-card", "index": dash.ALL}, "data"),
+    State({"type": "dest-card", "index": dash.ALL}, "data-key"),
+    State({"type": "dest-card", "index": dash.ALL}, "data-title"),
+    State({"type": "dest-card", "index": dash.ALL}, "data-description"),
+    State({"type": "dest-card", "index": dash.ALL}, "data-thumbnail"),
     prevent_initial_call=True,
 )
-def select_dest(n_clicks: list[int | None], data_list: list[dict | None]) -> tuple:
+def select_dest(
+    n_clicks: list[int | None],
+    keys: list[str | None],
+    titles: list[str | None],
+    descriptions: list[str | None],
+    thumbnails: list[str | None],
+) -> tuple:
     """Handle destination article selection."""
     ctx = dash.callback_context
     if not ctx.triggered:
         raise PreventUpdate
 
     # Find which card was clicked (n_clicks > 0)
-    for i, (clicks, data) in enumerate(zip(n_clicks, data_list)):
+    for i, clicks in enumerate(n_clicks):
         if clicks and clicks > 0:
+            data = {
+                "key": keys[i],
+                "title": titles[i],
+                "description": descriptions[i],
+                "thumbnail": thumbnails[i],
+            }
             return (
                 data,
                 {**RESULTS_CONTAINER_STYLE, "display": "none"},
-                data.get("title", ""),
+                titles[i] or "",
             )
 
     raise PreventUpdate
