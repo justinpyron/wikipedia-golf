@@ -86,11 +86,11 @@ def build_agent(variant: AgentVariant) -> Agent[WikiGolfDeps, str]:
         ctx.deps.path.append(key)
         ctx.deps.candidate_keys = {link.key for link in result.links}
 
-        out = result.to_markdown_table(omit=["text", "title"])
+        message = result.to_markdown_table(omit=["text", "title"])
         dst = ctx.deps.destination
         if dst in ctx.deps.candidate_keys:
-            out += f"\n\n🎯 DESTINATION '{dst}' IS AVAILABLE! Call get_links('{dst}') to win."
+            message += f"\n\n🎯 DESTINATION '{dst}' IS AVAILABLE! Call get_links('{dst}') to win."
 
-        return out
+        return message
 
     return agent
