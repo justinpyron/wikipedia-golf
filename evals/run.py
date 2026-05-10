@@ -12,25 +12,14 @@ from dataclasses import asdict
 
 import logfire
 from dotenv import load_dotenv
-from pydantic import BaseModel
-from pydantic_ai.messages import ModelMessage
 
 from agent import WikiGolfDeps, build_agent
 from evals.datasets import DATASETS
+from evals.types import WikiGolfEvalInput, WikiGolfEvalOutput
 from variants import VARIANTS
 
 load_dotenv()
 logfire.configure(service_name="wiki-golf-evals", environment="dev")
-
-
-class WikiGolfEvalInput(BaseModel):
-    origin: str
-    destination: str
-
-
-class WikiGolfEvalOutput(BaseModel):
-    path: list[str]
-    messages: list[ModelMessage]
 
 
 def build_task(variant) -> Callable[[WikiGolfEvalInput], Awaitable[WikiGolfEvalOutput]]:
@@ -84,8 +73,8 @@ def main() -> None:
     args = parser.parse_args()
 
     try:
-        variant = VARIANTS[args.variant]
-    except KeyError:
+        variant = next(v for v in VARIANTS if v.name == args.variant)
+    except StopIteration:
         raise KeyError(f"Variant '{args.variant}' does not exist in VARIANTS.")
 
     try:

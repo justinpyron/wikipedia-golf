@@ -3,7 +3,7 @@
 from pydantic_evals import Case, Dataset
 
 from evals.evaluators import AllValidLinksUsed, PathLength, ReachedDestination
-from evals.run import WikiGolfEvalInput, WikiGolfEvalOutput
+from evals.types import WikiGolfEvalInput, WikiGolfEvalOutput
 
 dataset: Dataset[WikiGolfEvalInput, WikiGolfEvalOutput] = Dataset(
     name="smoke",
