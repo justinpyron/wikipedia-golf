@@ -11,12 +11,19 @@ import dash
 from dash import Dash, Input, Output, State, callback, dcc, html
 from dash.exceptions import PreventUpdate
 from dotenv import load_dotenv
+from pydantic_ai import UsageLimits
 
 from agent import WikiGolfDeps, build_agent
 from variants import VARIANTS
 from wiki import ArticleSearchResult, find_articles
 
 load_dotenv()
+
+# Maximum number of tool calls (page visits) allowed per game
+MAX_TOOL_CALLS = 20
+
+# Maximum number of LLM requests (model turns) allowed per game
+MAX_LLM_REQUESTS = 30
 
 # Augusta-inspired color palette
 COLORS = {
@@ -689,11 +696,18 @@ def run_agent(
         variant = VARIANTS[0]
         agent = build_agent(variant)
 
-        # Run the agent
+        # Run the agent with usage limits
         deps = WikiGolfDeps(origin=origin_key, destination=dest_key)
 
         async def run():
-            return await agent.run(variant.user_prompt, deps=deps)
+            return await agent.run(
+                variant.user_prompt,
+                deps=deps,
+                usage_limits=UsageLimits(
+                    request_limit=MAX_LLM_REQUESTS,
+                    tool_calls_limit=MAX_TOOL_CALLS,
+                ),
+            )
 
         result = asyncio.run(run())
         path = deps.path
