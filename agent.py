@@ -1,24 +1,23 @@
 """Factory for building Wikipedia Golf agents from variant configurations."""
 
-from pydantic import BaseModel, Field
+from dataclasses import dataclass, field
+
 from pydantic_ai import Agent, ModelRetry, RunContext
 from pydantic_ai.settings import ModelSettings
 
 from variants import AgentVariant
-from wiki import fetch_article_links
+from wiki import WikiAPIError, WikiArticleNotFoundError, fetch_article_links
 
 
-class WikiGolfDeps(BaseModel):
+@dataclass
+class WikiGolfDeps:
     origin: str
     destination: str
-    path: list[str] = Field(default_factory=list)
+    path: list[str] = field(default_factory=list)
+    candidate_keys: set[str] = field(default_factory=set)
 
 
-class WikiGolfOutput(BaseModel):
-    path: list[str]
-
-
-def build_agent(variant: AgentVariant) -> Agent[WikiGolfDeps, WikiGolfOutput]:
+def build_agent(variant: AgentVariant) -> Agent[WikiGolfDeps, str]:
     """Construct a fully-configured Wikipedia Golf agent from a variant."""
     model_settings: ModelSettings | None = None
     if variant.temperature is not None or variant.thinking is not None:
@@ -30,7 +29,6 @@ def build_agent(variant: AgentVariant) -> Agent[WikiGolfDeps, WikiGolfOutput]:
     agent = Agent(
         variant.model,
         deps_type=WikiGolfDeps,
-        output_type=WikiGolfOutput,
         system_prompt=variant.system_prompt,
         model_settings=model_settings,
         instrument=True,
@@ -39,34 +37,66 @@ def build_agent(variant: AgentVariant) -> Agent[WikiGolfDeps, WikiGolfOutput]:
     @agent.system_prompt
     def game_specs_prompt(ctx: RunContext[WikiGolfDeps]) -> str:
         return (
-            f"You are playing Wikipedia Golf with the following constraints:\n"
+            f"# Parameters\n"
+            f"You are playing Wikipedia Golf with the following parameters:\n"
             f"Origin: {ctx.deps.origin}\n"
             f"Destination: {ctx.deps.destination}\n"
         )
 
     @agent.tool(retries=variant.tool_retries)
     async def get_links(ctx: RunContext[WikiGolfDeps], key: str) -> str:
-        """Fetch all navigable links from a Wikipedia article.
+        """Navigate to a Wikipedia article and return its outgoing links.
+
+        Validates that the move is legal (origin on first turn, reachable link
+        thereafter). If key equals destination, declares victory immediately
+        without fetching. Otherwise fetches and returns keys of articles linked to
+        from the requested article.
 
         Args:
-            key: The Wikipedia article key (identifier) to fetch links from.
+            key: Key of article to navigate to. Will be validated against game rules.
         """
-        result = fetch_article_links(key)
-        if result is None:
-            raise ModelRetry(
-                f"Could not fetch links for '{key}'. "
-                "Try a different key. "
-                "The key must be the origin key or exist in the output of a previous tool call."
-            )
-        ctx.deps.path.append(key)
+        # PHASE 1: Validate the move
+        is_first_move = len(ctx.deps.path) == 0
 
-        out = result.to_markdown_table(omit=["text", "title"])
-        dst = ctx.deps.destination
-        if dst in {link.key for link in result.links}:
-            out += f"\n\nVICTORY CONDITION MET: The destination '{dst}' is available in the links above!"
+        if is_first_move:
+            if key != ctx.deps.origin:
+                raise ModelRetry(
+                    f"INVALID FIRST MOVE: Must start at origin '{ctx.deps.origin}'. Got: '{key}'"
+                )
         else:
-            out += f"\n\nThe destination '{dst}' is not in the links above. Keep searching!"
+            if key not in ctx.deps.candidate_keys:
+                raise ModelRetry(
+                    f"ILLEGAL MOVE: '{key}' is not available from the current page. "
+                    f"Valid keys: {sorted(ctx.deps.candidate_keys)}"
+                )
 
-        return out
+        # PHASE 2: Victory (destination reached - no fetch needed)
+        if key == ctx.deps.destination:
+            ctx.deps.path.append(key)
+            return f"VICTORY: Reached destination '{key}'.\nPATH: {' -> '.join(ctx.deps.path)}"
+
+        # PHASE 3: Fetch and advance
+        try:
+            result = fetch_article_links(key)
+        except WikiArticleNotFoundError:
+            raise ModelRetry(
+                f"PAGE NOT FOUND: '{key}' does not exist. "
+                "Choose a different key from the available links."
+            )
+        except WikiAPIError as e:
+            raise ModelRetry(
+                f"NETWORK ERROR fetching '{key}': {e}. "
+                "Try again or choose another link from the available links."
+            )
+
+        ctx.deps.path.append(key)
+        ctx.deps.candidate_keys = {link.key for link in result.links}
+
+        message = result.to_list()
+        dst = ctx.deps.destination
+        if dst in ctx.deps.candidate_keys:
+            message += f"\n\n🎯 DESTINATION '{dst}' IS AVAILABLE! Call get_links('{dst}') to win."
+
+        return message
 
     return agent

@@ -15,6 +15,25 @@ from tabulate import tabulate
 BASE_URL = "https://en.wikipedia.org/w/rest.php/v1"
 HEADERS = {"User-Agent": "WikipediaGolf (justinpyron@gmail.com)"}
 
+
+class WikiError(Exception):
+    """Base exception for Wikipedia API errors."""
+
+    pass
+
+
+class WikiArticleNotFoundError(WikiError):
+    """Raised when the requested article does not exist (HTTP 404)."""
+
+    pass
+
+
+class WikiAPIError(WikiError):
+    """Raised when a network or API error occurs."""
+
+    pass
+
+
 EXCLUDE_SELECTORS = (
     "table.infobox",
     "table.sidebar",
@@ -112,6 +131,12 @@ class ArticleLinks(BaseModel):
             return ""
         return tabulate(data, headers="keys", tablefmt="github")
 
+    def to_list(self) -> str:
+        """Return a newline-separated list of link keys."""
+        keys = sorted([link.key for link in self.links])
+        header = f"Keys of articles linked to from article with key '{self.key}':\n"
+        return header + "\n".join(keys)
+
 
 def find_articles(query: str, limit: int = 5) -> list[ArticleSearchResult]:
     """Search Wikipedia for articles matching the query.
@@ -145,17 +170,19 @@ def find_articles(query: str, limit: int = 5) -> list[ArticleSearchResult]:
     ]
 
 
-def fetch_article(key: str) -> Article | None:
+def fetch_article(key: str) -> Article:
     """Fetch a Wikipedia article and return its content as cleaned Markdown.
 
     Wikilinks in `content` use the form [label](./Article_Key), where the
     href is the same form accepted by this function's `key` parameter
     (after stripping the "./" prefix), so callers can chain extracted
     hrefs back into fetch_article directly.
+
+    Raises:
+        WikiArticleNotFoundError: If the article does not exist (HTTP 404).
+        WikiAPIError: If a network or other HTTP error occurs.
     """
     data = _request_with_html(key)
-    if data is None:
-        return None
     soup = BeautifulSoup(data["html"], "lxml")
     body = soup.body or soup
     _strip_elements_by_selector(body)
@@ -171,11 +198,14 @@ def fetch_article(key: str) -> Article | None:
     )
 
 
-def fetch_article_links(key: str) -> ArticleLinks | None:
-    """Fetch a Wikipedia article and extract all unique navigable wikilinks."""
+def fetch_article_links(key: str) -> ArticleLinks:
+    """Fetch a Wikipedia article and extract all unique navigable wikilinks.
+
+    Raises:
+        WikiArticleNotFoundError: If the article does not exist (HTTP 404).
+        WikiAPIError: If a network or other HTTP error occurs.
+    """
     data = _request_with_html(key)
-    if data is None:
-        return None
     soup = BeautifulSoup(data["html"], "lxml")
     body = soup.body or soup
 
@@ -209,8 +239,13 @@ def fetch_article_links(key: str) -> ArticleLinks | None:
     )
 
 
-def _request_with_html(key: str) -> dict | None:
-    """GET /page/{key}/with_html and return the JSON payload."""
+def _request_with_html(key: str) -> dict:
+    """GET /page/{key}/with_html and return the JSON payload.
+
+    Raises:
+        WikiArticleNotFoundError: If the article does not exist (HTTP 404).
+        WikiAPIError: If a network or other HTTP error occurs.
+    """
     # safe="" ensures characters like "/" and "?" in titles (e.g. "AC/DC")
     # are percent-encoded so they aren't parsed as URL structure.
     url = f"{BASE_URL}/page/{quote(key, safe='')}/with_html"
@@ -218,9 +253,12 @@ def _request_with_html(key: str) -> dict | None:
         response = httpx.get(url, headers=HEADERS, follow_redirects=True)
         response.raise_for_status()
         return response.json()
-    except httpx.HTTPError as e:
-        print(f"Error making API request: {e}")
-        return None
+    except httpx.HTTPStatusError as e:
+        if e.response.status_code == 404:
+            raise WikiArticleNotFoundError(f"Article '{key}' not found") from e
+        raise WikiAPIError(f"HTTP {e.response.status_code} fetching '{key}'") from e
+    except httpx.RequestError as e:
+        raise WikiAPIError(f"Network error fetching '{key}': {e}") from e
 
 
 def _strip_elements_by_selector(soup: Tag) -> None:
