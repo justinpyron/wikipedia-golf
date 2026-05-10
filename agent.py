@@ -44,10 +44,18 @@ def build_agent(variant: AgentVariant) -> Agent[WikiGolfDeps, str]:
 
     @agent.tool(retries=variant.tool_retries)
     async def get_links(ctx: RunContext[WikiGolfDeps], key: str) -> str:
-        """Fetch all navigable links from a Wikipedia article.
+        """Navigate to a Wikipedia article and return its outgoing links.
+
+        Validates that the move is legal (origin on first turn, reachable link
+        thereafter). If key equals destination, declares victory immediately
+        without fetching. Otherwise fetches and returns links available from
+        the new current page.
 
         Args:
-            key: The Wikipedia article key (identifier) to fetch links from.
+            key: Article key to navigate to. Will be validated against game rules.
+
+        Returns:
+            Markdown table of links from the new page, or victory confirmation.
         """
         # PHASE 1: Validate the move
         is_first_move = len(ctx.deps.path) == 0

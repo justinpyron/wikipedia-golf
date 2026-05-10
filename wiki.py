@@ -131,6 +131,13 @@ class ArticleLinks(BaseModel):
             return ""
         return tabulate(data, headers="keys", tablefmt="github")
 
+    def to_list(self) -> str:
+        """Return a newline-separated list of link keys."""
+        keys = [link.key for link in self.links]
+        count = len(keys)
+        header = f"Links from '{self.title}' ({count} articles):"
+        return f"{header}\n" + "\n".join(sorted(keys))
+
 
 def find_articles(query: str, limit: int = 5) -> list[ArticleSearchResult]:
     """Search Wikipedia for articles matching the query.
