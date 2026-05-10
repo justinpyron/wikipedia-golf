@@ -333,10 +333,8 @@ def create_article_card(
     result: ArticleSearchResult, index: int, prefix: str
 ) -> html.Div:
     """Create a clickable article suggestion card."""
-    # Use dict-style ID for pattern-matching callbacks
+    # Simple ID with just type and index - data will be looked up from store
     card_id = {"type": f"{prefix}-card", "index": index}
-    # Store data in data-* attributes (valid HTML/Dash props)
-    thumbnail_url = result.thumbnail.get("url") if result.thumbnail else ""
     return html.Div(
         [
             html.Div(
@@ -354,12 +352,6 @@ def create_article_card(
         id=card_id,
         style=RESULT_CARD_STYLE,
         n_clicks=0,
-        **{
-            "data-key": result.key,
-            "data-title": result.title,
-            "data-description": result.description or "",
-            "data-thumbnail": thumbnail_url,
-        },
     )
 
 
@@ -458,7 +450,9 @@ app.layout = html.Div(
             id="preview-container",
             style=PREVIEW_CONTAINER_STYLE,
         ),
-        # Hidden stores for selected articles
+        # Hidden stores for search results and selections
+        dcc.Store(id="origin-results-store", data=[]),
+        dcc.Store(id="dest-results-store", data=[]),
         dcc.Store(id="origin-data", data=None),
         dcc.Store(id="dest-data", data=None),
         # Tee Off Button
@@ -503,7 +497,7 @@ app.layout = html.Div(
     Output("origin-results-container", "children"),
     Output("origin-error", "children"),
     Output("origin-error", "style"),
-    Output("origin-data", "data", allow_duplicate=True),
+    Output("origin-results-store", "data"),
     Input("origin-input", "value"),
     prevent_initial_call=True,
 )
@@ -519,23 +513,33 @@ def update_origin_results(query: str | None) -> tuple:
                 None,
                 f'No articles found matching "{query}"',
                 {**ERROR_STYLE, "display": "block"},
-                None,  # Clear selection
+                [],
             )
 
         cards = [create_article_card(r, i, "origin") for i, r in enumerate(results)]
+        # Store results as list of dicts for the selection callback to use
+        results_data = [
+            {
+                "key": r.key,
+                "title": r.title,
+                "description": r.description,
+                "thumbnail": r.thumbnail.get("url") if r.thumbnail else None,
+            }
+            for r in results
+        ]
         return (
-            cards,
+            html.Div(cards, style=RESULTS_CONTAINER_STYLE),
             None,
             {**ERROR_STYLE, "display": "none"},
-            None,
-        )  # Clear selection on new search
+            results_data,
+        )
 
     except Exception as e:
         return (
             None,
             "Unable to search. Please try again.",
             {**ERROR_STYLE, "display": "block"},
-            None,  # Clear selection
+            [],
         )
 
 
@@ -543,7 +547,7 @@ def update_origin_results(query: str | None) -> tuple:
     Output("dest-results-container", "children"),
     Output("dest-error", "children"),
     Output("dest-error", "style"),
-    Output("dest-data", "data", allow_duplicate=True),
+    Output("dest-results-store", "data"),
     Input("dest-input", "value"),
     prevent_initial_call=True,
 )
@@ -559,106 +563,118 @@ def update_dest_results(query: str | None) -> tuple:
                 None,
                 f'No articles found matching "{query}"',
                 {**ERROR_STYLE, "display": "block"},
-                None,  # Clear selection
+                [],
             )
 
         cards = [create_article_card(r, i, "dest") for i, r in enumerate(results)]
+        results_data = [
+            {
+                "key": r.key,
+                "title": r.title,
+                "description": r.description,
+                "thumbnail": r.thumbnail.get("url") if r.thumbnail else None,
+            }
+            for r in results
+        ]
         return (
-            cards,
+            html.Div(cards, style=RESULTS_CONTAINER_STYLE),
             None,
             {**ERROR_STYLE, "display": "none"},
-            None,
-        )  # Clear selection on new search
+            results_data,
+        )
 
     except Exception as e:
         return (
             None,
             "Unable to search. Please try again.",
             {**ERROR_STYLE, "display": "block"},
-            None,  # Clear selection
+            [],
         )
 
 
 @callback(
     Output("origin-data", "data"),
-    Output("origin-results-container", "style", allow_duplicate=True),
+    Output("origin-results-container", "children", allow_duplicate=True),
     Output("origin-input", "value", allow_duplicate=True),
     Input({"type": "origin-card", "index": dash.ALL}, "n_clicks"),
-    State({"type": "origin-card", "index": dash.ALL}, "data-key"),
-    State({"type": "origin-card", "index": dash.ALL}, "data-title"),
-    State({"type": "origin-card", "index": dash.ALL}, "data-description"),
-    State({"type": "origin-card", "index": dash.ALL}, "data-thumbnail"),
+    State("origin-results-store", "data"),
     prevent_initial_call=True,
 )
-def select_origin(
-    n_clicks: list[int | None],
-    keys: list[str | None],
-    titles: list[str | None],
-    descriptions: list[str | None],
-    thumbnails: list[str | None],
-) -> tuple:
+def select_origin(n_clicks: list[int | None], results_data: list[dict]) -> tuple:
     """Handle origin article selection."""
     ctx = dash.callback_context
     if not ctx.triggered:
         raise PreventUpdate
 
-    # Find which card was clicked (n_clicks > 0)
-    for i, clicks in enumerate(n_clicks):
-        if clicks and clicks > 0:
-            data = {
-                "key": keys[i],
-                "title": titles[i],
-                "description": descriptions[i],
-                "thumbnail": thumbnails[i],
-            }
-            return (
-                data,
-                {**RESULTS_CONTAINER_STYLE, "display": "none"},
-                titles[i] or "",
-            )
+    # Check that this is an actual click (n_clicks should be > 0 for the clicked item)
+    # When components are created, n_clicks is 0 or None, not > 0
+    if not n_clicks or all(c is None or c == 0 for c in n_clicks):
+        raise PreventUpdate
 
-    raise PreventUpdate
+    # Get the triggered component ID to find which card was clicked
+    triggered_id = ctx.triggered_id
+    if not triggered_id:
+        raise PreventUpdate
+
+    # Get the index from the triggered ID
+    clicked_index = triggered_id.get("index")
+    if clicked_index is None or clicked_index >= len(results_data):
+        raise PreventUpdate
+
+    # Verify this was actually the clicked item (n_clicks should be > 0)
+    if n_clicks[clicked_index] is None or n_clicks[clicked_index] == 0:
+        raise PreventUpdate
+
+    # Look up the data from the store
+    data = results_data[clicked_index]
+
+    return (
+        data,
+        None,  # Clear the results container
+        data.get("title", ""),
+    )
 
 
 @callback(
     Output("dest-data", "data"),
-    Output("dest-results-container", "style", allow_duplicate=True),
+    Output("dest-results-container", "children", allow_duplicate=True),
     Output("dest-input", "value", allow_duplicate=True),
     Input({"type": "dest-card", "index": dash.ALL}, "n_clicks"),
-    State({"type": "dest-card", "index": dash.ALL}, "data-key"),
-    State({"type": "dest-card", "index": dash.ALL}, "data-title"),
-    State({"type": "dest-card", "index": dash.ALL}, "data-description"),
-    State({"type": "dest-card", "index": dash.ALL}, "data-thumbnail"),
+    State("dest-results-store", "data"),
     prevent_initial_call=True,
 )
-def select_dest(
-    n_clicks: list[int | None],
-    keys: list[str | None],
-    titles: list[str | None],
-    descriptions: list[str | None],
-    thumbnails: list[str | None],
-) -> tuple:
+def select_dest(n_clicks: list[int | None], results_data: list[dict]) -> tuple:
     """Handle destination article selection."""
     ctx = dash.callback_context
     if not ctx.triggered:
         raise PreventUpdate
 
-    # Find which card was clicked (n_clicks > 0)
-    for i, clicks in enumerate(n_clicks):
-        if clicks and clicks > 0:
-            data = {
-                "key": keys[i],
-                "title": titles[i],
-                "description": descriptions[i],
-                "thumbnail": thumbnails[i],
-            }
-            return (
-                data,
-                {**RESULTS_CONTAINER_STYLE, "display": "none"},
-                titles[i] or "",
-            )
+    # Check that this is an actual click (n_clicks should be > 0 for the clicked item)
+    if not n_clicks or all(c is None or c == 0 for c in n_clicks):
+        raise PreventUpdate
 
-    raise PreventUpdate
+    # Get the triggered component ID to find which card was clicked
+    triggered_id = ctx.triggered_id
+    if not triggered_id:
+        raise PreventUpdate
+
+    # Get the index from the triggered ID
+    clicked_index = triggered_id.get("index")
+    if clicked_index is None or clicked_index >= len(results_data):
+        raise PreventUpdate
+
+    # Verify this was actually the clicked item (n_clicks should be > 0)
+    if n_clicks[clicked_index] is None or n_clicks[clicked_index] == 0:
+        raise PreventUpdate
+
+    # Look up the data from the store
+    data = results_data[clicked_index]
+
+    return (
+        data,
+        None,  # Clear the results container
+        data.get("title", ""),
+    )
 
 
 @callback(
