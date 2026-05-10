@@ -34,7 +34,8 @@ class WikiAPIError(WikiError):
     pass
 
 
-EXCLUDE_SELECTORS = (
+# Selectors/sections to strip from article content (fetch_article)
+STRIP_SELECTORS_CONTENT = (
     "table.infobox",
     "table.sidebar",
     "table.vertical-navbox",
@@ -56,8 +57,30 @@ EXCLUDE_SELECTORS = (
     "style",
     "script",
 )
+# Selectors/sections to strip from link extraction (fetch_article_links)
+STRIP_SELECTORS_LINKS = (
+    "table.sidebar",
+    "table.vertical-navbox",
+    "table.navbox",
+    "div.navbox",
+    "table.ambox",
+    "table.metadata",
+    "ol.references",
+    "div.reflist",
+    "sup.reference",
+    "div.hatnote",
+    "div[role='note']",
+    "span.mw-editsection",
+    "figure",
+    "figcaption",
+    ".gallerytext",
+    ".thumbcaption",
+    "div.thumb",
+    "style",
+    "script",
+)
 
-EXCLUDE_SECTIONS = (
+STRIP_SECTIONS_CONTENT = (
     "See also",
     "Notes",
     "References",
@@ -70,6 +93,7 @@ EXCLUDE_SECTIONS = (
     "Footnotes",
     "Explanatory notes",
 )
+STRIP_SECTIONS_LINKS = STRIP_SECTIONS_CONTENT
 
 NON_ARTICLE_PREFIXES = (
     "File:",
@@ -185,8 +209,8 @@ def fetch_article(key: str) -> Article:
     data = _request_with_html(key)
     soup = BeautifulSoup(data["html"], "lxml")
     body = soup.body or soup
-    _strip_elements_by_selector(body)
-    _strip_sections_by_heading(body)
+    _strip_elements_by_selector(body, STRIP_SELECTORS_CONTENT)
+    _strip_sections_by_heading(body, STRIP_SECTIONS_CONTENT)
     _unwrap_invalid_links(body)
     _normalize_article_hrefs(body)
     content = _to_markdown(body)
@@ -209,8 +233,8 @@ def fetch_article_links(key: str) -> ArticleLinks:
     soup = BeautifulSoup(data["html"], "lxml")
     body = soup.body or soup
 
-    _strip_elements_by_selector(body)
-    _strip_sections_by_heading(body)
+    _strip_elements_by_selector(body, STRIP_SELECTORS_LINKS)
+    _strip_sections_by_heading(body, STRIP_SECTIONS_LINKS)
     _unwrap_invalid_links(body)
     _normalize_article_hrefs(body)
 
@@ -261,18 +285,18 @@ def _request_with_html(key: str) -> dict:
         raise WikiAPIError(f"Network error fetching '{key}': {e}") from e
 
 
-def _strip_elements_by_selector(soup: Tag) -> None:
-    """Remove elements matching CSS selectors in EXCLUDE_SELECTORS."""
-    for selector in EXCLUDE_SELECTORS:
+def _strip_elements_by_selector(soup: Tag, selectors: tuple[str, ...]) -> None:
+    """Remove elements matching CSS selectors."""
+    for selector in selectors:
         for el in soup.select(selector):
             el.decompose()
 
 
-def _strip_sections_by_heading(soup: Tag) -> None:
-    """Remove entire <section> blocks whose heading text is in EXCLUDE_SECTIONS."""
+def _strip_sections_by_heading(soup: Tag, sections: tuple[str, ...]) -> None:
+    """Remove entire <section> blocks whose heading text is in the given sections."""
     for section in soup.find_all("section"):
         heading = section.find(["h2", "h3", "h4", "h5", "h6"], recursive=False)
-        if heading and heading.get_text(strip=True) in EXCLUDE_SECTIONS:
+        if heading and heading.get_text(strip=True) in sections:
             section.decompose()
 
 
