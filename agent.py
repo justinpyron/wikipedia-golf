@@ -37,6 +37,7 @@ def build_agent(variant: AgentVariant) -> Agent[WikiGolfDeps, str]:
     @agent.system_prompt
     def game_specs_prompt(ctx: RunContext[WikiGolfDeps]) -> str:
         return (
+            f"# Constraints"
             f"You are playing Wikipedia Golf with the following constraints:\n"
             f"Origin: {ctx.deps.origin}\n"
             f"Destination: {ctx.deps.destination}\n"
