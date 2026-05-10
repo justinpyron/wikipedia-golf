@@ -71,8 +71,6 @@ STRIP_SELECTORS_LINKS = (
     "div.hatnote",
     "div[role='note']",
     "span.mw-editsection",
-    "figure",
-    "figcaption",
     ".gallerytext",
     ".thumbcaption",
     "div.thumb",
