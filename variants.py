@@ -67,4 +67,9 @@ VARIANTS: list[AgentVariant] = [
         model="openai:gpt-5.4-mini",
         system_prompt=SYSTEM_PROMPT_V1_0,
     ),
+    AgentVariant(
+        name="v1_0_anthropic",
+        model="anthropic:claude-haiku-4-5-20251001",
+        system_prompt=SYSTEM_PROMPT_V1_0,
+    ),
 ]
