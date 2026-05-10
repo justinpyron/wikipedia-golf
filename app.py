@@ -90,8 +90,10 @@ SECTION_LABEL_STYLE = {
 
 INPUT_STYLE = {
     "width": "100%",
-    "padding": "14px 16px",
+    "height": "48px",
+    "padding": "0 16px",
     "fontSize": "16px",
+    "lineHeight": "1.5",
     "border": f"1px solid {COLORS['mist']}",
     "borderRadius": "4px",
     "backgroundColor": COLORS["white"],
