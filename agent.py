@@ -6,7 +6,7 @@ from pydantic_ai import Agent, ModelRetry, RunContext
 from pydantic_ai.settings import ModelSettings
 
 from variants import AgentVariant
-from wiki import fetch_article_links
+from wiki import WikiAPIError, WikiArticleNotFoundError, fetch_article_links
 
 
 @dataclass
@@ -14,6 +14,7 @@ class WikiGolfDeps:
     origin: str
     destination: str
     path: list[str] = field(default_factory=list)
+    candidate_keys: set[str] = field(default_factory=set)
 
 
 def build_agent(variant: AgentVariant) -> Agent[WikiGolfDeps, str]:
@@ -48,21 +49,47 @@ def build_agent(variant: AgentVariant) -> Agent[WikiGolfDeps, str]:
         Args:
             key: The Wikipedia article key (identifier) to fetch links from.
         """
-        result = fetch_article_links(key)
-        if result is None:
+        # PHASE 1: Validate the move
+        is_first_move = len(ctx.deps.path) == 0
+
+        if is_first_move:
+            if key != ctx.deps.origin:
+                raise ModelRetry(
+                    f"INVALID FIRST MOVE: Must start at origin '{ctx.deps.origin}'. Got: '{key}'"
+                )
+        else:
+            if key not in ctx.deps.candidate_keys:
+                raise ModelRetry(
+                    f"ILLEGAL MOVE: '{key}' is not available from the current page. "
+                    f"Valid keys: {sorted(ctx.deps.candidate_keys)}"
+                )
+
+        # PHASE 2: Victory (destination reached - no fetch needed)
+        if key == ctx.deps.destination:
+            ctx.deps.path.append(key)
+            return f"VICTORY: Reached destination '{key}'. Path: {' -> '.join(ctx.deps.path)}"
+
+        # PHASE 3: Fetch and advance
+        try:
+            result = fetch_article_links(key)
+        except WikiArticleNotFoundError:
             raise ModelRetry(
-                f"Could not fetch links for '{key}'. "
-                "Try a different key. "
-                "The key must be the origin key or exist in the output of a previous tool call."
+                f"PAGE NOT FOUND: '{key}' does not exist. "
+                "Choose a different key from the available links."
             )
+        except WikiAPIError as e:
+            raise ModelRetry(
+                f"NETWORK ERROR fetching '{key}': {e}. "
+                "Try again or choose another link from the available links."
+            )
+
         ctx.deps.path.append(key)
+        ctx.deps.candidate_keys = {link.key for link in result.links}
 
         out = result.to_markdown_table(omit=["text", "title"])
         dst = ctx.deps.destination
-        if dst in {link.key for link in result.links}:
-            out += f"\n\nVICTORY CONDITION MET: The destination '{dst}' is available in the links above!"
-        else:
-            out += f"\n\nThe destination '{dst}' is not in the links above. Keep searching!"
+        if dst in ctx.deps.candidate_keys:
+            out += f"\n\n🎯 DESTINATION '{dst}' IS AVAILABLE! Call get_links('{dst}') to win."
 
         return out
 
