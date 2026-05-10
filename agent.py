@@ -48,14 +48,11 @@ def build_agent(variant: AgentVariant) -> Agent[WikiGolfDeps, str]:
 
         Validates that the move is legal (origin on first turn, reachable link
         thereafter). If key equals destination, declares victory immediately
-        without fetching. Otherwise fetches and returns links available from
-        the new current page.
+        without fetching. Otherwise fetches and returns keys of articles linked to
+        from the requested article.
 
         Args:
-            key: Article key to navigate to. Will be validated against game rules.
-
-        Returns:
-            Markdown table of links from the new page, or victory confirmation.
+            key: Key of article to navigate to. Will be validated against game rules.
         """
         # PHASE 1: Validate the move
         is_first_move = len(ctx.deps.path) == 0
