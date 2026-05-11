@@ -98,12 +98,23 @@ INPUT_STYLE = {
     "transition": "border-color 0.2s ease",
 }
 
+SEARCH_WRAPPER_STYLE = {
+    "position": "relative",
+    "zIndex": "100",
+}
+
 SEARCH_RESULTS_CONTAINER_STYLE = {
+    "position": "absolute",
+    "top": "100%",
+    "left": "0",
+    "right": "0",
     "marginTop": "4px",
     "border": f"1px solid {COLORS['mist']}",
     "borderRadius": "4px",
     "overflow": "hidden",
-    "boxShadow": "0 2px 8px rgba(0,0,0,0.08)",
+    "boxShadow": "0 4px 12px rgba(0,0,0,0.15)",
+    "zIndex": "1000",
+    "backgroundColor": COLORS["white"],
 }
 
 SEARCH_RESULT_ITEM_STYLE = {
@@ -322,16 +333,19 @@ app.layout = html.Div(
                 html.Div(
                     [
                         html.Div("From", style=SECTION_LABEL_STYLE),
-                        dcc.Input(
-                            id="origin-input",
-                            type="text",
-                            placeholder="Search...",
-                            style=INPUT_STYLE,
-                            autoComplete="off",
-                            debounce=True,
-                        ),
                         html.Div(
-                            id="origin-search-results", style={"marginTop": "4px"}
+                            [
+                                dcc.Input(
+                                    id="origin-input",
+                                    type="text",
+                                    placeholder="Search...",
+                                    style=INPUT_STYLE,
+                                    autoComplete="off",
+                                    debounce=True,
+                                ),
+                                html.Div(id="origin-search-results"),
+                            ],
+                            style=SEARCH_WRAPPER_STYLE,
                         ),
                         html.Div(id="origin-error", style=ERROR_STYLE),
                     ],
@@ -341,15 +355,20 @@ app.layout = html.Div(
                 html.Div(
                     [
                         html.Div("To", style=SECTION_LABEL_STYLE),
-                        dcc.Input(
-                            id="dest-input",
-                            type="text",
-                            placeholder="Search...",
-                            style=INPUT_STYLE,
-                            autoComplete="off",
-                            debounce=True,
+                        html.Div(
+                            [
+                                dcc.Input(
+                                    id="dest-input",
+                                    type="text",
+                                    placeholder="Search...",
+                                    style=INPUT_STYLE,
+                                    autoComplete="off",
+                                    debounce=True,
+                                ),
+                                html.Div(id="dest-search-results"),
+                            ],
+                            style=SEARCH_WRAPPER_STYLE,
                         ),
-                        html.Div(id="dest-search-results", style={"marginTop": "4px"}),
                         html.Div(id="dest-error", style=ERROR_STYLE),
                     ],
                     style={"flex": "1", "minWidth": "300px"},
