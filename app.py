@@ -30,6 +30,9 @@ MAX_TOOL_CALLS = 20
 # Maximum number of LLM requests (model turns) allowed per game
 MAX_LLM_REQUESTS = 30
 
+# Number of search results to display
+SEARCH_RESULTS_LIMIT = 5
+
 # Augusta-inspired color palette
 COLORS = {
     "whisper": "#F8F7F4",
@@ -551,7 +554,7 @@ def search_origin(n_clicks: int | None, input_value: str | None) -> tuple:
         return [], None, {**ERROR_STYLE, "display": "none"}
 
     try:
-        results = find_articles(input_value, limit=5)
+        results = find_articles(input_value, limit=SEARCH_RESULTS_LIMIT)
         if not results:
             return (
                 [],
@@ -594,7 +597,7 @@ def search_dest(n_clicks: int | None, input_value: str | None) -> tuple:
         return [], None, {**ERROR_STYLE, "display": "none"}
 
     try:
-        results = find_articles(input_value, limit=5)
+        results = find_articles(input_value, limit=SEARCH_RESULTS_LIMIT)
         if not results:
             return (
                 [],
