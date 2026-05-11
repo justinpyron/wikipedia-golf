@@ -909,7 +909,7 @@ def run_agent(
         origin_key = origin_data.get("key")
         dest_key = dest_data.get("key")
 
-        variant = VARIANTS[0]
+        variant = VARIANTS[1]
         agent = build_agent(variant)
 
         deps = WikiGolfDeps(origin=origin_key, destination=dest_key)
