@@ -385,7 +385,6 @@ def create_preview_card(data: dict | None, is_destination: bool = False) -> html
                 data.get("description") or "No description available",
                 style=PREVIEW_DESC_STYLE,
             ),
-            html.Div(data.get("key", ""), style=PREVIEW_KEY_STYLE),
         ],
         style=PREVIEW_CARD_DEST_STYLE if is_destination else PREVIEW_CARD_STYLE,
     )
@@ -397,7 +396,7 @@ app.layout = html.Div(
         html.Div(
             [
                 html.H1("W I K I P E D I A   G O L F", style=TITLE_STYLE),
-                html.P("Navigate from any article to any other", style=SUBTITLE_STYLE),
+                html.P("with an AI agent", style=SUBTITLE_STYLE),
             ],
             style=HEADER_STYLE,
         ),
