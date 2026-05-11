@@ -43,63 +43,6 @@ app = Dash(
     suppress_callback_exceptions=True,
 )
 
-# Inject custom CSS animations via index_string
-app.index_string = """
-<!DOCTYPE html>
-<html>
-    <head>
-        {%metas%}
-        <title>{%title%}</title>
-        {%favicon%}
-        {%css%}
-        <style>
-            @keyframes fadeIn {
-                from { opacity: 0; transform: translateY(-8px); }
-                to { opacity: 1; transform: translateY(0); }
-            }
-            @keyframes slideIn {
-                from { opacity: 0; transform: translateY(10px); }
-                to { opacity: 1; transform: translateY(0); }
-            }
-            .slide-in {
-                animation: slideIn 0.35s ease forwards;
-            }
-            .search-container {
-                transition: opacity 0.3s ease, transform 0.3s ease, height 0.3s ease, margin 0.3s ease;
-            }
-            .search-container.hidden {
-                opacity: 0;
-                transform: translateY(-10px);
-                pointer-events: none;
-                height: 0;
-                overflow: hidden;
-                margin: 0;
-                padding: 0;
-            }
-            .selected-card {
-                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            }
-            .selected-card:hover {
-                box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-                transform: translateY(-1px);
-            }
-            .reset-btn:hover {
-                background-color: #D4D2CE !important;
-                color: #3A3A3A !important;
-            }
-        </style>
-    </head>
-    <body>
-        {%app_entry%}
-        <footer>
-            {%config%}
-            {%scripts%}
-            {%renderer%}
-        </footer>
-    </body>
-</html>
-"""
-
 # Styles
 CONTAINER_STYLE = {
     "maxWidth": "900px",
