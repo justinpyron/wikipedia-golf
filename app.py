@@ -107,6 +107,16 @@ INPUT_FOCUS_STYLE = {
     "borderColor": COLORS["augusta_green"],
 }
 
+DROPDOWN_STYLE = {
+    "width": "100%",
+    "fontSize": "16px",
+}
+
+DROPDOWN_OPTION_STYLE = {
+    "fontSize": "14px",
+    "padding": "12px 16px",
+}
+
 RESULTS_CONTAINER_STYLE = {
     "display": "flex",
     "gap": "12px",
@@ -399,38 +409,53 @@ app.layout = html.Div(
             ],
             style=HEADER_STYLE,
         ),
-        # Origin Section
+        # Search Section - Origin and Destination side by side
         html.Div(
             [
-                html.Div("From", style=SECTION_LABEL_STYLE),
-                dcc.Input(
-                    id="origin-input",
-                    type="text",
-                    placeholder="Search for starting article...",
-                    style=INPUT_STYLE,
-                    debounce=True,
+                # Origin Section
+                html.Div(
+                    [
+                        html.Div("From", style=SECTION_LABEL_STYLE),
+                        dcc.Dropdown(
+                            id="origin-dropdown",
+                            placeholder="Search for starting article...",
+                            searchable=True,
+                            style={"width": "100%"},
+                        ),
+                        html.Div(id="origin-error", style=ERROR_STYLE),
+                    ],
+                    style={"flex": "1", "minWidth": "300px"},
                 ),
-                html.Div(id="origin-results-container", style=RESULTS_CONTAINER_STYLE),
-                html.Div(id="origin-error", style=ERROR_STYLE),
-            ],
-            style=SECTION_STYLE,
-        ),
-        # Destination Section
-        html.Div(
-            [
-                html.Div("To", style=SECTION_LABEL_STYLE),
-                dcc.Input(
-                    id="dest-input",
-                    type="text",
-                    placeholder="Search for destination article...",
-                    style=INPUT_STYLE,
-                    debounce=True,
+                # Destination Section
+                html.Div(
+                    [
+                        html.Div("To", style=SECTION_LABEL_STYLE),
+                        dcc.Dropdown(
+                            id="dest-dropdown",
+                            placeholder="Search for destination article...",
+                            searchable=True,
+                            style={"width": "100%"},
+                        ),
+                        html.Div(id="dest-error", style=ERROR_STYLE),
+                    ],
+                    style={"flex": "1", "minWidth": "300px"},
                 ),
-                html.Div(id="dest-results-container", style=RESULTS_CONTAINER_STYLE),
-                html.Div(id="dest-error", style=ERROR_STYLE),
             ],
-            style=SECTION_STYLE,
+            style={
+                "display": "flex",
+                "gap": "32px",
+                "marginBottom": "32px",
+                "flexWrap": "wrap",
+            },
         ),
+        # Debounce intervals for API calls
+        dcc.Interval(id="origin-search-interval", interval=500, disabled=True),
+        dcc.Interval(id="dest-search-interval", interval=500, disabled=True),
+        # Hidden stores for search state
+        dcc.Store(id="origin-search-query", data=""),
+        dcc.Store(id="dest-search-query", data=""),
+        dcc.Store(id="origin-results-store", data=[]),
+        dcc.Store(id="dest-results-store", data=[]),
         # Preview Section
         html.Div(
             [
@@ -448,9 +473,7 @@ app.layout = html.Div(
             id="preview-container",
             style=PREVIEW_CONTAINER_STYLE,
         ),
-        # Hidden stores for search results and selections
-        dcc.Store(id="origin-results-store", data=[]),
-        dcc.Store(id="dest-results-store", data=[]),
+        # Hidden stores for selections
         dcc.Store(id="origin-data", data=None),
         dcc.Store(id="dest-data", data=None),
         # Tee Off Button
@@ -492,81 +515,59 @@ app.layout = html.Div(
 
 
 @callback(
-    Output("origin-results-container", "children"),
-    Output("origin-error", "children"),
-    Output("origin-error", "style"),
-    Output("origin-results-store", "data"),
-    Input("origin-input", "value"),
-    prevent_initial_call=True,
+    Output("origin-search-interval", "disabled"),
+    Output("origin-search-query", "data"),
+    Input("origin-dropdown", "search_value"),
 )
-def update_origin_results(query: str | None) -> tuple:
-    """Search for articles when origin input changes."""
-    if not query or len(query) < 2:
-        raise PreventUpdate
-
-    try:
-        results = find_articles(query, limit=5)
-        if not results:
-            return (
-                None,
-                f'No articles found matching "{query}"',
-                {**ERROR_STYLE, "display": "block"},
-                [],
-            )
-
-        cards = [
-            create_search_result_card(r, i, "origin") for i, r in enumerate(results)
-        ]
-        # Store results as list of dicts for the selection callback to use
-        results_data = [
-            {
-                "key": r.key,
-                "title": r.title,
-                "description": r.description,
-                "thumbnail": r.thumbnail.get("url") if r.thumbnail else None,
-            }
-            for r in results
-        ]
-        return (
-            html.Div(cards, style=RESULTS_CONTAINER_STYLE),
-            None,
-            {**ERROR_STYLE, "display": "none"},
-            results_data,
-        )
-
-    except Exception as e:
-        return (
-            None,
-            "Unable to search. Please try again.",
-            {**ERROR_STYLE, "display": "block"},
-            [],
-        )
+def handle_origin_search_input(search_value: str | None) -> tuple:
+    """Store search query and enable interval for debounced API call."""
+    if not search_value or len(search_value) < 2:
+        return True, ""  # Disable interval, clear query
+    return False, search_value  # Enable interval, store query
 
 
 @callback(
-    Output("dest-results-container", "children"),
-    Output("dest-error", "children"),
-    Output("dest-error", "style"),
-    Output("dest-results-store", "data"),
-    Input("dest-input", "value"),
+    Output("origin-dropdown", "options"),
+    Output("origin-error", "children"),
+    Output("origin-error", "style"),
+    Output("origin-results-store", "data"),
+    Input("origin-search-interval", "n_intervals"),
+    State("origin-search-query", "data"),
     prevent_initial_call=True,
 )
-def update_dest_results(query: str | None) -> tuple:
-    """Search for articles when destination input changes."""
+def search_origin(n_intervals: int, query: str) -> tuple:
+    """Search Wikipedia and populate origin dropdown options."""
     if not query or len(query) < 2:
-        raise PreventUpdate
+        return [], None, {**ERROR_STYLE, "display": "none"}, []
 
     try:
         results = find_articles(query, limit=5)
         if not results:
             return (
-                None,
+                [],
                 f'No articles found matching "{query}"',
                 {**ERROR_STYLE, "display": "block"},
                 [],
             )
 
-        cards = [create_search_result_card(r, i, "dest") for i, r in enumerate(results)]
+        # Format for dropdown: label shows title + description
+        options = [
+            {
+                "label": html.Div(
+                    [
+                        html.Div(r.title, style={"fontWeight": "500"}),
+                        html.Div(
+                            r.description or "",
+                            style={"fontSize": "12px", "color": COLORS["slate"]},
+                        ),
+                    ]
+                ),
+                "value": str(i),  # Use index as value
+            }
+            for i, r in enumerate(results)
+        ]
+
+        # Store full data for lookup when selected
         results_data = [
             {
                 "key": r.key,
@@ -576,16 +577,12 @@ def update_dest_results(query: str | None) -> tuple:
             }
             for r in results
         ]
-        return (
-            html.Div(cards, style=RESULTS_CONTAINER_STYLE),
-            None,
-            {**ERROR_STYLE, "display": "none"},
-            results_data,
-        )
+
+        return options, None, {**ERROR_STYLE, "display": "none"}, results_data
 
     except Exception as e:
         return (
-            None,
+            [],
             "Unable to search. Please try again.",
             {**ERROR_STYLE, "display": "block"},
             [],
@@ -594,81 +591,114 @@ def update_dest_results(query: str | None) -> tuple:
 
 @callback(
     Output("origin-data", "data"),
-    Output("origin-results-container", "children", allow_duplicate=True),
-    Output("origin-input", "value", allow_duplicate=True),
-    Input({"type": "origin-card", "index": dash.ALL}, "n_clicks"),
+    Output("origin-dropdown", "value"),
+    Input("origin-dropdown", "value"),
     State("origin-results-store", "data"),
     prevent_initial_call=True,
 )
-def select_origin(n_clicks: list[int | None], results_data: list[dict]) -> tuple:
-    """Handle origin article selection."""
-    ctx = dash.callback_context
-    if not ctx.triggered:
+def select_origin(selected_index: str | None, results_data: list[dict]) -> tuple:
+    """Handle origin selection from dropdown."""
+    if selected_index is None or not results_data:
         raise PreventUpdate
 
-    # Check that this is an actual click (n_clicks should be > 0 for the clicked item)
-    # When components are created, n_clicks is 0 or None, not > 0
-    if not n_clicks or all(c is None or c == 0 for c in n_clicks):
+    idx = int(selected_index)
+    if idx >= len(results_data):
         raise PreventUpdate
 
-    # Get the triggered component ID to find which card was clicked
-    triggered_id = ctx.triggered_id
-    if not triggered_id:
-        raise PreventUpdate
+    data = results_data[idx]
+    return data, selected_index
 
-    # Get the index from the triggered ID
-    clicked_index = triggered_id.get("index")
-    if clicked_index is None or clicked_index >= len(results_data):
-        raise PreventUpdate
 
-    # Verify this was actually the clicked item (n_clicks should be > 0)
-    if n_clicks[clicked_index] is None or n_clicks[clicked_index] == 0:
-        raise PreventUpdate
+@callback(
+    Output("dest-search-interval", "disabled"),
+    Output("dest-search-query", "data"),
+    Input("dest-dropdown", "search_value"),
+)
+def handle_dest_search_input(search_value: str | None) -> tuple:
+    """Store search query and enable interval for debounced API call."""
+    if not search_value or len(search_value) < 2:
+        return True, ""
+    return False, search_value
 
-    # Look up the data from the store
-    data = results_data[clicked_index]
 
-    return (
-        data,
-        None,  # Clear the results container
-        data.get("title", ""),
-    )
+@callback(
+    Output("dest-dropdown", "options"),
+    Output("dest-error", "children"),
+    Output("dest-error", "style"),
+    Output("dest-results-store", "data"),
+    Input("dest-search-interval", "n_intervals"),
+    State("dest-search-query", "data"),
+    prevent_initial_call=True,
+)
+def search_dest(n_intervals: int, query: str) -> tuple:
+    """Search Wikipedia and populate destination dropdown options."""
+    if not query or len(query) < 2:
+        return [], None, {**ERROR_STYLE, "display": "none"}, []
+
+    try:
+        results = find_articles(query, limit=5)
+        if not results:
+            return (
+                [],
+                f'No articles found matching "{query}"',
+                {**ERROR_STYLE, "display": "block"},
+                [],
+            )
+
+        options = [
+            {
+                "label": html.Div(
+                    [
+                        html.Div(r.title, style={"fontWeight": "500"}),
+                        html.Div(
+                            r.description or "",
+                            style={"fontSize": "12px", "color": COLORS["slate"]},
+                        ),
+                    ]
+                ),
+                "value": str(i),
+            }
+            for i, r in enumerate(results)
+        ]
+
+        results_data = [
+            {
+                "key": r.key,
+                "title": r.title,
+                "description": r.description,
+                "thumbnail": r.thumbnail.get("url") if r.thumbnail else None,
+            }
+            for r in results
+        ]
+
+        return options, None, {**ERROR_STYLE, "display": "none"}, results_data
+
+    except Exception as e:
+        return (
+            [],
+            "Unable to search. Please try again.",
+            {**ERROR_STYLE, "display": "block"},
+            [],
+        )
 
 
 @callback(
     Output("dest-data", "data"),
-    Output("dest-results-container", "children", allow_duplicate=True),
-    Output("dest-input", "value", allow_duplicate=True),
-    Input({"type": "dest-card", "index": dash.ALL}, "n_clicks"),
+    Output("dest-dropdown", "value"),
+    Input("dest-dropdown", "value"),
     State("dest-results-store", "data"),
     prevent_initial_call=True,
 )
-def select_dest(n_clicks: list[int | None], results_data: list[dict]) -> tuple:
-    """Handle destination article selection."""
-    ctx = dash.callback_context
-    if not ctx.triggered:
+def select_dest(selected_index: str | None, results_data: list[dict]) -> tuple:
+    """Handle destination selection from dropdown."""
+    if selected_index is None or not results_data:
         raise PreventUpdate
 
-    # Check that this is an actual click (n_clicks should be > 0 for the clicked item)
-    if not n_clicks or all(c is None or c == 0 for c in n_clicks):
+    idx = int(selected_index)
+    if idx >= len(results_data):
         raise PreventUpdate
 
-    # Get the triggered component ID to find which card was clicked
-    triggered_id = ctx.triggered_id
-    if not triggered_id:
-        raise PreventUpdate
-
-    # Get the index from the triggered ID
-    clicked_index = triggered_id.get("index")
-    if clicked_index is None or clicked_index >= len(results_data):
-        raise PreventUpdate
-
-    # Verify this was actually the clicked item (n_clicks should be > 0)
-    if n_clicks[clicked_index] is None or n_clicks[clicked_index] == 0:
-        raise PreventUpdate
-
-    # Look up the data from the store
-    data = results_data[clicked_index]
+    data = results_data[idx]
 
     return (
         data,
