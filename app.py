@@ -394,7 +394,6 @@ app.layout = html.Div(
                                             placeholder="Search for origin article...",
                                             style=INPUT_STYLE,
                                             autoComplete="off",
-                                            debounce=True,
                                         ),
                                         html.Div(id="origin-search-results"),
                                     ],
@@ -403,6 +402,15 @@ app.layout = html.Div(
                                 html.Div(
                                     id="origin-error",
                                     style={**ERROR_STYLE, "display": "none"},
+                                ),
+                                html.Button(
+                                    "Search",
+                                    id="origin-search-btn",
+                                    style={
+                                        **BUTTON_STYLE,
+                                        "marginTop": "12px",
+                                        "width": "100%",
+                                    },
                                 ),
                             ],
                             id="origin-search-container",
@@ -428,7 +436,6 @@ app.layout = html.Div(
                                             placeholder="Search for destination article...",
                                             style=INPUT_STYLE,
                                             autoComplete="off",
-                                            debounce=True,
                                         ),
                                         html.Div(id="dest-search-results"),
                                     ],
@@ -437,6 +444,15 @@ app.layout = html.Div(
                                 html.Div(
                                     id="dest-error",
                                     style={**ERROR_STYLE, "display": "none"},
+                                ),
+                                html.Button(
+                                    "Search",
+                                    id="dest-search-btn",
+                                    style={
+                                        **BUTTON_STYLE,
+                                        "marginTop": "12px",
+                                        "width": "100%",
+                                    },
                                 ),
                             ],
                             id="dest-search-container",
@@ -507,12 +523,13 @@ app.layout = html.Div(
     Output("origin-search-results-data", "data"),
     Output("origin-error", "children"),
     Output("origin-error", "style"),
-    Input("origin-input", "value"),
+    Input("origin-search-btn", "n_clicks"),
+    State("origin-input", "value"),
     prevent_initial_call=True,
 )
-def search_origin(input_value: str | None) -> tuple:
-    """Search Wikipedia when user types in origin input."""
-    if not input_value or len(input_value) < 2:
+def search_origin(n_clicks: int | None, input_value: str | None) -> tuple:
+    """Search Wikipedia when user clicks origin search button."""
+    if not n_clicks or not input_value or len(input_value) < 2:
         return [], None, {**ERROR_STYLE, "display": "none"}
 
     try:
@@ -549,12 +566,13 @@ def search_origin(input_value: str | None) -> tuple:
     Output("dest-search-results-data", "data"),
     Output("dest-error", "children"),
     Output("dest-error", "style"),
-    Input("dest-input", "value"),
+    Input("dest-search-btn", "n_clicks"),
+    State("dest-input", "value"),
     prevent_initial_call=True,
 )
-def search_dest(input_value: str | None) -> tuple:
-    """Search Wikipedia when user types in destination input."""
-    if not input_value or len(input_value) < 2:
+def search_dest(n_clicks: int | None, input_value: str | None) -> tuple:
+    """Search Wikipedia when user clicks destination search button."""
+    if not n_clicks or not input_value or len(input_value) < 2:
         return [], None, {**ERROR_STYLE, "display": "none"}
 
     try:
