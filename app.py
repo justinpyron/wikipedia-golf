@@ -402,21 +402,27 @@ app.layout = html.Div(
                                             autoComplete="off",
                                         ),
                                         html.Div(id="origin-search-results"),
+                                        html.Div(
+                                            id="origin-error",
+                                            style={
+                                                **ERROR_STYLE,
+                                                "display": "none",
+                                                "marginTop": "4px",
+                                            },
+                                        ),
+                                        html.Button(
+                                            "Search",
+                                            id="origin-search-btn",
+                                            style={
+                                                **BUTTON_STYLE,
+                                                "marginTop": "12px",
+                                                "width": "100%",
+                                                "position": "relative",
+                                                "zIndex": "1",
+                                            },
+                                        ),
                                     ],
                                     style=SEARCH_WRAPPER_STYLE,
-                                ),
-                                html.Div(
-                                    id="origin-error",
-                                    style={**ERROR_STYLE, "display": "none"},
-                                ),
-                                html.Button(
-                                    "Search",
-                                    id="origin-search-btn",
-                                    style={
-                                        **BUTTON_STYLE,
-                                        "marginTop": "12px",
-                                        "width": "100%",
-                                    },
                                 ),
                             ],
                             id="origin-search-container",
@@ -444,21 +450,27 @@ app.layout = html.Div(
                                             autoComplete="off",
                                         ),
                                         html.Div(id="dest-search-results"),
+                                        html.Div(
+                                            id="dest-error",
+                                            style={
+                                                **ERROR_STYLE,
+                                                "display": "none",
+                                                "marginTop": "4px",
+                                            },
+                                        ),
+                                        html.Button(
+                                            "Search",
+                                            id="dest-search-btn",
+                                            style={
+                                                **BUTTON_STYLE,
+                                                "marginTop": "12px",
+                                                "width": "100%",
+                                                "position": "relative",
+                                                "zIndex": "1",
+                                            },
+                                        ),
                                     ],
                                     style=SEARCH_WRAPPER_STYLE,
-                                ),
-                                html.Div(
-                                    id="dest-error",
-                                    style={**ERROR_STYLE, "display": "none"},
-                                ),
-                                html.Button(
-                                    "Search",
-                                    id="dest-search-btn",
-                                    style={
-                                        **BUTTON_STYLE,
-                                        "marginTop": "12px",
-                                        "width": "100%",
-                                    },
                                 ),
                             ],
                             id="dest-search-container",
