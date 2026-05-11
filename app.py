@@ -329,11 +329,10 @@ DIVIDER_STYLE = {
 }
 
 
-def create_article_card(
+def create_search_result_card(
     result: ArticleSearchResult, index: int, prefix: str
 ) -> html.Div:
-    """Create a clickable article suggestion card."""
-    # Simple ID with just type and index - data will be looked up from store
+    """Create a clickable card displaying a search result from a user's query."""
     card_id = {"type": f"{prefix}-card", "index": index}
     return html.Div(
         [
@@ -356,7 +355,7 @@ def create_article_card(
 
 
 def create_preview_card(data: dict | None, is_destination: bool = False) -> html.Div:
-    """Create a preview card for a selected article."""
+    """Create a preview card for the origin or destination article chosen by the user."""
     if data is None:
         return html.Div(
             [
@@ -515,7 +514,9 @@ def update_origin_results(query: str | None) -> tuple:
                 [],
             )
 
-        cards = [create_article_card(r, i, "origin") for i, r in enumerate(results)]
+        cards = [
+            create_search_result_card(r, i, "origin") for i, r in enumerate(results)
+        ]
         # Store results as list of dicts for the selection callback to use
         results_data = [
             {
@@ -565,7 +566,7 @@ def update_dest_results(query: str | None) -> tuple:
                 [],
             )
 
-        cards = [create_article_card(r, i, "dest") for i, r in enumerate(results)]
+        cards = [create_search_result_card(r, i, "dest") for i, r in enumerate(results)]
         results_data = [
             {
                 "key": r.key,
