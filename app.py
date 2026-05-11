@@ -5,8 +5,10 @@ Aesthetic: Augusta-inspired (whisper white, Augusta green, championship gold).
 """
 
 import asyncio
+import os
 
 import dash
+import logfire
 from dash import Dash, Input, Output, State, callback, dcc, html
 from dash.exceptions import PreventUpdate
 from dotenv import load_dotenv
@@ -17,6 +19,10 @@ from variants import VARIANTS
 from wiki import find_articles
 
 load_dotenv()
+logfire.configure(
+    service_name="wiki-golf",
+    environment=os.getenv("LOGFIRE_ENV", "dev"),
+)
 
 # Maximum number of tool calls (page visits) allowed per game
 MAX_TOOL_CALLS = 20
