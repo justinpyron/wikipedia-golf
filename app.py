@@ -232,7 +232,7 @@ RESET_BUTTON_STYLE = {
     "width": "28px",
     "height": "28px",
     "border": "none",
-    "borderRadius": "50%",
+    "borderRadius": "4px",
     "backgroundColor": COLORS["light_mist"],
     "color": COLORS["slate"],
     "fontSize": "16px",
