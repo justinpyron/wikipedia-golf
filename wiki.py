@@ -16,24 +16,6 @@ BASE_URL = "https://en.wikipedia.org/w/rest.php/v1"
 HEADERS = {"User-Agent": "WikipediaGolf (justinpyron@gmail.com)"}
 
 
-class WikiError(Exception):
-    """Base exception for Wikipedia API errors."""
-
-    pass
-
-
-class WikiArticleNotFoundError(WikiError):
-    """Raised when the requested article does not exist (HTTP 404)."""
-
-    pass
-
-
-class WikiAPIError(WikiError):
-    """Raised when a network or API error occurs."""
-
-    pass
-
-
 # Selectors/sections to strip from article content (fetch_article)
 STRIP_SELECTORS_CONTENT = (
     "table.infobox",
@@ -158,6 +140,24 @@ class ArticleLinks(BaseModel):
         keys = sorted([link.key for link in self.links])
         header = f"Keys of articles linked to from article with key '{self.key}':\n"
         return header + "\n".join(keys)
+
+
+class WikiError(Exception):
+    """Base exception for Wikipedia API errors."""
+
+    pass
+
+
+class WikiArticleNotFoundError(WikiError):
+    """Raised when the requested article does not exist (HTTP 404)."""
+
+    pass
+
+
+class WikiAPIError(WikiError):
+    """Raised when a network or API error occurs."""
+
+    pass
 
 
 def find_articles(query: str, limit: int = 5) -> list[ArticleSearchResult]:
