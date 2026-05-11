@@ -313,13 +313,10 @@ ERROR_STYLE = {
 
 def create_selected_display(
     data: dict | None, is_destination: bool = False
-) -> html.Div:
+) -> html.Div | None:
     """Create the selected article display card with reset button."""
     if data is None:
-        return html.Div(
-            id=f"{'dest' if is_destination else 'origin'}-selected-display",
-            style={"display": "none"},
-        )
+        return None
 
     thumbnail_url = data.get("thumbnail")
     thumbnail = (
@@ -403,16 +400,16 @@ app.layout = html.Div(
                                     ],
                                     style=SEARCH_WRAPPER_STYLE,
                                 ),
-                                html.Div(id="origin-error", style=ERROR_STYLE),
+                                html.Div(
+                                    id="origin-error",
+                                    style={**ERROR_STYLE, "display": "none"},
+                                ),
                             ],
                             id="origin-search-container",
                             className="search-container",
                         ),
                         # Selected display (shown when article selected)
-                        html.Div(
-                            create_selected_display(None, False),
-                            id="origin-selected-wrapper",
-                        ),
+                        html.Div(id="origin-selected-wrapper"),
                     ],
                     style={"flex": "1", "minWidth": "300px"},
                 ),
@@ -437,16 +434,16 @@ app.layout = html.Div(
                                     ],
                                     style=SEARCH_WRAPPER_STYLE,
                                 ),
-                                html.Div(id="dest-error", style=ERROR_STYLE),
+                                html.Div(
+                                    id="dest-error",
+                                    style={**ERROR_STYLE, "display": "none"},
+                                ),
                             ],
                             id="dest-search-container",
                             className="search-container",
                         ),
                         # Selected display (shown when article selected)
-                        html.Div(
-                            create_selected_display(None, True),
-                            id="dest-selected-wrapper",
-                        ),
+                        html.Div(id="dest-selected-wrapper"),
                     ],
                     style={"flex": "1", "minWidth": "300px"},
                 ),
