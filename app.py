@@ -43,6 +43,63 @@ app = Dash(
     suppress_callback_exceptions=True,
 )
 
+# Inject custom CSS animations via index_string
+app.index_string = """
+<!DOCTYPE html>
+<html>
+    <head>
+        {%metas%}
+        <title>{%title%}</title>
+        {%favicon%}
+        {%css%}
+        <style>
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(-8px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+            @keyframes slideIn {
+                from { opacity: 0; transform: translateY(10px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+            .slide-in {
+                animation: slideIn 0.35s ease forwards;
+            }
+            .search-container {
+                transition: opacity 0.3s ease, transform 0.3s ease, height 0.3s ease, margin 0.3s ease;
+            }
+            .search-container.hidden {
+                opacity: 0;
+                transform: translateY(-10px);
+                pointer-events: none;
+                height: 0;
+                overflow: hidden;
+                margin: 0;
+                padding: 0;
+            }
+            .selected-card {
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+            .selected-card:hover {
+                box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+                transform: translateY(-1px);
+            }
+            .reset-btn:hover {
+                background-color: #D4D2CE !important;
+                color: #3A3A3A !important;
+            }
+        </style>
+    </head>
+    <body>
+        {%app_entry%}
+        <footer>
+            {%config%}
+            {%scripts%}
+            {%renderer%}
+        </footer>
+    </body>
+</html>
+"""
+
 # Styles
 CONTAINER_STYLE = {
     "maxWidth": "900px",
@@ -125,67 +182,6 @@ SEARCH_RESULT_ITEM_STYLE = {
     "transition": "background-color 0.15s ease",
 }
 
-PREVIEW_CONTAINER_STYLE = {
-    "display": "flex",
-    "gap": "24px",
-    "marginTop": "48px",
-    "marginBottom": "32px",
-    "justifyContent": "center",
-}
-
-PREVIEW_CARD_STYLE = {
-    "flex": "1",
-    "maxWidth": "300px",
-    "padding": "20px",
-    "backgroundColor": COLORS["white"],
-    "border": f"1px solid {COLORS['mist']}",
-    "borderRadius": "4px",
-    "textAlign": "center",
-}
-
-PREVIEW_CARD_DEST_STYLE = {
-    **PREVIEW_CARD_STYLE,
-    "borderColor": COLORS["championship_gold"],
-}
-
-PREVIEW_THUMBNAIL_STYLE = {
-    "width": "80px",
-    "height": "80px",
-    "objectFit": "cover",
-    "borderRadius": "4px",
-    "marginBottom": "12px",
-    "border": f"1px solid {COLORS['light_mist']}",
-}
-
-PREVIEW_THUMBNAIL_PLACEHOLDER_STYLE = {
-    "width": "80px",
-    "height": "80px",
-    "backgroundColor": COLORS["light_mist"],
-    "borderRadius": "4px",
-    "marginBottom": "12px",
-    "marginLeft": "auto",
-    "marginRight": "auto",
-    "display": "flex",
-    "alignItems": "center",
-    "justifyContent": "center",
-    "fontSize": "24px",
-    "color": COLORS["slate"],
-}
-
-PREVIEW_TITLE_STYLE = {
-    "fontSize": "16px",
-    "fontWeight": "600",
-    "color": COLORS["charcoal"],
-    "margin": "0 0 8px 0",
-    "lineHeight": "1.3",
-}
-
-PREVIEW_DESC_STYLE = {
-    "fontSize": "13px",
-    "color": COLORS["slate"],
-    "margin": "0",
-    "lineHeight": "1.4",
-}
 
 BUTTON_STYLE = {
     "width": "100%",
@@ -214,6 +210,101 @@ SPINNER_STYLE = {
     "padding": "48px 0",
     "color": COLORS["augusta_green"],
     "fontSize": "14px",
+}
+
+# Selected article display styles (inline card)
+SELECTED_CARD_STYLE = {
+    "display": "flex",
+    "alignItems": "flex-start",
+    "gap": "16px",
+    "padding": "16px",
+    "backgroundColor": COLORS["white"],
+    "border": f"1px solid {COLORS['mist']}",
+    "borderRadius": "4px",
+    "position": "relative",
+    "transition": "all 0.3s ease",
+}
+
+SELECTED_CARD_ORIGIN_STYLE = {
+    **SELECTED_CARD_STYLE,
+    "borderLeft": f"4px solid {COLORS['augusta_green']}",
+}
+
+SELECTED_CARD_DEST_STYLE = {
+    **SELECTED_CARD_STYLE,
+    "borderLeft": f"4px solid {COLORS['championship_gold']}",
+}
+
+SELECTED_THUMBNAIL_STYLE = {
+    "width": "48px",
+    "height": "48px",
+    "objectFit": "cover",
+    "borderRadius": "4px",
+    "flexShrink": "0",
+    "border": f"1px solid {COLORS['light_mist']}",
+}
+
+SELECTED_THUMBNAIL_PLACEHOLDER_STYLE = {
+    "width": "48px",
+    "height": "48px",
+    "backgroundColor": COLORS["light_mist"],
+    "borderRadius": "4px",
+    "flexShrink": "0",
+    "display": "flex",
+    "alignItems": "center",
+    "justifyContent": "center",
+    "fontSize": "20px",
+    "color": COLORS["slate"],
+}
+
+SELECTED_CONTENT_STYLE = {
+    "flex": "1",
+    "minWidth": "0",
+}
+
+SELECTED_TITLE_STYLE = {
+    "fontSize": "18px",
+    "fontWeight": "600",
+    "color": COLORS["charcoal"],
+    "margin": "0 0 4px 0",
+    "lineHeight": "1.3",
+}
+
+SELECTED_DESC_STYLE = {
+    "fontSize": "13px",
+    "color": COLORS["slate"],
+    "margin": "0",
+    "lineHeight": "1.4",
+    "display": "-webkit-box",
+    "WebkitLineClamp": "2",
+    "WebkitBoxOrient": "vertical",
+    "overflow": "hidden",
+    "textOverflow": "ellipsis",
+}
+
+RESET_BUTTON_STYLE = {
+    "position": "absolute",
+    "top": "12px",
+    "right": "12px",
+    "width": "28px",
+    "height": "28px",
+    "border": "none",
+    "borderRadius": "50%",
+    "backgroundColor": COLORS["light_mist"],
+    "color": COLORS["slate"],
+    "fontSize": "16px",
+    "cursor": "pointer",
+    "display": "flex",
+    "alignItems": "center",
+    "justifyContent": "center",
+    "transition": "all 0.2s ease",
+    "padding": "0",
+    "lineHeight": "1",
+}
+
+# Animation style for search container transitions
+SEARCH_CONTAINER_STYLE = {
+    "transition": "all 0.3s ease",
 }
 
 RESULT_CONTAINER_STYLE = {
@@ -277,40 +368,59 @@ ERROR_STYLE = {
 }
 
 
-def create_preview_card(data: dict | None, is_destination: bool = False) -> html.Div:
-    """Create a preview card for the origin or destination article chosen by the user."""
+def create_selected_display(
+    data: dict | None, is_destination: bool = False
+) -> html.Div:
+    """Create the selected article display card with reset button."""
     if data is None:
         return html.Div(
-            [
-                html.Div("?", style=PREVIEW_THUMBNAIL_PLACEHOLDER_STYLE),
-                html.Div(
-                    "Destination" if is_destination else "Origin",
-                    style=PREVIEW_TITLE_STYLE,
-                ),
-                html.Div("Not selected", style=PREVIEW_DESC_STYLE),
-            ],
-            style=PREVIEW_CARD_STYLE,
+            id=f"{'dest' if is_destination else 'origin'}-selected-display",
+            style={"display": "none"},
         )
 
     thumbnail_url = data.get("thumbnail")
     thumbnail = (
-        html.Img(src=thumbnail_url, style=PREVIEW_THUMBNAIL_STYLE)
+        html.Img(src=thumbnail_url, style=SELECTED_THUMBNAIL_STYLE)
         if thumbnail_url
-        else html.Div("📄", style=PREVIEW_THUMBNAIL_PLACEHOLDER_STYLE)
+        else html.Div("📄", style=SELECTED_THUMBNAIL_PLACEHOLDER_STYLE)
+    )
+
+    card_style = (
+        SELECTED_CARD_DEST_STYLE if is_destination else SELECTED_CARD_ORIGIN_STYLE
     )
 
     return html.Div(
         [
             thumbnail,
-            html.Div(data.get("title", ""), style=PREVIEW_TITLE_STYLE),
             html.Div(
-                data.get("description") or "No description available",
-                style=PREVIEW_DESC_STYLE,
+                [
+                    html.Div(
+                        data.get("title", ""),
+                        style=SELECTED_TITLE_STYLE,
+                    ),
+                    html.Div(
+                        data.get("description") or "No description available",
+                        style=SELECTED_DESC_STYLE,
+                    ),
+                ],
+                style=SELECTED_CONTENT_STYLE,
+            ),
+            html.Button(
+                "×",
+                id=f"{'dest' if is_destination else 'origin'}-reset-btn",
+                style=RESET_BUTTON_STYLE,
+                className="reset-btn",
+                n_clicks=0,
             ),
         ],
-        style=PREVIEW_CARD_DEST_STYLE if is_destination else PREVIEW_CARD_STYLE,
+        id=f"{'dest' if is_destination else 'origin'}-selected-display",
+        style=card_style,
+        className="selected-card slide-in",
     )
 
+
+# CSS animations via inline style tag since Dash doesn't support index_string well with debug mode
+# We'll add a clientside callback or use dcc.Store to trigger CSS classes
 
 # ============================================================================
 # LAYOUT
@@ -333,21 +443,33 @@ app.layout = html.Div(
                 html.Div(
                     [
                         html.Div("From", style=SECTION_LABEL_STYLE),
+                        # Search container (shown when no selection)
                         html.Div(
                             [
-                                dcc.Input(
-                                    id="origin-input",
-                                    type="text",
-                                    placeholder="Search...",
-                                    style=INPUT_STYLE,
-                                    autoComplete="off",
-                                    debounce=True,
+                                html.Div(
+                                    [
+                                        dcc.Input(
+                                            id="origin-input",
+                                            type="text",
+                                            placeholder="Search for origin article...",
+                                            style=INPUT_STYLE,
+                                            autoComplete="off",
+                                            debounce=True,
+                                        ),
+                                        html.Div(id="origin-search-results"),
+                                    ],
+                                    style=SEARCH_WRAPPER_STYLE,
                                 ),
-                                html.Div(id="origin-search-results"),
+                                html.Div(id="origin-error", style=ERROR_STYLE),
                             ],
-                            style=SEARCH_WRAPPER_STYLE,
+                            id="origin-search-container",
+                            className="search-container",
                         ),
-                        html.Div(id="origin-error", style=ERROR_STYLE),
+                        # Selected display (shown when article selected)
+                        html.Div(
+                            create_selected_display(None, False),
+                            id="origin-selected-wrapper",
+                        ),
                     ],
                     style={"flex": "1", "minWidth": "300px"},
                 ),
@@ -355,21 +477,33 @@ app.layout = html.Div(
                 html.Div(
                     [
                         html.Div("To", style=SECTION_LABEL_STYLE),
+                        # Search container (shown when no selection)
                         html.Div(
                             [
-                                dcc.Input(
-                                    id="dest-input",
-                                    type="text",
-                                    placeholder="Search...",
-                                    style=INPUT_STYLE,
-                                    autoComplete="off",
-                                    debounce=True,
+                                html.Div(
+                                    [
+                                        dcc.Input(
+                                            id="dest-input",
+                                            type="text",
+                                            placeholder="Search for destination article...",
+                                            style=INPUT_STYLE,
+                                            autoComplete="off",
+                                            debounce=True,
+                                        ),
+                                        html.Div(id="dest-search-results"),
+                                    ],
+                                    style=SEARCH_WRAPPER_STYLE,
                                 ),
-                                html.Div(id="dest-search-results"),
+                                html.Div(id="dest-error", style=ERROR_STYLE),
                             ],
-                            style=SEARCH_WRAPPER_STYLE,
+                            id="dest-search-container",
+                            className="search-container",
                         ),
-                        html.Div(id="dest-error", style=ERROR_STYLE),
+                        # Selected display (shown when article selected)
+                        html.Div(
+                            create_selected_display(None, True),
+                            id="dest-selected-wrapper",
+                        ),
                     ],
                     style={"flex": "1", "minWidth": "300px"},
                 ),
@@ -377,7 +511,7 @@ app.layout = html.Div(
             style={
                 "display": "flex",
                 "gap": "48px",
-                "marginBottom": "48px",
+                "marginBottom": "32px",
                 "flexWrap": "wrap",
             },
         ),
@@ -386,23 +520,6 @@ app.layout = html.Div(
         dcc.Store(id="dest-search-results-data", data=[]),
         dcc.Store(id="origin-data", data=None),
         dcc.Store(id="dest-data", data=None),
-        # Preview Section
-        html.Div(
-            [
-                create_preview_card(None, False),
-                html.Div(
-                    "→",
-                    style={
-                        "fontSize": "24px",
-                        "color": COLORS["slate"],
-                        "alignSelf": "center",
-                    },
-                ),
-                create_preview_card(None, True),
-            ],
-            id="preview-container",
-            style=PREVIEW_CONTAINER_STYLE,
-        ),
         # Tee Off Button
         html.Button(
             "Tee Off",
@@ -684,29 +801,79 @@ def select_dest(n_clicks: list[int | None], search_results_data: list[dict]) -> 
 
 
 # ============================================================================
-# CALLBACKS - Preview Cards (render selected articles)
+# CALLBACKS - Progressive Disclosure (show/hide search vs selected)
 # ============================================================================
 
 
 @callback(
-    Output("preview-container", "children"),
+    Output("origin-search-container", "style"),
+    Output("origin-selected-wrapper", "children"),
     Input("origin-data", "data"),
+)
+def update_origin_display(origin_data: dict | None) -> tuple:
+    """Show/hide origin search container and update selected display."""
+    if origin_data is None:
+        # No selection - show search, hide selected
+        search_style = SEARCH_CONTAINER_STYLE
+        selected_display = create_selected_display(None, False)
+    else:
+        # Has selection - hide search, show selected
+        search_style = {**SEARCH_CONTAINER_STYLE, "display": "none"}
+        selected_display = create_selected_display(origin_data, False)
+
+    return search_style, selected_display
+
+
+@callback(
+    Output("dest-search-container", "style"),
+    Output("dest-selected-wrapper", "children"),
     Input("dest-data", "data"),
 )
-def update_preview(origin_data: dict | None, dest_data: dict | None) -> list:
-    """Update the preview cards when selections change."""
-    return [
-        create_preview_card(origin_data, False),
-        html.Div(
-            "→",
-            style={
-                "fontSize": "24px",
-                "color": COLORS["slate"],
-                "alignSelf": "center",
-            },
-        ),
-        create_preview_card(dest_data, True),
-    ]
+def update_dest_display(dest_data: dict | None) -> tuple:
+    """Show/hide destination search container and update selected display."""
+    if dest_data is None:
+        # No selection - show search, hide selected
+        search_style = SEARCH_CONTAINER_STYLE
+        selected_display = create_selected_display(None, True)
+    else:
+        # Has selection - hide search, show selected
+        search_style = {**SEARCH_CONTAINER_STYLE, "display": "none"}
+        selected_display = create_selected_display(dest_data, True)
+
+    return search_style, selected_display
+
+
+# ============================================================================
+# CALLBACKS - Reset (clear selection and return to search)
+# ============================================================================
+
+
+@callback(
+    Output("origin-data", "data", allow_duplicate=True),
+    Output("origin-input", "value", allow_duplicate=True),
+    Input("origin-reset-btn", "n_clicks"),
+    prevent_initial_call=True,
+)
+def reset_origin(n_clicks: int | None) -> tuple:
+    """Reset origin selection and return to search state."""
+    if not n_clicks:
+        raise PreventUpdate
+
+    return None, ""
+
+
+@callback(
+    Output("dest-data", "data", allow_duplicate=True),
+    Output("dest-input", "value", allow_duplicate=True),
+    Input("dest-reset-btn", "n_clicks"),
+    prevent_initial_call=True,
+)
+def reset_dest(n_clicks: int | None) -> tuple:
+    """Reset destination selection and return to search state."""
+    if not n_clicks:
+        raise PreventUpdate
+
+    return None, ""
 
 
 # ============================================================================
