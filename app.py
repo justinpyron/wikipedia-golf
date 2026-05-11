@@ -5,7 +5,6 @@ Aesthetic: Augusta-inspired (whisper white, Augusta green, championship gold).
 """
 
 import asyncio
-from typing import Any
 
 import dash
 from dash import Dash, Input, Output, State, callback, dcc, html
@@ -15,7 +14,7 @@ from pydantic_ai import UsageLimits
 
 from agent import WikiGolfDeps, build_agent
 from variants import VARIANTS
-from wiki import ArticleSearchResult, find_articles
+from wiki import find_articles
 
 load_dotenv()
 
@@ -75,17 +74,13 @@ SUBTITLE_STYLE = {
     "fontWeight": "400",
 }
 
-SECTION_STYLE = {
-    "marginBottom": "32px",
-}
-
 SECTION_LABEL_STYLE = {
     "fontSize": "12px",
     "fontWeight": "600",
     "color": COLORS["slate"],
     "textTransform": "uppercase",
     "letterSpacing": "0.1em",
-    "marginBottom": "12px",
+    "marginBottom": "8px",
 }
 
 INPUT_STYLE = {
@@ -103,71 +98,26 @@ INPUT_STYLE = {
     "transition": "border-color 0.2s ease",
 }
 
-INPUT_FOCUS_STYLE = {
-    "borderColor": COLORS["augusta_green"],
-}
-
-DROPDOWN_STYLE = {
-    "width": "100%",
-    "fontSize": "16px",
-}
-
-DROPDOWN_OPTION_STYLE = {
-    "fontSize": "14px",
-    "padding": "12px 16px",
-}
-
-RESULTS_CONTAINER_STYLE = {
-    "display": "flex",
-    "gap": "12px",
-    "marginTop": "16px",
-    "flexWrap": "wrap",
-}
-
-RESULT_CARD_STYLE = {
-    "flex": "1",
-    "minWidth": "120px",
-    "maxWidth": "calc(20% - 10px)",
-    "padding": "12px",
-    "backgroundColor": COLORS["white"],
+SEARCH_RESULTS_CONTAINER_STYLE = {
+    "marginTop": "4px",
     "border": f"1px solid {COLORS['mist']}",
     "borderRadius": "4px",
+    "overflow": "hidden",
+    "boxShadow": "0 2px 8px rgba(0,0,0,0.08)",
+}
+
+SEARCH_RESULT_ITEM_STYLE = {
+    "padding": "12px 16px",
     "cursor": "pointer",
-    "transition": "all 0.2s ease",
-}
-
-RESULT_CARD_HOVER_STYLE = {
-    "borderColor": COLORS["augusta_green"],
-    "boxShadow": "0 2px 8px rgba(0,0,0,0.04)",
-}
-
-RESULT_TITLE_STYLE = {
-    "fontSize": "13px",
-    "fontWeight": "500",
-    "color": COLORS["charcoal"],
-    "margin": "0 0 4px 0",
-    "lineHeight": "1.3",
-    "overflow": "hidden",
-    "textOverflow": "ellipsis",
-    "whiteSpace": "nowrap",
-}
-
-RESULT_DESC_STYLE = {
-    "fontSize": "11px",
-    "color": COLORS["slate"],
-    "margin": "0",
-    "lineHeight": "1.3",
-    "overflow": "hidden",
-    "textOverflow": "ellipsis",
-    "display": "-webkit-box",
-    "WebkitLineClamp": "2",
-    "WebkitBoxOrient": "vertical",
+    "backgroundColor": COLORS["white"],
+    "borderBottom": f"1px solid {COLORS['light_mist']}",
+    "transition": "background-color 0.15s ease",
 }
 
 PREVIEW_CONTAINER_STYLE = {
     "display": "flex",
     "gap": "24px",
-    "marginTop": "32px",
+    "marginTop": "48px",
     "marginBottom": "32px",
     "justifyContent": "center",
 }
@@ -226,17 +176,6 @@ PREVIEW_DESC_STYLE = {
     "lineHeight": "1.4",
 }
 
-PREVIEW_KEY_STYLE = {
-    "fontSize": "11px",
-    "fontFamily": "'JetBrains Mono', monospace",
-    "color": COLORS["slate"],
-    "backgroundColor": COLORS["light_mist"],
-    "padding": "4px 8px",
-    "borderRadius": "3px",
-    "marginTop": "12px",
-    "display": "inline-block",
-}
-
 BUTTON_STYLE = {
     "width": "100%",
     "padding": "16px 32px",
@@ -250,7 +189,6 @@ BUTTON_STYLE = {
     "borderRadius": "2px",
     "cursor": "pointer",
     "transition": "background-color 0.2s ease",
-    "marginTop": "24px",
 }
 
 BUTTON_DISABLED_STYLE = {
@@ -258,10 +196,6 @@ BUTTON_DISABLED_STYLE = {
     "backgroundColor": COLORS["mist"],
     "color": COLORS["slate"],
     "cursor": "not-allowed",
-}
-
-BUTTON_HOVER_STYLE = {
-    "backgroundColor": COLORS["billiard_green"],
 }
 
 SPINNER_STYLE = {
@@ -322,46 +256,14 @@ PATH_STATS_STYLE = {
 }
 
 ERROR_STYLE = {
-    "marginTop": "12px",
-    "padding": "12px 16px",
+    "marginTop": "8px",
+    "padding": "10px 12px",
     "backgroundColor": "#FEF2F2",
     "border": "1px solid #FECACA",
     "borderRadius": "4px",
     "color": "#DC2626",
     "fontSize": "13px",
 }
-
-DIVIDER_STYLE = {
-    "height": "1px",
-    "backgroundColor": COLORS["mist"],
-    "margin": "48px 0",
-    "border": "none",
-}
-
-
-def create_search_result_card(
-    result: ArticleSearchResult, index: int, prefix: str
-) -> html.Div:
-    """Create a clickable card displaying a search result from a user's query."""
-    card_id = {"type": f"{prefix}-card", "index": index}
-    return html.Div(
-        [
-            html.Div(
-                result.title,
-                style=RESULT_TITLE_STYLE,
-                title=result.title,
-            ),
-            html.Div(
-                result.description or "No description available",
-                style=RESULT_DESC_STYLE,
-            )
-            if result.description
-            else None,
-        ],
-        id=card_id,
-        style=RESULT_CARD_STYLE,
-        n_clicks=0,
-    )
 
 
 def create_preview_card(data: dict | None, is_destination: bool = False) -> html.Div:
@@ -399,6 +301,10 @@ def create_preview_card(data: dict | None, is_destination: bool = False) -> html
     )
 
 
+# ============================================================================
+# LAYOUT
+# ============================================================================
+
 app.layout = html.Div(
     [
         # Header
@@ -416,11 +322,16 @@ app.layout = html.Div(
                 html.Div(
                     [
                         html.Div("From", style=SECTION_LABEL_STYLE),
-                        dcc.Dropdown(
-                            id="origin-dropdown",
-                            placeholder="Search for starting article...",
-                            searchable=True,
-                            style={"width": "100%"},
+                        dcc.Input(
+                            id="origin-input",
+                            type="text",
+                            placeholder="Search...",
+                            style=INPUT_STYLE,
+                            autoComplete="off",
+                            debounce=True,
+                        ),
+                        html.Div(
+                            id="origin-search-results", style={"marginTop": "4px"}
                         ),
                         html.Div(id="origin-error", style=ERROR_STYLE),
                     ],
@@ -430,12 +341,15 @@ app.layout = html.Div(
                 html.Div(
                     [
                         html.Div("To", style=SECTION_LABEL_STYLE),
-                        dcc.Dropdown(
-                            id="dest-dropdown",
-                            placeholder="Search for destination article...",
-                            searchable=True,
-                            style={"width": "100%"},
+                        dcc.Input(
+                            id="dest-input",
+                            type="text",
+                            placeholder="Search...",
+                            style=INPUT_STYLE,
+                            autoComplete="off",
+                            debounce=True,
                         ),
+                        html.Div(id="dest-search-results", style={"marginTop": "4px"}),
                         html.Div(id="dest-error", style=ERROR_STYLE),
                     ],
                     style={"flex": "1", "minWidth": "300px"},
@@ -443,19 +357,16 @@ app.layout = html.Div(
             ],
             style={
                 "display": "flex",
-                "gap": "32px",
-                "marginBottom": "32px",
+                "gap": "48px",
+                "marginBottom": "48px",
                 "flexWrap": "wrap",
             },
         ),
-        # Debounce intervals for API calls
-        dcc.Interval(id="origin-search-interval", interval=500, disabled=True),
-        dcc.Interval(id="dest-search-interval", interval=500, disabled=True),
-        # Hidden stores for search state
-        dcc.Store(id="origin-search-query", data=""),
-        dcc.Store(id="dest-search-query", data=""),
-        dcc.Store(id="origin-results-store", data=[]),
-        dcc.Store(id="dest-results-store", data=[]),
+        # Data Stores
+        dcc.Store(id="origin-search-results-data", data=[]),
+        dcc.Store(id="dest-search-results-data", data=[]),
+        dcc.Store(id="origin-data", data=None),
+        dcc.Store(id="dest-data", data=None),
         # Preview Section
         html.Div(
             [
@@ -473,9 +384,6 @@ app.layout = html.Div(
             id="preview-container",
             style=PREVIEW_CONTAINER_STYLE,
         ),
-        # Hidden stores for selections
-        dcc.Store(id="origin-data", data=None),
-        dcc.Store(id="dest-data", data=None),
         # Tee Off Button
         html.Button(
             "Tee Off",
@@ -514,61 +422,34 @@ app.layout = html.Div(
 )
 
 
-@callback(
-    Output("origin-search-interval", "disabled"),
-    Output("origin-search-query", "data"),
-    Input("origin-dropdown", "search_value"),
-)
-def handle_origin_search_input(search_value: str | None) -> tuple:
-    """Store search query and enable interval for debounced API call."""
-    if not search_value or len(search_value) < 2:
-        return True, ""  # Disable interval, clear query
-    return False, search_value  # Enable interval, store query
+# ============================================================================
+# CALLBACKS - Search
+# ============================================================================
 
 
 @callback(
-    Output("origin-dropdown", "options"),
+    Output("origin-search-results-data", "data"),
     Output("origin-error", "children"),
     Output("origin-error", "style"),
-    Output("origin-results-store", "data"),
-    Input("origin-search-interval", "n_intervals"),
-    State("origin-search-query", "data"),
+    Input("origin-input", "value"),
     prevent_initial_call=True,
 )
-def search_origin(n_intervals: int, query: str) -> tuple:
-    """Search Wikipedia and populate origin dropdown options."""
-    if not query or len(query) < 2:
-        return [], None, {**ERROR_STYLE, "display": "none"}, []
+def search_origin(input_value: str | None) -> tuple:
+    """Search Wikipedia when user types in origin input."""
+    if not input_value or len(input_value) < 2:
+        return [], None, {**ERROR_STYLE, "display": "none"}
 
     try:
-        results = find_articles(query, limit=5)
+        results = find_articles(input_value, limit=5)
         if not results:
             return (
                 [],
-                f'No articles found matching "{query}"',
+                f'No articles found matching "{input_value}"',
                 {**ERROR_STYLE, "display": "block"},
-                [],
             )
 
-        # Format for dropdown: label shows title + description
-        options = [
-            {
-                "label": html.Div(
-                    [
-                        html.Div(r.title, style={"fontWeight": "500"}),
-                        html.Div(
-                            r.description or "",
-                            style={"fontSize": "12px", "color": COLORS["slate"]},
-                        ),
-                    ]
-                ),
-                "value": str(i),  # Use index as value
-            }
-            for i, r in enumerate(results)
-        ]
-
-        # Store full data for lookup when selected
-        results_data = [
+        # Store search results as list of dicts
+        search_results_data = [
             {
                 "key": r.key,
                 "title": r.title,
@@ -578,133 +459,214 @@ def search_origin(n_intervals: int, query: str) -> tuple:
             for r in results
         ]
 
-        return options, None, {**ERROR_STYLE, "display": "none"}, results_data
+        return search_results_data, None, {**ERROR_STYLE, "display": "none"}
 
-    except Exception as e:
+    except Exception:
         return (
             [],
             "Unable to search. Please try again.",
             {**ERROR_STYLE, "display": "block"},
-            [],
         )
+
+
+@callback(
+    Output("dest-search-results-data", "data"),
+    Output("dest-error", "children"),
+    Output("dest-error", "style"),
+    Input("dest-input", "value"),
+    prevent_initial_call=True,
+)
+def search_dest(input_value: str | None) -> tuple:
+    """Search Wikipedia when user types in destination input."""
+    if not input_value or len(input_value) < 2:
+        return [], None, {**ERROR_STYLE, "display": "none"}
+
+    try:
+        results = find_articles(input_value, limit=5)
+        if not results:
+            return (
+                [],
+                f'No articles found matching "{input_value}"',
+                {**ERROR_STYLE, "display": "block"},
+            )
+
+        search_results_data = [
+            {
+                "key": r.key,
+                "title": r.title,
+                "description": r.description,
+                "thumbnail": r.thumbnail.get("url") if r.thumbnail else None,
+            }
+            for r in results
+        ]
+
+        return search_results_data, None, {**ERROR_STYLE, "display": "none"}
+
+    except Exception:
+        return (
+            [],
+            "Unable to search. Please try again.",
+            {**ERROR_STYLE, "display": "block"},
+        )
+
+
+# ============================================================================
+# CALLBACKS - Render Search Results (single writer per output)
+# ============================================================================
+
+
+@callback(
+    Output("origin-search-results", "children"),
+    Input("origin-search-results-data", "data"),
+    prevent_initial_call=True,
+)
+def render_origin_search_results(search_results_data: list[dict]) -> html.Div | None:
+    """Render origin search results from store data."""
+    if not search_results_data:
+        return None
+
+    result_items = []
+    for i, result in enumerate(search_results_data):
+        result_items.append(
+            html.Div(
+                [
+                    html.Div(
+                        result["title"],
+                        style={
+                            "fontSize": "14px",
+                            "fontWeight": "500",
+                            "color": COLORS["charcoal"],
+                        },
+                    ),
+                    html.Div(
+                        result.get("description") or "",
+                        style={
+                            "fontSize": "12px",
+                            "color": COLORS["slate"],
+                            "marginTop": "2px",
+                        },
+                    ),
+                ],
+                id={"type": "origin-search-result", "index": i},
+                style=SEARCH_RESULT_ITEM_STYLE,
+                n_clicks=0,
+            )
+        )
+
+    return html.Div(result_items, style=SEARCH_RESULTS_CONTAINER_STYLE)
+
+
+@callback(
+    Output("dest-search-results", "children"),
+    Input("dest-search-results-data", "data"),
+    prevent_initial_call=True,
+)
+def render_dest_search_results(search_results_data: list[dict]) -> html.Div | None:
+    """Render destination search results from store data."""
+    if not search_results_data:
+        return None
+
+    result_items = []
+    for i, result in enumerate(search_results_data):
+        result_items.append(
+            html.Div(
+                [
+                    html.Div(
+                        result["title"],
+                        style={
+                            "fontSize": "14px",
+                            "fontWeight": "500",
+                            "color": COLORS["charcoal"],
+                        },
+                    ),
+                    html.Div(
+                        result.get("description") or "",
+                        style={
+                            "fontSize": "12px",
+                            "color": COLORS["slate"],
+                            "marginTop": "2px",
+                        },
+                    ),
+                ],
+                id={"type": "dest-search-result", "index": i},
+                style=SEARCH_RESULT_ITEM_STYLE,
+                n_clicks=0,
+            )
+        )
+
+    return html.Div(result_items, style=SEARCH_RESULTS_CONTAINER_STYLE)
+
+
+# ============================================================================
+# CALLBACKS - Selection (user clicks a search result)
+# ============================================================================
 
 
 @callback(
     Output("origin-data", "data"),
-    Output("origin-dropdown", "value"),
-    Input("origin-dropdown", "value"),
-    State("origin-results-store", "data"),
+    Output("origin-search-results-data", "data", allow_duplicate=True),
+    Output("origin-input", "value"),
+    Input({"type": "origin-search-result", "index": dash.ALL}, "n_clicks"),
+    State("origin-search-results-data", "data"),
     prevent_initial_call=True,
 )
-def select_origin(selected_index: str | None, results_data: list[dict]) -> tuple:
-    """Handle origin selection from dropdown."""
-    if selected_index is None or not results_data:
+def select_origin(n_clicks: list[int | None], search_results_data: list[dict]) -> tuple:
+    """Handle origin article selection from search results."""
+    # Check for actual click
+    if not n_clicks or all(c is None or c == 0 for c in n_clicks):
         raise PreventUpdate
 
-    idx = int(selected_index)
-    if idx >= len(results_data):
+    ctx = dash.callback_context
+    triggered_id = ctx.triggered_id
+    if not triggered_id:
         raise PreventUpdate
 
-    data = results_data[idx]
-    return data, selected_index
+    clicked_index = triggered_id.get("index")
+    if clicked_index is None or clicked_index >= len(search_results_data):
+        raise PreventUpdate
 
+    if n_clicks[clicked_index] is None or n_clicks[clicked_index] == 0:
+        raise PreventUpdate
 
-@callback(
-    Output("dest-search-interval", "disabled"),
-    Output("dest-search-query", "data"),
-    Input("dest-dropdown", "search_value"),
-)
-def handle_dest_search_input(search_value: str | None) -> tuple:
-    """Store search query and enable interval for debounced API call."""
-    if not search_value or len(search_value) < 2:
-        return True, ""
-    return False, search_value
+    selected_data = search_results_data[clicked_index]
 
-
-@callback(
-    Output("dest-dropdown", "options"),
-    Output("dest-error", "children"),
-    Output("dest-error", "style"),
-    Output("dest-results-store", "data"),
-    Input("dest-search-interval", "n_intervals"),
-    State("dest-search-query", "data"),
-    prevent_initial_call=True,
-)
-def search_dest(n_intervals: int, query: str) -> tuple:
-    """Search Wikipedia and populate destination dropdown options."""
-    if not query or len(query) < 2:
-        return [], None, {**ERROR_STYLE, "display": "none"}, []
-
-    try:
-        results = find_articles(query, limit=5)
-        if not results:
-            return (
-                [],
-                f'No articles found matching "{query}"',
-                {**ERROR_STYLE, "display": "block"},
-                [],
-            )
-
-        options = [
-            {
-                "label": html.Div(
-                    [
-                        html.Div(r.title, style={"fontWeight": "500"}),
-                        html.Div(
-                            r.description or "",
-                            style={"fontSize": "12px", "color": COLORS["slate"]},
-                        ),
-                    ]
-                ),
-                "value": str(i),
-            }
-            for i, r in enumerate(results)
-        ]
-
-        results_data = [
-            {
-                "key": r.key,
-                "title": r.title,
-                "description": r.description,
-                "thumbnail": r.thumbnail.get("url") if r.thumbnail else None,
-            }
-            for r in results
-        ]
-
-        return options, None, {**ERROR_STYLE, "display": "none"}, results_data
-
-    except Exception as e:
-        return (
-            [],
-            "Unable to search. Please try again.",
-            {**ERROR_STYLE, "display": "block"},
-            [],
-        )
+    # Return selected data, clear search results, clear input
+    return selected_data, [], ""
 
 
 @callback(
     Output("dest-data", "data"),
-    Output("dest-dropdown", "value"),
-    Input("dest-dropdown", "value"),
-    State("dest-results-store", "data"),
+    Output("dest-search-results-data", "data", allow_duplicate=True),
+    Output("dest-input", "value"),
+    Input({"type": "dest-search-result", "index": dash.ALL}, "n_clicks"),
+    State("dest-search-results-data", "data"),
     prevent_initial_call=True,
 )
-def select_dest(selected_index: str | None, results_data: list[dict]) -> tuple:
-    """Handle destination selection from dropdown."""
-    if selected_index is None or not results_data:
+def select_dest(n_clicks: list[int | None], search_results_data: list[dict]) -> tuple:
+    """Handle destination article selection from search results."""
+    if not n_clicks or all(c is None or c == 0 for c in n_clicks):
         raise PreventUpdate
 
-    idx = int(selected_index)
-    if idx >= len(results_data):
+    ctx = dash.callback_context
+    triggered_id = ctx.triggered_id
+    if not triggered_id:
         raise PreventUpdate
 
-    data = results_data[idx]
+    clicked_index = triggered_id.get("index")
+    if clicked_index is None or clicked_index >= len(search_results_data):
+        raise PreventUpdate
 
-    return (
-        data,
-        None,  # Clear the results container
-        data.get("title", ""),
-    )
+    if n_clicks[clicked_index] is None or n_clicks[clicked_index] == 0:
+        raise PreventUpdate
+
+    selected_data = search_results_data[clicked_index]
+
+    return selected_data, [], ""
+
+
+# ============================================================================
+# CALLBACKS - Preview Cards (render selected articles)
+# ============================================================================
 
 
 @callback(
@@ -718,10 +680,19 @@ def update_preview(origin_data: dict | None, dest_data: dict | None) -> list:
         create_preview_card(origin_data, False),
         html.Div(
             "→",
-            style={"fontSize": "24px", "color": COLORS["slate"], "alignSelf": "center"},
+            style={
+                "fontSize": "24px",
+                "color": COLORS["slate"],
+                "alignSelf": "center",
+            },
         ),
         create_preview_card(dest_data, True),
     ]
+
+
+# ============================================================================
+# CALLBACKS - Tee Off Button
+# ============================================================================
 
 
 @callback(
@@ -737,6 +708,11 @@ def toggle_button(origin_data: dict | None, dest_data: dict | None) -> tuple:
     if can_tee_off:
         return False, BUTTON_STYLE
     return True, BUTTON_DISABLED_STYLE
+
+
+# ============================================================================
+# CALLBACKS - Run Agent
+# ============================================================================
 
 
 @callback(
@@ -764,7 +740,6 @@ def run_agent(
     if n_clicks is None or not origin_data or not dest_data:
         raise PreventUpdate
 
-    # Show spinner
     loading_style = {**SPINNER_STYLE, "display": "block"}
     result_style = {**RESULT_CONTAINER_STYLE, "display": "none"}
 
@@ -772,11 +747,9 @@ def run_agent(
         origin_key = origin_data.get("key")
         dest_key = dest_data.get("key")
 
-        # Use default variant
         variant = VARIANTS[0]
         agent = build_agent(variant)
 
-        # Run the agent with usage limits
         deps = WikiGolfDeps(origin=origin_key, destination=dest_key)
 
         async def run():
@@ -789,7 +762,7 @@ def run_agent(
                 ),
             )
 
-        result = asyncio.run(run())
+        asyncio.run(run())
         path = deps.path
 
         if not path:
@@ -802,7 +775,6 @@ def run_agent(
                 {**ERROR_STYLE, "display": "block"},
             )
 
-        # Build path display
         path_elements = []
         for i, step in enumerate(path):
             is_dest = i == len(path) - 1
@@ -826,7 +798,7 @@ def run_agent(
             {**ERROR_STYLE, "display": "none"},
         )
 
-    except Exception as e:
+    except Exception:
         return (
             {**SPINNER_STYLE, "display": "none"},
             result_style,
