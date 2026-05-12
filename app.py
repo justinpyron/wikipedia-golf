@@ -33,6 +33,10 @@ MAX_LLM_REQUESTS = 30
 # Number of search results to display
 SEARCH_RESULTS_LIMIT = 5
 
+# ============================================================================
+# STYLES & THEME
+# ============================================================================
+
 # Augusta-inspired color palette
 COLORS = {
     "whisper": "#F8F7F4",
@@ -46,13 +50,6 @@ COLORS = {
     "light_mist": "#F0EFED",
 }
 
-app = Dash(
-    __name__,
-    title="Wikipedia Golf",
-    suppress_callback_exceptions=True,
-)
-
-# Styles
 CONTAINER_STYLE = {
     "maxWidth": "900px",
     "margin": "0 auto",
@@ -368,12 +365,16 @@ def create_selected_display(
     )
 
 
-# CSS animations via inline style tag since Dash doesn't support index_string well with debug mode
-# We'll add a clientside callback or use dcc.Store to trigger CSS classes
-
 # ============================================================================
 # LAYOUT
 # ============================================================================
+
+
+app = Dash(
+    __name__,
+    title="Wikipedia Golf",
+    suppress_callback_exceptions=True,
+)
 
 app.layout = html.Div(
     [
