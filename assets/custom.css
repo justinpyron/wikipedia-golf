@@ -109,22 +109,18 @@
     transform: rotate(90deg);
 }
 
-/* About content panel - overlay style */
+/* About content panel - inline, pushes content down */
 .about-content {
-    position: absolute;
-    top: calc(100% + 8px);
-    left: 50%;
-    transform: translateX(-50%);
-    width: 480px;
+    width: 420px;
     max-width: 90vw;
+    margin: 1rem auto 0;
     padding: 1.25rem;
     background-color: #FFFFFF;
     border: 1px solid #E5E3DF;
-    border-radius: 4px; /* Match pill radius */
+    border-radius: 4px;
     text-align: left;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
     animation: fadeIn 0.2s ease forwards;
-    z-index: 1000;
 }
 
 .about-text {
@@ -146,22 +142,18 @@
     text-decoration: underline;
 }
 
-/* Settings content panel - overlay style, wider */
+/* Settings content panel - inline, pushes content down */
 .settings-content {
-    position: absolute;
-    top: calc(100% + 8px);
-    left: 50%;
-    transform: translateX(-50%);
-    width: 420px; /* Wider than before */
+    width: 420px;
     max-width: 90vw;
+    margin: 1rem auto 0;
     padding: 1rem 1.25rem 1.25rem;
     background-color: #FFFFFF;
     border: 1px solid #E5E3DF;
-    border-radius: 4px; /* Match pill radius */
+    border-radius: 4px;
     text-align: left;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
     animation: fadeIn 0.2s ease forwards;
-    z-index: 1000;
 }
 
 .settings-label {
