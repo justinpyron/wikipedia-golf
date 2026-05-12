@@ -46,9 +46,10 @@
    Augusta Pill Buttons & Collapsible Sections
    ============================================================ */
 
-/* Container for pill details elements */
+/* Container for pill details elements - needs positioning context */
 .pill-details {
     display: inline-block;
+    position: relative;
 }
 
 /* Remove default details marker */
@@ -59,7 +60,7 @@
     display: none;
 }
 
-/* Augusta-styled pill button */
+/* Augusta-styled pill button - match search input radius */
 .augusta-pill {
     display: inline-flex;
     align-items: center;
@@ -73,7 +74,7 @@
     color: #5A5A5A; /* Slate */
     background-color: #FFFFFF;
     border: 1px solid #E5E3DF; /* Mist */
-    border-radius: 999px;
+    border-radius: 4px; /* Match search inputs */
     cursor: pointer;
     transition: all 0.2s ease;
     user-select: none;
@@ -108,17 +109,22 @@
     transform: rotate(90deg);
 }
 
-/* About content panel */
+/* About content panel - overlay style */
 .about-content {
-    max-width: 480px;
-    margin: 1rem auto 0;
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    width: 480px;
+    max-width: 90vw;
     padding: 1.25rem;
     background-color: #FFFFFF;
     border: 1px solid #E5E3DF;
-    border-radius: 8px;
+    border-radius: 4px; /* Match pill radius */
     text-align: left;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     animation: fadeIn 0.2s ease forwards;
+    z-index: 1000;
 }
 
 .about-text {
@@ -140,17 +146,22 @@
     text-decoration: underline;
 }
 
-/* Settings content panel */
+/* Settings content panel - overlay style, wider */
 .settings-content {
-    max-width: 320px;
-    margin: 1rem auto 0;
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    width: 420px; /* Wider than before */
+    max-width: 90vw;
     padding: 1rem 1.25rem 1.25rem;
     background-color: #FFFFFF;
     border: 1px solid #E5E3DF;
-    border-radius: 8px;
+    border-radius: 4px; /* Match pill radius */
     text-align: left;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     animation: fadeIn 0.2s ease forwards;
+    z-index: 1000;
 }
 
 .settings-label {
