@@ -15,7 +15,7 @@ from dotenv import load_dotenv
 from pydantic_ai import UsageLimits
 
 from agent import WikiGolfDeps, build_agent
-from variants import VARIANTS
+from variants import SYSTEM_PROMPT_V1_0, VARIANTS, AgentVariant
 from wiki import find_articles
 
 load_dotenv()
@@ -1096,6 +1096,8 @@ def toggle_button(origin_data: dict | None, dest_data: dict | None) -> tuple:
     Input("tee-off-button", "n_clicks"),
     State("origin-data", "data"),
     State("dest-data", "data"),
+    State("selected-llm", "data"),
+    State("selected-temperature", "data"),
     running=[
         (Output("tee-off-button", "disabled"), True, False),
         (Output("tee-off-button", "style"), BUTTON_DISABLED_STYLE, BUTTON_STYLE),
@@ -1106,6 +1108,8 @@ def run_agent(
     n_clicks: int | None,
     origin_data: dict | None,
     dest_data: dict | None,
+    selected_llm: str | None,
+    selected_temperature: float | None,
 ) -> tuple:
     """Run the Wikipedia Golf agent and display results."""
     if n_clicks is None or not origin_data or not dest_data:
@@ -1118,7 +1122,17 @@ def run_agent(
         origin_key = origin_data.get("key")
         dest_key = dest_data.get("key")
 
-        variant = VARIANTS[1]
+        # Use selected settings or defaults
+        model = selected_llm or "openai:gpt-5.4-mini"
+        temperature = selected_temperature if selected_temperature is not None else 0.7
+
+        # Construct fresh AgentVariant with user settings
+        variant = AgentVariant(
+            name="user_configured",
+            model=model,
+            system_prompt=SYSTEM_PROMPT_V1_0,
+            temperature=temperature,
+        )
         agent = build_agent(variant)
 
         deps = WikiGolfDeps(origin=origin_key, destination=dest_key)
