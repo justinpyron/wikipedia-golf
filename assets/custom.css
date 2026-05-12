@@ -464,20 +464,15 @@
 
 /* Collapse Panel - Smooth slide out animation */
 .wg-collapse {
-    transition: opacity 0.35s ease-out, transform 0.35s ease-out, height 0.35s ease-out;
+    transition: max-height 0.35s ease-out, transform 0.35s ease-out;
     overflow: hidden;
-}
-
-.wg-collapse:not(.show) {
-    opacity: 0;
+    max-height: 0;
     transform: translateY(-8px);
-    height: 0;
 }
 
 .wg-collapse.show {
-    opacity: 1;
+    max-height: 500px;
     transform: translateY(0);
-    height: auto;
 }
 
 /* Panel Content */
