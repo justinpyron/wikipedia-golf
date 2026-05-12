@@ -130,7 +130,7 @@ app.layout = html.Div(
                                             className="wg-about-text",
                                         ),
                                         html.A(
-                                            html.B("Learn more about Wikipedia Golf →"),
+                                            html.B("Learn more →"),
                                             href="https://en.wikipedia.org/wiki/Wikipedia:Wiki_Game",
                                             target="_blank",
                                             className="wg-about-link",
