@@ -537,44 +537,70 @@ app.layout = html.Div(
                         html.Div(
                             [
                                 html.Div("Settings", style=DROPDOWN_HEADER_STYLE),
-                                # LLM Selection
+                                # LLM Selection - Radio with image labels
                                 html.Div("Model", style=SETTINGS_LABEL_STYLE),
-                                dcc.Dropdown(
-                                    id="llm-dropdown",
+                                dcc.RadioItems(
+                                    id="llm-radio",
                                     options=[
                                         {
-                                            "label": "GPT-5.4 Mini",
+                                            "label": [
+                                                html.Img(
+                                                    src="/assets/logo_open_ai.png",
+                                                    height=20,
+                                                    style={"marginRight": "10px"},
+                                                ),
+                                                html.Span(
+                                                    "GPT-5.4 Mini",
+                                                    style={
+                                                        "fontSize": "14px",
+                                                        "lineHeight": "20px",
+                                                    },
+                                                ),
+                                            ],
                                             "value": "openai:gpt-5.4-mini",
                                         },
                                         {
-                                            "label": "Claude Haiku 4.5",
+                                            "label": [
+                                                html.Img(
+                                                    src="/assets/logo_open_ai.png",
+                                                    height=20,
+                                                    style={"marginRight": "10px"},
+                                                ),
+                                                html.Span(
+                                                    "Claude Haiku 4.5",
+                                                    style={
+                                                        "fontSize": "14px",
+                                                        "lineHeight": "20px",
+                                                    },
+                                                ),
+                                            ],
                                             "value": "anthropic:claude-haiku-4-5-20251001",
                                         },
                                     ],
                                     value="openai:gpt-5.4-mini",
-                                    clearable=False,
-                                    style={"fontSize": "14px"},
+                                    labelStyle={
+                                        "display": "flex",
+                                        "alignItems": "center",
+                                        "marginBottom": "2px",
+                                        "cursor": "pointer",
+                                        "padding": "6px 0",
+                                    },
+                                    inputStyle={
+                                        "marginRight": "10px",
+                                        "marginTop": "0",
+                                        "marginBottom": "0",
+                                    },
                                 ),
                                 # Temperature Slider
                                 html.Div("Temperature", style=SETTINGS_LABEL_STYLE),
                                 dcc.Slider(
                                     id="temperature-slider",
-                                    min=0,
-                                    max=1,
+                                    min=0.0,
+                                    max=1.0,
                                     step=0.1,
                                     value=0.7,
-                                    marks=None,
-                                    tooltip={
-                                        "placement": "bottom",
-                                        "always_visible": False,
-                                    },
-                                ),
-                                html.Div(
-                                    [
-                                        html.Span("0"),
-                                        html.Span("1"),
-                                    ],
-                                    style=SLIDER_LABELS_STYLE,
+                                    marks={i / 10: str(i / 10) for i in range(11)},
+                                    allow_direct_input=False,
                                 ),
                             ],
                             id="settings-dropdown",
@@ -1125,8 +1151,6 @@ def run_agent(
         # Use selected settings or defaults
         model = selected_llm or "openai:gpt-5.4-mini"
         temperature = selected_temperature if selected_temperature is not None else 0.7
-
-        # Construct fresh AgentVariant with user settings
         variant = AgentVariant(
             name="user_configured",
             model=model,
@@ -1278,7 +1302,7 @@ def toggle_settings(
 
 @callback(
     Output("selected-llm", "data"),
-    Input("llm-dropdown", "value"),
+    Input("llm-radio", "value"),
     prevent_initial_call=True,
 )
 def store_llm_selection(value: str | None) -> str | None:
