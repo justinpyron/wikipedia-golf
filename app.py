@@ -288,7 +288,7 @@ app.layout = html.Div(
                                                     "GPT-5.4 Mini",
                                                     style={
                                                         "fontSize": "14px",
-                                                        "lineHeight": "20px",
+                                                        "lineHeight": "1",
                                                     },
                                                 ),
                                             ],
@@ -305,7 +305,7 @@ app.layout = html.Div(
                                                     "Claude Haiku 4.5",
                                                     style={
                                                         "fontSize": "14px",
-                                                        "lineHeight": "20px",
+                                                        "lineHeight": "1",
                                                     },
                                                 ),
                                             ],
