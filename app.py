@@ -123,37 +123,29 @@ app.layout = html.Div(
                                 ),
                                 html.Div(
                                     [
+                                        # Section 1: What is Wikipedia Golf
                                         html.P(
                                             "Wikipedia Golf is the game of navigating from one Wikipedia article to another "
                                             "using the fewest links possible.",
                                             className="wg-about-text",
                                         ),
-                                        html.Div(
-                                            [
-                                                html.A(
-                                                    html.B(
-                                                        "Learn more about Wikipedia Golf →"
-                                                    ),
-                                                    href="https://en.wikipedia.org/wiki/Wikipedia:Wiki_Game",
-                                                    target="_blank",
-                                                    className="wg-about-link",
-                                                ),
-                                            ],
-                                            style={"marginBottom": "12px"},
+                                        html.A(
+                                            html.B("Learn more about Wikipedia Golf →"),
+                                            href="https://en.wikipedia.org/wiki/Wikipedia:Wiki_Game",
+                                            target="_blank",
+                                            className="wg-about-link",
                                         ),
+                                        # Section 2: About this app
+                                        html.Div(style={"height": "40px"}),
                                         html.P(
                                             "In this app, an AI agent plays the game, based on start/end articles you set.",
                                             className="wg-about-text",
                                         ),
-                                        html.Div(
-                                            [
-                                                html.A(
-                                                    html.B("View source code →"),
-                                                    href="https://github.com/justinpyron/wikipedia-golf",
-                                                    target="_blank",
-                                                    className="wg-about-link",
-                                                ),
-                                            ],
+                                        html.A(
+                                            html.B("View source code →"),
+                                            href="https://github.com/justinpyron/wikipedia-golf",
+                                            target="_blank",
+                                            className="wg-about-link",
                                         ),
                                     ],
                                     className="wg-about-content",
