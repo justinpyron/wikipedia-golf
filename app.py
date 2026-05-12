@@ -400,15 +400,12 @@ app.layout = html.Div(
                                             "using the fewest links possible.",
                                             className="about-text",
                                         ),
-                                        html.P(
-                                            "This application uses an AI agent built with Pydantic AI to find optimal paths. "
-                                            "The agent explores article links strategically, seeking conceptual bridges between topics.",
-                                            className="about-text",
-                                        ),
                                         html.Div(
                                             [
                                                 html.A(
-                                                    "Learn more about Wikipedia Golf →",
+                                                    html.B(
+                                                        "Learn more about Wikipedia Golf →"
+                                                    ),
                                                     href="https://en.wikipedia.org/wiki/Wikipedia:Wiki_Game",
                                                     target="_blank",
                                                     className="about-link",
@@ -416,10 +413,14 @@ app.layout = html.Div(
                                             ],
                                             style={"marginBottom": "12px"},
                                         ),
+                                        html.P(
+                                            "In this app, an AI agent plays the game, based on start/end articles you set.",
+                                            className="about-text",
+                                        ),
                                         html.Div(
                                             [
                                                 html.A(
-                                                    "View source code →",
+                                                    html.B("View source code →"),
                                                     href="https://github.com/justinpyron/wikipedia-golf",
                                                     target="_blank",
                                                     className="about-link",
