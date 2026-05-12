@@ -434,6 +434,7 @@
     cursor: pointer;
     transition: all 0.2s ease;
     user-select: none;
+    line-height: 1;
 }
 
 .wg-pill:hover {
@@ -453,9 +454,22 @@
 }
 
 .wg-pill-icon {
-    display: inline-block;
-    font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    line-height: 1;
+    height: 1em;
+    vertical-align: middle;
+    margin-top: -2px;
     transition: transform 0.3s ease;
+}
+
+.wg-pill-text {
+    display: inline-flex;
+    align-items: center;
+    line-height: 1;
+    height: 1em;
 }
 
 .wg-pill-details[open] .wg-pill-icon:last-child {

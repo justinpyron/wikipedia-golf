@@ -117,7 +117,7 @@ app.layout = html.Div(
                                 html.Summary(
                                     [
                                         html.Span("ℹ", className="wg-pill-icon"),
-                                        html.Span("About"),
+                                        html.Span("About", className="wg-pill-text"),
                                     ],
                                     className="wg-pill",
                                 ),
@@ -267,7 +267,7 @@ app.layout = html.Div(
                         html.Summary(
                             [
                                 html.Span("⚙", className="wg-pill-icon"),
-                                html.Span("Settings"),
+                                html.Span("Settings", className="wg-pill-text"),
                             ],
                             className="wg-pill",
                         ),
