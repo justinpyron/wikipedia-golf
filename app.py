@@ -73,11 +73,96 @@ TITLE_STYLE = {
     "fontFamily": "'Crimson Text', Georgia, serif",
 }
 
-SUBTITLE_STYLE = {
-    "fontSize": "14px",
+UTILITY_LINKS_CONTAINER_STYLE = {
+    "display": "flex",
+    "justifyContent": "center",
+    "alignItems": "center",
+    "gap": "12px",
+    "marginTop": "16px",
+}
+
+UTILITY_LINK_STYLE = {
+    "fontSize": "13px",
     "color": COLORS["slate"],
-    "margin": "0",
-    "fontWeight": "400",
+    "cursor": "pointer",
+    "transition": "color 0.15s ease",
+    "userSelect": "none",
+}
+
+DIVIDER_STYLE = {
+    "fontSize": "13px",
+    "color": COLORS["mist"],
+    "userSelect": "none",
+}
+
+DROPDOWN_CONTAINER_STYLE = {
+    "position": "absolute",
+    "top": "100%",
+    "left": "50%",
+    "transform": "translateX(-50%)",
+    "marginTop": "8px",
+    "width": "320px",
+    "backgroundColor": COLORS["white"],
+    "border": f"1px solid {COLORS['mist']}",
+    "borderRadius": "4px",
+    "padding": "20px",
+    "boxShadow": "0 4px 12px rgba(0,0,0,0.15)",
+    "zIndex": "1000",
+}
+
+DROPDOWN_HEADER_STYLE = {
+    "fontSize": "12px",
+    "fontWeight": "600",
+    "color": COLORS["slate"],
+    "textTransform": "uppercase",
+    "letterSpacing": "0.1em",
+    "marginBottom": "12px",
+}
+
+DROPDOWN_TEXT_STYLE = {
+    "fontSize": "14px",
+    "color": COLORS["charcoal"],
+    "lineHeight": "1.6",
+    "marginBottom": "12px",
+}
+
+DROPDOWN_LINK_STYLE = {
+    "fontSize": "14px",
+    "color": COLORS["augusta_green"],
+    "textDecoration": "none",
+    "transition": "color 0.15s ease",
+}
+
+SETTINGS_LABEL_STYLE = {
+    "fontSize": "12px",
+    "fontWeight": "600",
+    "color": COLORS["slate"],
+    "marginBottom": "6px",
+    "marginTop": "16px",
+}
+
+SETTINGS_SELECT_STYLE = {
+    "width": "100%",
+    "height": "40px",
+    "padding": "0 12px",
+    "fontSize": "14px",
+    "border": f"1px solid {COLORS['mist']}",
+    "borderRadius": "4px",
+    "backgroundColor": COLORS["white"],
+    "color": COLORS["charcoal"],
+    "outline": "none",
+}
+
+SLIDER_CONTAINER_STYLE = {
+    "marginTop": "8px",
+}
+
+SLIDER_LABELS_STYLE = {
+    "display": "flex",
+    "justifyContent": "space-between",
+    "fontSize": "12px",
+    "color": COLORS["slate"],
+    "marginTop": "4px",
 }
 
 SECTION_LABEL_STYLE = {
@@ -370,10 +455,16 @@ def create_selected_display(
 # ============================================================================
 
 
+# Load Google Fonts for the Augusta aesthetic
+external_stylesheets = [
+    "https://fonts.googleapis.com/css2?family=Crimson+Text:wght@400;600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap",
+]
+
 app = Dash(
     __name__,
     title="Wikipedia Golf",
     suppress_callback_exceptions=True,
+    external_stylesheets=external_stylesheets,
 )
 
 app.layout = html.Div(
@@ -382,7 +473,116 @@ app.layout = html.Div(
         html.Div(
             [
                 html.H1("W I K I P E D I A   G O L F", style=TITLE_STYLE),
-                html.P("with an AI agent", style=SUBTITLE_STYLE),
+                # Utility links with dropdowns
+                html.Div(
+                    [
+                        html.Div(
+                            [
+                                html.Span(
+                                    "About",
+                                    id="about-link",
+                                    style=UTILITY_LINK_STYLE,
+                                    n_clicks=0,
+                                ),
+                                html.Span("·", style=DIVIDER_STYLE),
+                                html.Span(
+                                    "Settings",
+                                    id="settings-link",
+                                    style=UTILITY_LINK_STYLE,
+                                    n_clicks=0,
+                                ),
+                            ],
+                            style=UTILITY_LINKS_CONTAINER_STYLE,
+                        ),
+                        # About dropdown
+                        html.Div(
+                            [
+                                html.Div("About", style=DROPDOWN_HEADER_STYLE),
+                                html.P(
+                                    "Wikipedia Golf is the game of navigating from one Wikipedia article to another "
+                                    "using the fewest links possible.",
+                                    style=DROPDOWN_TEXT_STYLE,
+                                ),
+                                html.P(
+                                    "This application uses an AI agent built with Pydantic AI to find optimal paths. "
+                                    "The agent explores article links strategically, seeking conceptual bridges between topics.",
+                                    style=DROPDOWN_TEXT_STYLE,
+                                ),
+                                html.Div(
+                                    [
+                                        html.A(
+                                            "Learn more about Wikipedia Golf →",
+                                            href="https://en.wikipedia.org/wiki/Wikipedia:Wiki_Game",
+                                            target="_blank",
+                                            style=DROPDOWN_LINK_STYLE,
+                                        ),
+                                    ],
+                                    style={"marginBottom": "12px"},
+                                ),
+                                html.Div(
+                                    [
+                                        html.A(
+                                            "View source code →",
+                                            href="https://github.com/justinpyron/wikipedia-golf",
+                                            target="_blank",
+                                            style=DROPDOWN_LINK_STYLE,
+                                        ),
+                                    ],
+                                ),
+                            ],
+                            id="about-dropdown",
+                            style={**DROPDOWN_CONTAINER_STYLE, "display": "none"},
+                        ),
+                        # Settings dropdown
+                        html.Div(
+                            [
+                                html.Div("Settings", style=DROPDOWN_HEADER_STYLE),
+                                # LLM Selection
+                                html.Div("Model", style=SETTINGS_LABEL_STYLE),
+                                dcc.Dropdown(
+                                    id="llm-dropdown",
+                                    options=[
+                                        {
+                                            "label": "GPT-5.4 Mini",
+                                            "value": "openai:gpt-5.4-mini",
+                                        },
+                                        {
+                                            "label": "Claude Haiku 4.5",
+                                            "value": "anthropic:claude-haiku-4-5-20251001",
+                                        },
+                                    ],
+                                    value="openai:gpt-5.4-mini",
+                                    clearable=False,
+                                    style={"fontSize": "14px"},
+                                ),
+                                # Temperature Slider
+                                html.Div("Temperature", style=SETTINGS_LABEL_STYLE),
+                                dcc.Slider(
+                                    id="temperature-slider",
+                                    min=0,
+                                    max=1,
+                                    step=0.1,
+                                    value=0.7,
+                                    marks=None,
+                                    tooltip={
+                                        "placement": "bottom",
+                                        "always_visible": False,
+                                    },
+                                ),
+                                html.Div(
+                                    [
+                                        html.Span("0"),
+                                        html.Span("1"),
+                                    ],
+                                    style=SLIDER_LABELS_STYLE,
+                                ),
+                            ],
+                            id="settings-dropdown",
+                            style={**DROPDOWN_CONTAINER_STYLE, "display": "none"},
+                        ),
+                    ],
+                    style={"position": "relative"},
+                ),
             ],
             style=HEADER_STYLE,
         ),
@@ -498,6 +698,11 @@ app.layout = html.Div(
         dcc.Store(id="dest-search-results-data", data=[]),
         dcc.Store(id="origin-data", data=None),
         dcc.Store(id="dest-data", data=None),
+        # Dropdown and Settings Stores
+        dcc.Store(id="about-open", data=False),
+        dcc.Store(id="settings-open", data=False),
+        dcc.Store(id="selected-llm", data="openai:gpt-5.4-mini"),
+        dcc.Store(id="selected-temperature", data=0.7),
         # Tee Off Button
         html.Button(
             "Tee Off",
@@ -973,6 +1178,108 @@ def run_agent(
             "The agent encountered an error. Please try again.",
             {**ERROR_STYLE, "display": "block"},
         )
+
+
+# ============================================================================
+# CALLBACKS - Dropdown Toggles
+# ============================================================================
+
+
+@callback(
+    Output("about-open", "data"),
+    Output("about-dropdown", "style"),
+    Output("settings-open", "data", allow_duplicate=True),
+    Output("settings-dropdown", "style", allow_duplicate=True),
+    Input("about-link", "n_clicks"),
+    State("about-open", "data"),
+    State("settings-open", "data"),
+    prevent_initial_call=True,
+)
+def toggle_about(
+    n_clicks: int | None,
+    about_open: bool,
+    settings_open: bool,
+) -> tuple:
+    """Toggle About dropdown and close Settings if open."""
+    if not n_clicks:
+        raise PreventUpdate
+
+    new_about_open = not about_open
+
+    # Close settings if opening about
+    new_settings_open = False if new_about_open else settings_open
+
+    about_style = {
+        **DROPDOWN_CONTAINER_STYLE,
+        "display": "block" if new_about_open else "none",
+    }
+    settings_style = {
+        **DROPDOWN_CONTAINER_STYLE,
+        "display": "block" if new_settings_open else "none",
+    }
+
+    return new_about_open, about_style, new_settings_open, settings_style
+
+
+@callback(
+    Output("settings-open", "data"),
+    Output("settings-dropdown", "style"),
+    Output("about-open", "data", allow_duplicate=True),
+    Output("about-dropdown", "style", allow_duplicate=True),
+    Input("settings-link", "n_clicks"),
+    State("settings-open", "data"),
+    State("about-open", "data"),
+    prevent_initial_call=True,
+)
+def toggle_settings(
+    n_clicks: int | None,
+    settings_open: bool,
+    about_open: bool,
+) -> tuple:
+    """Toggle Settings dropdown and close About if open."""
+    if not n_clicks:
+        raise PreventUpdate
+
+    new_settings_open = not settings_open
+
+    # Close about if opening settings
+    new_about_open = False if new_settings_open else about_open
+
+    settings_style = {
+        **DROPDOWN_CONTAINER_STYLE,
+        "display": "block" if new_settings_open else "none",
+    }
+    about_style = {
+        **DROPDOWN_CONTAINER_STYLE,
+        "display": "block" if new_about_open else "none",
+    }
+
+    return new_settings_open, settings_style, new_about_open, about_style
+
+
+# ============================================================================
+# CALLBACKS - Settings Persistence
+# ============================================================================
+
+
+@callback(
+    Output("selected-llm", "data"),
+    Input("llm-dropdown", "value"),
+    prevent_initial_call=True,
+)
+def store_llm_selection(value: str | None) -> str | None:
+    """Store selected LLM model."""
+    return value
+
+
+@callback(
+    Output("selected-temperature", "data"),
+    Input("temperature-slider", "value"),
+    prevent_initial_call=True,
+)
+def store_temperature(value: float | None) -> float | None:
+    """Store temperature setting."""
+    return value
 
 
 if __name__ == "__main__":
