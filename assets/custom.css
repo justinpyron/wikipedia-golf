@@ -42,19 +42,127 @@
     color: #3A3A3A !important;
 }
 
-/* Utility links hover effect */
-#about-link:hover,
-#settings-link:hover {
-    color: #1E4D2B !important;
+/* ============================================================
+   Augusta Pill Buttons & Collapsible Sections
+   ============================================================ */
+
+/* Container for pill details elements */
+.pill-details {
+    display: inline-block;
 }
 
-/* Dropdown links hover effect */
-#about-dropdown a:hover {
-    color: #2D5A3D !important;
+/* Remove default details marker */
+.pill-details > summary {
+    list-style: none;
+}
+.pill-details > summary::-webkit-details-marker {
+    display: none;
 }
 
-/* Dropdown animation */
-#about-dropdown,
-#settings-dropdown {
+/* Augusta-styled pill button */
+.augusta-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.45rem 1rem;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #5A5A5A; /* Slate */
+    background-color: #FFFFFF;
+    border: 1px solid #E5E3DF; /* Mist */
+    border-radius: 999px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.augusta-pill:hover {
+    color: #1A1A1A; /* Charcoal */
+    border-color: #D4D2CE;
+    background-color: #F8F7F4; /* Whisper White */
+}
+
+/* Active state when details is open */
+.pill-details[open] .augusta-pill {
+    color: #1E4D2B; /* Augusta Green */
+    background-color: rgba(30, 77, 43, 0.08);
+    border-color: #1E4D2B;
+}
+
+.pill-details[open] .augusta-pill:hover {
+    background-color: rgba(30, 77, 43, 0.12);
+}
+
+/* Icon inside pill */
+.pill-icon {
+    display: inline-block;
+    font-size: 0.9rem;
+    transition: transform 0.3s ease;
+}
+
+/* Rotate gear icon when settings is open */
+.pill-details[open] .pill-icon:last-child {
+    transform: rotate(90deg);
+}
+
+/* About content panel */
+.about-content {
+    max-width: 480px;
+    margin: 1rem auto 0;
+    padding: 1.25rem;
+    background-color: #FFFFFF;
+    border: 1px solid #E5E3DF;
+    border-radius: 8px;
+    text-align: left;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
     animation: fadeIn 0.2s ease forwards;
+}
+
+.about-text {
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: #5A5A5A; /* Slate */
+    margin: 0 0 0.75rem 0;
+}
+
+.about-link {
+    font-size: 0.9rem;
+    color: #1E4D2B; /* Augusta Green */
+    text-decoration: none;
+    transition: color 0.15s ease;
+}
+
+.about-link:hover {
+    color: #2D5A3D; /* Billiard Green */
+    text-decoration: underline;
+}
+
+/* Settings content panel */
+.settings-content {
+    max-width: 320px;
+    margin: 1rem auto 0;
+    padding: 1rem 1.25rem 1.25rem;
+    background-color: #FFFFFF;
+    border: 1px solid #E5E3DF;
+    border-radius: 8px;
+    text-align: left;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+    animation: fadeIn 0.2s ease forwards;
+}
+
+.settings-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #5A5A5A; /* Slate */
+    margin-bottom: 0.5rem;
+    margin-top: 1rem;
+}
+
+.settings-label:first-of-type {
+    margin-top: 0;
 }

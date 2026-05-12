@@ -73,98 +73,6 @@ TITLE_STYLE = {
     "fontFamily": "'Crimson Text', Georgia, serif",
 }
 
-UTILITY_LINKS_CONTAINER_STYLE = {
-    "display": "flex",
-    "justifyContent": "center",
-    "alignItems": "center",
-    "gap": "12px",
-    "marginTop": "16px",
-}
-
-UTILITY_LINK_STYLE = {
-    "fontSize": "13px",
-    "color": COLORS["slate"],
-    "cursor": "pointer",
-    "transition": "color 0.15s ease",
-    "userSelect": "none",
-}
-
-DIVIDER_STYLE = {
-    "fontSize": "13px",
-    "color": COLORS["mist"],
-    "userSelect": "none",
-}
-
-DROPDOWN_CONTAINER_STYLE = {
-    "position": "absolute",
-    "top": "100%",
-    "left": "50%",
-    "transform": "translateX(-50%)",
-    "marginTop": "8px",
-    "width": "320px",
-    "backgroundColor": COLORS["white"],
-    "border": f"1px solid {COLORS['mist']}",
-    "borderRadius": "4px",
-    "padding": "20px",
-    "boxShadow": "0 4px 12px rgba(0,0,0,0.15)",
-    "zIndex": "1000",
-}
-
-DROPDOWN_HEADER_STYLE = {
-    "fontSize": "12px",
-    "fontWeight": "600",
-    "color": COLORS["slate"],
-    "textTransform": "uppercase",
-    "letterSpacing": "0.1em",
-    "marginBottom": "12px",
-}
-
-DROPDOWN_TEXT_STYLE = {
-    "fontSize": "14px",
-    "color": COLORS["charcoal"],
-    "lineHeight": "1.6",
-    "marginBottom": "12px",
-}
-
-DROPDOWN_LINK_STYLE = {
-    "fontSize": "14px",
-    "color": COLORS["augusta_green"],
-    "textDecoration": "none",
-    "transition": "color 0.15s ease",
-}
-
-SETTINGS_LABEL_STYLE = {
-    "fontSize": "12px",
-    "fontWeight": "600",
-    "color": COLORS["slate"],
-    "marginBottom": "6px",
-    "marginTop": "16px",
-}
-
-SETTINGS_SELECT_STYLE = {
-    "width": "100%",
-    "height": "40px",
-    "padding": "0 12px",
-    "fontSize": "14px",
-    "border": f"1px solid {COLORS['mist']}",
-    "borderRadius": "4px",
-    "backgroundColor": COLORS["white"],
-    "color": COLORS["charcoal"],
-    "outline": "none",
-}
-
-SLIDER_CONTAINER_STYLE = {
-    "marginTop": "8px",
-}
-
-SLIDER_LABELS_STYLE = {
-    "display": "flex",
-    "justifyContent": "space-between",
-    "fontSize": "12px",
-    "color": COLORS["slate"],
-    "marginTop": "4px",
-}
-
 SECTION_LABEL_STYLE = {
     "fontSize": "12px",
     "fontWeight": "600",
@@ -473,141 +381,60 @@ app.layout = html.Div(
         html.Div(
             [
                 html.H1("W I K I P E D I A   G O L F", style=TITLE_STYLE),
-                # Utility links with dropdowns
+                # About Section - Collapsible pill below title
                 html.Div(
                     [
-                        html.Div(
+                        html.Details(
                             [
-                                html.Span(
-                                    "About",
-                                    id="about-link",
-                                    style=UTILITY_LINK_STYLE,
-                                    n_clicks=0,
-                                ),
-                                html.Span("·", style=DIVIDER_STYLE),
-                                html.Span(
-                                    "Settings",
-                                    id="settings-link",
-                                    style=UTILITY_LINK_STYLE,
-                                    n_clicks=0,
-                                ),
-                            ],
-                            style=UTILITY_LINKS_CONTAINER_STYLE,
-                        ),
-                        # About dropdown
-                        html.Div(
-                            [
-                                html.Div("About", style=DROPDOWN_HEADER_STYLE),
-                                html.P(
-                                    "Wikipedia Golf is the game of navigating from one Wikipedia article to another "
-                                    "using the fewest links possible.",
-                                    style=DROPDOWN_TEXT_STYLE,
-                                ),
-                                html.P(
-                                    "This application uses an AI agent built with Pydantic AI to find optimal paths. "
-                                    "The agent explores article links strategically, seeking conceptual bridges between topics.",
-                                    style=DROPDOWN_TEXT_STYLE,
+                                html.Summary(
+                                    [
+                                        html.Span("ℹ", className="pill-icon"),
+                                        html.Span("About"),
+                                    ],
+                                    className="augusta-pill",
                                 ),
                                 html.Div(
                                     [
-                                        html.A(
-                                            "Learn more about Wikipedia Golf →",
-                                            href="https://en.wikipedia.org/wiki/Wikipedia:Wiki_Game",
-                                            target="_blank",
-                                            style=DROPDOWN_LINK_STYLE,
+                                        html.P(
+                                            "Wikipedia Golf is the game of navigating from one Wikipedia article to another "
+                                            "using the fewest links possible.",
+                                            className="about-text",
                                         ),
-                                    ],
-                                    style={"marginBottom": "12px"},
-                                ),
-                                html.Div(
-                                    [
-                                        html.A(
-                                            "View source code →",
-                                            href="https://github.com/justinpyron/wikipedia-golf",
-                                            target="_blank",
-                                            style=DROPDOWN_LINK_STYLE,
+                                        html.P(
+                                            "This application uses an AI agent built with Pydantic AI to find optimal paths. "
+                                            "The agent explores article links strategically, seeking conceptual bridges between topics.",
+                                            className="about-text",
                                         ),
-                                    ],
-                                ),
-                            ],
-                            id="about-dropdown",
-                            style={**DROPDOWN_CONTAINER_STYLE, "display": "none"},
-                        ),
-                        # Settings dropdown
-                        html.Div(
-                            [
-                                html.Div("Settings", style=DROPDOWN_HEADER_STYLE),
-                                # LLM Selection - Radio with image labels
-                                html.Div("Model", style=SETTINGS_LABEL_STYLE),
-                                dcc.RadioItems(
-                                    id="llm-radio",
-                                    options=[
-                                        {
-                                            "label": [
-                                                html.Img(
-                                                    src="/assets/logo_open_ai.png",
-                                                    height=20,
-                                                    style={"marginRight": "10px"},
-                                                ),
-                                                html.Span(
-                                                    "GPT-5.4 Mini",
-                                                    style={
-                                                        "fontSize": "14px",
-                                                        "lineHeight": "20px",
-                                                    },
+                                        html.Div(
+                                            [
+                                                html.A(
+                                                    "Learn more about Wikipedia Golf →",
+                                                    href="https://en.wikipedia.org/wiki/Wikipedia:Wiki_Game",
+                                                    target="_blank",
+                                                    className="about-link",
                                                 ),
                                             ],
-                                            "value": "openai:gpt-5.4-mini",
-                                        },
-                                        {
-                                            "label": [
-                                                html.Img(
-                                                    src="/assets/logo_open_ai.png",
-                                                    height=20,
-                                                    style={"marginRight": "10px"},
-                                                ),
-                                                html.Span(
-                                                    "Claude Haiku 4.5",
-                                                    style={
-                                                        "fontSize": "14px",
-                                                        "lineHeight": "20px",
-                                                    },
+                                            style={"marginBottom": "12px"},
+                                        ),
+                                        html.Div(
+                                            [
+                                                html.A(
+                                                    "View source code →",
+                                                    href="https://github.com/justinpyron/wikipedia-golf",
+                                                    target="_blank",
+                                                    className="about-link",
                                                 ),
                                             ],
-                                            "value": "anthropic:claude-haiku-4-5-20251001",
-                                        },
+                                        ),
                                     ],
-                                    value="openai:gpt-5.4-mini",
-                                    labelStyle={
-                                        "display": "flex",
-                                        "alignItems": "center",
-                                        "marginBottom": "2px",
-                                        "cursor": "pointer",
-                                        "padding": "6px 0",
-                                    },
-                                    inputStyle={
-                                        "marginRight": "10px",
-                                        "marginTop": "0",
-                                        "marginBottom": "0",
-                                    },
-                                ),
-                                # Temperature Slider
-                                html.Div("Temperature", style=SETTINGS_LABEL_STYLE),
-                                dcc.Slider(
-                                    id="temperature-slider",
-                                    min=0.0,
-                                    max=1.0,
-                                    step=0.1,
-                                    value=0.7,
-                                    marks={i / 10: str(i / 10) for i in range(11)},
-                                    allow_direct_input=False,
+                                    className="about-content",
                                 ),
                             ],
-                            id="settings-dropdown",
-                            style={**DROPDOWN_CONTAINER_STYLE, "display": "none"},
+                            id="about-details",
+                            className="pill-details",
                         ),
                     ],
-                    style={"position": "relative"},
+                    style={"textAlign": "center", "marginTop": "24px"},
                 ),
             ],
             style=HEADER_STYLE,
@@ -724,9 +551,7 @@ app.layout = html.Div(
         dcc.Store(id="dest-search-results-data", data=[]),
         dcc.Store(id="origin-data", data=None),
         dcc.Store(id="dest-data", data=None),
-        # Dropdown and Settings Stores
-        dcc.Store(id="about-open", data=False),
-        dcc.Store(id="settings-open", data=False),
+        # Settings Stores
         dcc.Store(id="selected-llm", data="openai:gpt-5.4-mini"),
         dcc.Store(id="selected-temperature", data=0.7),
         # Tee Off Button
@@ -735,6 +560,92 @@ app.layout = html.Div(
             id="tee-off-button",
             style=BUTTON_DISABLED_STYLE,
             disabled=True,
+        ),
+        # Settings Section - Collapsible pill below Tee Off
+        html.Div(
+            [
+                html.Details(
+                    [
+                        html.Summary(
+                            [
+                                html.Span("⚙", className="pill-icon"),
+                                html.Span("Settings"),
+                            ],
+                            className="augusta-pill",
+                        ),
+                        html.Div(
+                            [
+                                html.Div("Model", className="settings-label"),
+                                dcc.RadioItems(
+                                    id="llm-radio",
+                                    options=[
+                                        {
+                                            "label": [
+                                                html.Img(
+                                                    src="/assets/logo_open_ai.png",
+                                                    height=20,
+                                                    style={"marginRight": "10px"},
+                                                ),
+                                                html.Span(
+                                                    "GPT-5.4 Mini",
+                                                    style={
+                                                        "fontSize": "14px",
+                                                        "lineHeight": "20px",
+                                                    },
+                                                ),
+                                            ],
+                                            "value": "openai:gpt-5.4-mini",
+                                        },
+                                        {
+                                            "label": [
+                                                html.Img(
+                                                    src="/assets/logo_open_ai.png",
+                                                    height=20,
+                                                    style={"marginRight": "10px"},
+                                                ),
+                                                html.Span(
+                                                    "Claude Haiku 4.5",
+                                                    style={
+                                                        "fontSize": "14px",
+                                                        "lineHeight": "20px",
+                                                    },
+                                                ),
+                                            ],
+                                            "value": "anthropic:claude-haiku-4-5-20251001",
+                                        },
+                                    ],
+                                    value="openai:gpt-5.4-mini",
+                                    labelStyle={
+                                        "display": "flex",
+                                        "alignItems": "center",
+                                        "marginBottom": "2px",
+                                        "cursor": "pointer",
+                                        "padding": "6px 0",
+                                    },
+                                    inputStyle={
+                                        "marginRight": "10px",
+                                        "marginTop": "0",
+                                        "marginBottom": "0",
+                                    },
+                                ),
+                                html.Div("Temperature", className="settings-label"),
+                                dcc.Slider(
+                                    id="temperature-slider",
+                                    min=0.0,
+                                    max=1.0,
+                                    step=0.1,
+                                    value=0.7,
+                                    marks={i / 10: str(i / 10) for i in range(11)},
+                                ),
+                            ],
+                            className="settings-content",
+                        ),
+                    ],
+                    id="settings-details",
+                    className="pill-details",
+                ),
+            ],
+            style={"textAlign": "center", "marginTop": "24px"},
         ),
         # Loading spinner
         html.Div(
@@ -1216,83 +1127,6 @@ def run_agent(
             "The agent encountered an error. Please try again.",
             {**ERROR_STYLE, "display": "block"},
         )
-
-
-# ============================================================================
-# CALLBACKS - Dropdown Toggles
-# ============================================================================
-
-
-@callback(
-    Output("about-open", "data"),
-    Output("about-dropdown", "style"),
-    Output("settings-open", "data", allow_duplicate=True),
-    Output("settings-dropdown", "style", allow_duplicate=True),
-    Input("about-link", "n_clicks"),
-    State("about-open", "data"),
-    State("settings-open", "data"),
-    prevent_initial_call=True,
-)
-def toggle_about(
-    n_clicks: int | None,
-    about_open: bool,
-    settings_open: bool,
-) -> tuple:
-    """Toggle About dropdown and close Settings if open."""
-    if not n_clicks:
-        raise PreventUpdate
-
-    new_about_open = not about_open
-
-    # Close settings if opening about
-    new_settings_open = False if new_about_open else settings_open
-
-    about_style = {
-        **DROPDOWN_CONTAINER_STYLE,
-        "display": "block" if new_about_open else "none",
-    }
-    settings_style = {
-        **DROPDOWN_CONTAINER_STYLE,
-        "display": "block" if new_settings_open else "none",
-    }
-
-    return new_about_open, about_style, new_settings_open, settings_style
-
-
-@callback(
-    Output("settings-open", "data"),
-    Output("settings-dropdown", "style"),
-    Output("about-open", "data", allow_duplicate=True),
-    Output("about-dropdown", "style", allow_duplicate=True),
-    Input("settings-link", "n_clicks"),
-    State("settings-open", "data"),
-    State("about-open", "data"),
-    prevent_initial_call=True,
-)
-def toggle_settings(
-    n_clicks: int | None,
-    settings_open: bool,
-    about_open: bool,
-) -> tuple:
-    """Toggle Settings dropdown and close About if open."""
-    if not n_clicks:
-        raise PreventUpdate
-
-    new_settings_open = not settings_open
-
-    # Close about if opening settings
-    new_about_open = False if new_settings_open else about_open
-
-    settings_style = {
-        **DROPDOWN_CONTAINER_STYLE,
-        "display": "block" if new_settings_open else "none",
-    }
-    about_style = {
-        **DROPDOWN_CONTAINER_STYLE,
-        "display": "block" if new_about_open else "none",
-    }
-
-    return new_settings_open, settings_style, new_about_open, about_style
 
 
 # ============================================================================
