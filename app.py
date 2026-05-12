@@ -37,7 +37,7 @@ SEARCH_RESULTS_LIMIT = 5
 # STYLES & THEME
 # ============================================================================
 
-# Augusta-inspired color palette
+# Augusta-inspired color palette - kept for reference, but styles are in CSS
 COLORS = {
     "whisper": "#F8F7F4",
     "white": "#FFFFFF",
@@ -50,265 +50,6 @@ COLORS = {
     "light_mist": "#F0EFED",
 }
 
-CONTAINER_STYLE = {
-    "maxWidth": "900px",
-    "margin": "0 auto",
-    "padding": "48px 24px",
-    "backgroundColor": COLORS["whisper"],
-    "minHeight": "100vh",
-    "fontFamily": "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
-}
-
-HEADER_STYLE = {
-    "textAlign": "center",
-    "marginBottom": "48px",
-}
-
-TITLE_STYLE = {
-    "fontSize": "32px",
-    "fontWeight": "500",
-    "color": COLORS["augusta_green"],
-    "letterSpacing": "0.05em",
-    "margin": "0 0 8px 0",
-    "fontFamily": "'Crimson Text', Georgia, serif",
-}
-
-SECTION_LABEL_STYLE = {
-    "fontSize": "12px",
-    "fontWeight": "600",
-    "color": COLORS["slate"],
-    "textTransform": "uppercase",
-    "letterSpacing": "0.1em",
-    "marginBottom": "8px",
-}
-
-INPUT_STYLE = {
-    "width": "100%",
-    "height": "48px",
-    "padding": "0 16px",
-    "fontSize": "16px",
-    "lineHeight": "1.5",
-    "border": f"1px solid {COLORS['mist']}",
-    "borderRadius": "4px",
-    "backgroundColor": COLORS["white"],
-    "color": COLORS["charcoal"],
-    "outline": "none",
-    "boxSizing": "border-box",
-    "transition": "border-color 0.2s ease",
-}
-
-SEARCH_WRAPPER_STYLE = {
-    "position": "relative",
-    "zIndex": "100",
-}
-
-SEARCH_RESULTS_CONTAINER_STYLE = {
-    "position": "absolute",
-    "top": "100%",
-    "left": "0",
-    "right": "0",
-    "marginTop": "4px",
-    "border": f"1px solid {COLORS['mist']}",
-    "borderRadius": "4px",
-    "overflow": "hidden",
-    "boxShadow": "0 4px 12px rgba(0,0,0,0.15)",
-    "zIndex": "1000",
-    "backgroundColor": COLORS["white"],
-}
-
-SEARCH_RESULT_ITEM_STYLE = {
-    "padding": "12px 16px",
-    "cursor": "pointer",
-    "backgroundColor": COLORS["white"],
-    "borderBottom": f"1px solid {COLORS['light_mist']}",
-    "transition": "background-color 0.15s ease",
-}
-
-
-BUTTON_STYLE = {
-    "width": "100%",
-    "padding": "16px 32px",
-    "fontSize": "14px",
-    "fontWeight": "600",
-    "textTransform": "uppercase",
-    "letterSpacing": "0.15em",
-    "color": COLORS["white"],
-    "backgroundColor": COLORS["augusta_green"],
-    "border": "none",
-    "borderRadius": "2px",
-    "cursor": "pointer",
-    "transition": "background-color 0.2s ease",
-}
-
-BUTTON_DISABLED_STYLE = {
-    **BUTTON_STYLE,
-    "backgroundColor": COLORS["mist"],
-    "color": COLORS["slate"],
-    "cursor": "not-allowed",
-}
-
-SPINNER_STYLE = {
-    "textAlign": "center",
-    "padding": "48px 0",
-    "color": COLORS["augusta_green"],
-    "fontSize": "14px",
-}
-
-# Selected article display styles (inline card)
-SELECTED_CARD_STYLE = {
-    "display": "flex",
-    "alignItems": "flex-start",
-    "gap": "16px",
-    "padding": "16px",
-    "backgroundColor": COLORS["white"],
-    "border": f"1px solid {COLORS['mist']}",
-    "borderRadius": "4px",
-    "position": "relative",
-    "transition": "all 0.3s ease",
-}
-
-SELECTED_CARD_ORIGIN_STYLE = {
-    **SELECTED_CARD_STYLE,
-    "borderLeft": f"4px solid {COLORS['augusta_green']}",
-}
-
-SELECTED_CARD_DEST_STYLE = {
-    **SELECTED_CARD_STYLE,
-    "borderLeft": f"4px solid {COLORS['championship_gold']}",
-}
-
-SELECTED_THUMBNAIL_STYLE = {
-    "width": "48px",
-    "height": "48px",
-    "objectFit": "cover",
-    "borderRadius": "4px",
-    "flexShrink": "0",
-    "border": f"1px solid {COLORS['light_mist']}",
-}
-
-SELECTED_THUMBNAIL_PLACEHOLDER_STYLE = {
-    "width": "48px",
-    "height": "48px",
-    "backgroundColor": COLORS["light_mist"],
-    "borderRadius": "4px",
-    "flexShrink": "0",
-    "display": "flex",
-    "alignItems": "center",
-    "justifyContent": "center",
-    "fontSize": "20px",
-    "color": COLORS["slate"],
-}
-
-SELECTED_CONTENT_STYLE = {
-    "flex": "1",
-    "minWidth": "0",
-}
-
-SELECTED_TITLE_STYLE = {
-    "fontSize": "18px",
-    "fontWeight": "600",
-    "color": COLORS["charcoal"],
-    "margin": "0 0 4px 0",
-    "lineHeight": "1.3",
-}
-
-SELECTED_DESC_STYLE = {
-    "fontSize": "13px",
-    "color": COLORS["slate"],
-    "margin": "0",
-    "lineHeight": "1.4",
-    "display": "-webkit-box",
-    "WebkitLineClamp": "2",
-    "WebkitBoxOrient": "vertical",
-    "overflow": "hidden",
-    "textOverflow": "ellipsis",
-}
-
-RESET_BUTTON_STYLE = {
-    "position": "absolute",
-    "top": "12px",
-    "right": "12px",
-    "width": "28px",
-    "height": "28px",
-    "border": "none",
-    "borderRadius": "4px",
-    "backgroundColor": COLORS["light_mist"],
-    "color": COLORS["slate"],
-    "fontSize": "16px",
-    "cursor": "pointer",
-    "display": "flex",
-    "alignItems": "center",
-    "justifyContent": "center",
-    "transition": "all 0.2s ease",
-    "padding": "0",
-    "lineHeight": "1",
-}
-
-# Animation style for search container transitions
-SEARCH_CONTAINER_STYLE = {
-    "transition": "all 0.3s ease",
-}
-
-RESULT_CONTAINER_STYLE = {
-    "marginTop": "48px",
-    "padding": "32px",
-    "backgroundColor": COLORS["white"],
-    "border": f"1px solid {COLORS['mist']}",
-    "borderRadius": "4px",
-    "textAlign": "center",
-}
-
-RESULT_HEADER_STYLE = {
-    "fontSize": "12px",
-    "fontWeight": "600",
-    "color": COLORS["slate"],
-    "textTransform": "uppercase",
-    "letterSpacing": "0.1em",
-    "marginBottom": "24px",
-}
-
-PATH_CONTAINER_STYLE = {
-    "display": "flex",
-    "alignItems": "center",
-    "justifyContent": "center",
-    "gap": "12px",
-    "flexWrap": "wrap",
-}
-
-PATH_STEP_STYLE = {
-    "fontSize": "15px",
-    "fontWeight": "500",
-    "color": COLORS["charcoal"],
-    "fontFamily": "'JetBrains Mono', monospace",
-}
-
-PATH_STEP_DEST_STYLE = {
-    **PATH_STEP_STYLE,
-    "color": COLORS["championship_gold"],
-    "fontWeight": "700",
-}
-
-PATH_ARROW_STYLE = {
-    "fontSize": "14px",
-    "color": COLORS["slate"],
-}
-
-PATH_STATS_STYLE = {
-    "marginTop": "24px",
-    "fontSize": "13px",
-    "color": COLORS["slate"],
-}
-
-ERROR_STYLE = {
-    "marginTop": "8px",
-    "padding": "10px 12px",
-    "backgroundColor": "#FEF2F2",
-    "border": "1px solid #FECACA",
-    "borderRadius": "4px",
-    "color": "#DC2626",
-    "fontSize": "13px",
-}
-
 
 def create_selected_display(
     data: dict | None, is_destination: bool = False
@@ -319,13 +60,15 @@ def create_selected_display(
 
     thumbnail_url = data.get("thumbnail")
     thumbnail = (
-        html.Img(src=thumbnail_url, style=SELECTED_THUMBNAIL_STYLE)
+        html.Img(src=thumbnail_url, className="wg-selected-thumbnail")
         if thumbnail_url
-        else html.Div("📄", style=SELECTED_THUMBNAIL_PLACEHOLDER_STYLE)
+        else html.Div("📄", className="wg-selected-thumbnail-placeholder")
     )
 
-    card_style = (
-        SELECTED_CARD_DEST_STYLE if is_destination else SELECTED_CARD_ORIGIN_STYLE
+    card_class = (
+        "wg-selected-card wg-selected-card-dest"
+        if is_destination
+        else "wg-selected-card wg-selected-card-origin"
     )
 
     return html.Div(
@@ -335,26 +78,24 @@ def create_selected_display(
                 [
                     html.Div(
                         data.get("title", ""),
-                        style=SELECTED_TITLE_STYLE,
+                        className="wg-selected-title",
                     ),
                     html.Div(
                         data.get("description") or "No description available",
-                        style=SELECTED_DESC_STYLE,
+                        className="wg-selected-desc",
                     ),
                 ],
-                style=SELECTED_CONTENT_STYLE,
+                className="wg-selected-content",
             ),
             html.Button(
                 "×",
                 id=f"{'dest' if is_destination else 'origin'}-reset-btn",
-                style=RESET_BUTTON_STYLE,
-                className="reset-btn",
+                className="wg-reset-btn",
                 n_clicks=0,
             ),
         ],
         id=f"{'dest' if is_destination else 'origin'}-selected-display",
-        style=card_style,
-        className="selected-card slide-in",
+        className=f"{card_class} slide-in",
     )
 
 
@@ -380,7 +121,7 @@ app.layout = html.Div(
         # Header
         html.Div(
             [
-                html.H1("W I K I P E D I A   G O L F", style=TITLE_STYLE),
+                html.H1("W I K I P E D I A   G O L F", className="wg-title"),
                 # About Section - Collapsible pill below title
                 html.Div(
                     [
@@ -388,17 +129,17 @@ app.layout = html.Div(
                             [
                                 html.Summary(
                                     [
-                                        html.Span("ℹ", className="pill-icon"),
+                                        html.Span("ℹ", className="wg-pill-icon"),
                                         html.Span("About"),
                                     ],
-                                    className="augusta-pill",
+                                    className="wg-pill",
                                 ),
                                 html.Div(
                                     [
                                         html.P(
                                             "Wikipedia Golf is the game of navigating from one Wikipedia article to another "
                                             "using the fewest links possible.",
-                                            className="about-text",
+                                            className="wg-about-text",
                                         ),
                                         html.Div(
                                             [
@@ -408,14 +149,14 @@ app.layout = html.Div(
                                                     ),
                                                     href="https://en.wikipedia.org/wiki/Wikipedia:Wiki_Game",
                                                     target="_blank",
-                                                    className="about-link",
+                                                    className="wg-about-link",
                                                 ),
                                             ],
                                             style={"marginBottom": "12px"},
                                         ),
                                         html.P(
                                             "In this app, an AI agent plays the game, based on start/end articles you set.",
-                                            className="about-text",
+                                            className="wg-about-text",
                                         ),
                                         html.Div(
                                             [
@@ -423,22 +164,22 @@ app.layout = html.Div(
                                                     html.B("View source code →"),
                                                     href="https://github.com/justinpyron/wikipedia-golf",
                                                     target="_blank",
-                                                    className="about-link",
+                                                    className="wg-about-link",
                                                 ),
                                             ],
                                         ),
                                     ],
-                                    className="about-content",
+                                    className="wg-about-content",
                                 ),
                             ],
                             id="about-details",
-                            className="pill-details",
+                            className="wg-pill-details",
                         ),
                     ],
-                    style={"textAlign": "center", "marginTop": "24px"},
+                    className="wg-about-wrapper",
                 ),
             ],
-            style=HEADER_STYLE,
+            className="wg-header",
         ),
         # Search Section - Origin and Destination side by side
         html.Div(
@@ -446,7 +187,7 @@ app.layout = html.Div(
                 # Origin Section
                 html.Div(
                     [
-                        html.Div("Origin", style=SECTION_LABEL_STYLE),
+                        html.Div("Origin", className="wg-section-label"),
                         # Search container (shown when no selection)
                         html.Div(
                             [
@@ -456,45 +197,36 @@ app.layout = html.Div(
                                             id="origin-input",
                                             type="text",
                                             placeholder="Search...",
-                                            style=INPUT_STYLE,
+                                            className="wg-input",
                                             autoComplete="off",
                                         ),
                                         html.Div(id="origin-search-results"),
                                         html.Div(
                                             id="origin-error",
-                                            style={
-                                                **ERROR_STYLE,
-                                                "display": "none",
-                                                "marginTop": "4px",
-                                            },
+                                            className="wg-error mt-sm",
+                                            style={"display": "none"},
                                         ),
                                         html.Button(
                                             "Search",
                                             id="origin-search-btn",
-                                            style={
-                                                **BUTTON_STYLE,
-                                                "marginTop": "12px",
-                                                "width": "100%",
-                                                "position": "relative",
-                                                "zIndex": "1",
-                                            },
+                                            className="wg-button mt-md",
                                         ),
                                     ],
-                                    style=SEARCH_WRAPPER_STYLE,
+                                    className="wg-search-wrapper",
                                 ),
                             ],
                             id="origin-search-container",
-                            className="search-container",
+                            className="wg-search-container",
                         ),
                         # Selected display (shown when article selected)
                         html.Div(id="origin-selected-wrapper"),
                     ],
-                    style={"flex": "1", "minWidth": "300px"},
+                    className="wg-origin-dest-item",
                 ),
                 # Destination Section
                 html.Div(
                     [
-                        html.Div("Destination", style=SECTION_LABEL_STYLE),
+                        html.Div("Destination", className="wg-section-label"),
                         # Search container (shown when no selection)
                         html.Div(
                             [
@@ -504,48 +236,34 @@ app.layout = html.Div(
                                             id="dest-input",
                                             type="text",
                                             placeholder="Search...",
-                                            style=INPUT_STYLE,
+                                            className="wg-input",
                                             autoComplete="off",
                                         ),
                                         html.Div(id="dest-search-results"),
                                         html.Div(
                                             id="dest-error",
-                                            style={
-                                                **ERROR_STYLE,
-                                                "display": "none",
-                                                "marginTop": "4px",
-                                            },
+                                            className="wg-error mt-sm",
+                                            style={"display": "none"},
                                         ),
                                         html.Button(
                                             "Search",
                                             id="dest-search-btn",
-                                            style={
-                                                **BUTTON_STYLE,
-                                                "marginTop": "12px",
-                                                "width": "100%",
-                                                "position": "relative",
-                                                "zIndex": "1",
-                                            },
+                                            className="wg-button mt-md",
                                         ),
                                     ],
-                                    style=SEARCH_WRAPPER_STYLE,
+                                    className="wg-search-wrapper",
                                 ),
                             ],
                             id="dest-search-container",
-                            className="search-container",
+                            className="wg-search-container",
                         ),
                         # Selected display (shown when article selected)
                         html.Div(id="dest-selected-wrapper"),
                     ],
-                    style={"flex": "1", "minWidth": "300px"},
+                    className="wg-origin-dest-item",
                 ),
             ],
-            style={
-                "display": "flex",
-                "gap": "48px",
-                "marginBottom": "32px",
-                "flexWrap": "wrap",
-            },
+            className="wg-origin-dest-container",
         ),
         # Data Stores
         dcc.Store(id="origin-search-results-data", data=[]),
@@ -559,7 +277,7 @@ app.layout = html.Div(
         html.Button(
             "Tee Off",
             id="tee-off-button",
-            style=BUTTON_DISABLED_STYLE,
+            className="wg-button wg-button-disabled",
             disabled=True,
         ),
         # Settings Section - Collapsible pill below Tee Off
@@ -569,14 +287,14 @@ app.layout = html.Div(
                     [
                         html.Summary(
                             [
-                                html.Span("⚙", className="pill-icon"),
+                                html.Span("⚙", className="wg-pill-icon"),
                                 html.Span("Settings"),
                             ],
-                            className="augusta-pill",
+                            className="wg-pill",
                         ),
                         html.Div(
                             [
-                                html.Div("Model", className="settings-label"),
+                                html.Div("Model", className="wg-settings-label"),
                                 dcc.RadioItems(
                                     id="llm-radio",
                                     options=[
@@ -629,7 +347,7 @@ app.layout = html.Div(
                                         "marginBottom": "0",
                                     },
                                 ),
-                                html.Div("Temperature", className="settings-label"),
+                                html.Div("Temperature", className="wg-settings-label"),
                                 dcc.Slider(
                                     id="temperature-slider",
                                     min=0.0,
@@ -640,43 +358,46 @@ app.layout = html.Div(
                                     allow_direct_input=False,
                                 ),
                             ],
-                            className="settings-content",
+                            className="wg-settings-content",
                         ),
                     ],
                     id="settings-details",
-                    className="pill-details",
+                    className="wg-pill-details",
                 ),
             ],
-            style={"textAlign": "center", "marginTop": "24px"},
+            className="wg-settings-wrapper",
         ),
         # Loading spinner
         html.Div(
             [
                 html.Div(
                     "⛳ The agent is finding the best path...",
-                    style={"color": COLORS["augusta_green"], "fontSize": "16px"},
+                    className="wg-spinner-text",
                 ),
             ],
             id="loading-spinner",
-            style={**SPINNER_STYLE, "display": "none"},
+            className="wg-spinner",
+            style={"display": "none"},
         ),
         # Result Section
         html.Div(
             [
-                html.Div("Path Found", style=RESULT_HEADER_STYLE),
-                html.Div(id="result-path", style=PATH_CONTAINER_STYLE),
-                html.Div(id="result-stats", style=PATH_STATS_STYLE),
+                html.Div("Path Found", className="wg-result-header"),
+                html.Div(id="result-path", className="wg-path-container"),
+                html.Div(id="result-stats", className="wg-path-stats"),
             ],
             id="result-container",
-            style={**RESULT_CONTAINER_STYLE, "display": "none"},
+            className="wg-result-container",
+            style={"display": "none"},
         ),
         # Agent error
         html.Div(
             id="agent-error",
-            style={**ERROR_STYLE, "marginTop": "24px", "display": "none"},
+            className="wg-error mt-lg",
+            style={"display": "none"},
         ),
     ],
-    style=CONTAINER_STYLE,
+    className="wg-container",
 )
 
 
@@ -696,7 +417,7 @@ app.layout = html.Div(
 def search_origin(n_clicks: int | None, input_value: str | None) -> tuple:
     """Search Wikipedia when user clicks origin search button."""
     if not n_clicks or not input_value or len(input_value) < 2:
-        return [], None, {**ERROR_STYLE, "display": "none"}
+        return [], None, {"display": "none"}
 
     try:
         results = find_articles(input_value, limit=SEARCH_RESULTS_LIMIT)
@@ -704,7 +425,7 @@ def search_origin(n_clicks: int | None, input_value: str | None) -> tuple:
             return (
                 [],
                 f'No articles found matching "{input_value}"',
-                {**ERROR_STYLE, "display": "block"},
+                {"display": "block"},
             )
 
         # Store search results as list of dicts
@@ -718,13 +439,13 @@ def search_origin(n_clicks: int | None, input_value: str | None) -> tuple:
             for r in results
         ]
 
-        return search_results_data, None, {**ERROR_STYLE, "display": "none"}
+        return search_results_data, None, {"display": "none"}
 
     except Exception:
         return (
             [],
             "Unable to search. Please try again.",
-            {**ERROR_STYLE, "display": "block"},
+            {"display": "block"},
         )
 
 
@@ -739,7 +460,7 @@ def search_origin(n_clicks: int | None, input_value: str | None) -> tuple:
 def search_dest(n_clicks: int | None, input_value: str | None) -> tuple:
     """Search Wikipedia when user clicks destination search button."""
     if not n_clicks or not input_value or len(input_value) < 2:
-        return [], None, {**ERROR_STYLE, "display": "none"}
+        return [], None, {"display": "none"}
 
     try:
         results = find_articles(input_value, limit=SEARCH_RESULTS_LIMIT)
@@ -747,7 +468,7 @@ def search_dest(n_clicks: int | None, input_value: str | None) -> tuple:
             return (
                 [],
                 f'No articles found matching "{input_value}"',
-                {**ERROR_STYLE, "display": "block"},
+                {"display": "block"},
             )
 
         search_results_data = [
@@ -760,13 +481,13 @@ def search_dest(n_clicks: int | None, input_value: str | None) -> tuple:
             for r in results
         ]
 
-        return search_results_data, None, {**ERROR_STYLE, "display": "none"}
+        return search_results_data, None, {"display": "none"}
 
     except Exception:
         return (
             [],
             "Unable to search. Please try again.",
-            {**ERROR_STYLE, "display": "block"},
+            {"display": "block"},
         )
 
 
@@ -792,28 +513,20 @@ def render_origin_search_results(search_results_data: list[dict]) -> html.Div | 
                 [
                     html.Div(
                         result["title"],
-                        style={
-                            "fontSize": "14px",
-                            "fontWeight": "500",
-                            "color": COLORS["charcoal"],
-                        },
+                        className="wg-search-result-title",
                     ),
                     html.Div(
                         result.get("description") or "",
-                        style={
-                            "fontSize": "12px",
-                            "color": COLORS["slate"],
-                            "marginTop": "2px",
-                        },
+                        className="wg-search-result-desc",
                     ),
                 ],
                 id={"type": "origin-search-result", "index": i},
-                style=SEARCH_RESULT_ITEM_STYLE,
+                className="wg-search-result-item",
                 n_clicks=0,
             )
         )
 
-    return html.Div(result_items, style=SEARCH_RESULTS_CONTAINER_STYLE)
+    return html.Div(result_items, className="wg-search-results-container")
 
 
 @callback(
@@ -833,28 +546,20 @@ def render_dest_search_results(search_results_data: list[dict]) -> html.Div | No
                 [
                     html.Div(
                         result["title"],
-                        style={
-                            "fontSize": "14px",
-                            "fontWeight": "500",
-                            "color": COLORS["charcoal"],
-                        },
+                        className="wg-search-result-title",
                     ),
                     html.Div(
                         result.get("description") or "",
-                        style={
-                            "fontSize": "12px",
-                            "color": COLORS["slate"],
-                            "marginTop": "2px",
-                        },
+                        className="wg-search-result-desc",
                     ),
                 ],
                 id={"type": "dest-search-result", "index": i},
-                style=SEARCH_RESULT_ITEM_STYLE,
+                className="wg-search-result-item",
                 n_clicks=0,
             )
         )
 
-    return html.Div(result_items, style=SEARCH_RESULTS_CONTAINER_STYLE)
+    return html.Div(result_items, className="wg-search-results-container")
 
 
 # ============================================================================
@@ -930,7 +635,7 @@ def select_dest(n_clicks: list[int | None], search_results_data: list[dict]) -> 
 
 
 @callback(
-    Output("origin-search-container", "style"),
+    Output("origin-search-container", "className"),
     Output("origin-selected-wrapper", "children"),
     Input("origin-data", "data"),
 )
@@ -938,18 +643,18 @@ def update_origin_display(origin_data: dict | None) -> tuple:
     """Show/hide origin search container and update selected display."""
     if origin_data is None:
         # No selection - show search, hide selected
-        search_style = SEARCH_CONTAINER_STYLE
+        search_class = "wg-search-container"
         selected_display = create_selected_display(None, False)
     else:
         # Has selection - hide search, show selected
-        search_style = {**SEARCH_CONTAINER_STYLE, "display": "none"}
+        search_class = "wg-search-container hidden"
         selected_display = create_selected_display(origin_data, False)
 
-    return search_style, selected_display
+    return search_class, selected_display
 
 
 @callback(
-    Output("dest-search-container", "style"),
+    Output("dest-search-container", "className"),
     Output("dest-selected-wrapper", "children"),
     Input("dest-data", "data"),
 )
@@ -957,14 +662,14 @@ def update_dest_display(dest_data: dict | None) -> tuple:
     """Show/hide destination search container and update selected display."""
     if dest_data is None:
         # No selection - show search, hide selected
-        search_style = SEARCH_CONTAINER_STYLE
+        search_class = "wg-search-container"
         selected_display = create_selected_display(None, True)
     else:
         # Has selection - hide search, show selected
-        search_style = {**SEARCH_CONTAINER_STYLE, "display": "none"}
+        search_class = "wg-search-container hidden"
         selected_display = create_selected_display(dest_data, True)
 
-    return search_style, selected_display
+    return search_class, selected_display
 
 
 # ============================================================================
@@ -1007,7 +712,7 @@ def reset_dest(n_clicks: int | None) -> tuple:
 
 @callback(
     Output("tee-off-button", "disabled"),
-    Output("tee-off-button", "style"),
+    Output("tee-off-button", "className"),
     Input("origin-data", "data"),
     Input("dest-data", "data"),
 )
@@ -1016,8 +721,8 @@ def toggle_button(origin_data: dict | None, dest_data: dict | None) -> tuple:
     can_tee_off = origin_data is not None and dest_data is not None
 
     if can_tee_off:
-        return False, BUTTON_STYLE
-    return True, BUTTON_DISABLED_STYLE
+        return False, "wg-button"
+    return True, "wg-button wg-button-disabled"
 
 
 # ============================================================================
@@ -1039,7 +744,11 @@ def toggle_button(origin_data: dict | None, dest_data: dict | None) -> tuple:
     State("selected-temperature", "data"),
     running=[
         (Output("tee-off-button", "disabled"), True, False),
-        (Output("tee-off-button", "style"), BUTTON_DISABLED_STYLE, BUTTON_STYLE),
+        (
+            Output("tee-off-button", "className"),
+            "wg-button wg-button-disabled",
+            "wg-button",
+        ),
     ],
     prevent_initial_call=True,
 )
@@ -1053,9 +762,6 @@ def run_agent(
     """Run the Wikipedia Golf agent and display results."""
     if n_clicks is None or not origin_data or not dest_data:
         raise PreventUpdate
-
-    loading_style = {**SPINNER_STYLE, "display": "block"}
-    result_style = {**RESULT_CONTAINER_STYLE, "display": "none"}
 
     try:
         origin_key = origin_data.get("key")
@@ -1089,12 +795,12 @@ def run_agent(
 
         if not path:
             return (
-                {**SPINNER_STYLE, "display": "none"},
-                result_style,
+                {"display": "none"},
+                {"display": "none"},
                 None,
                 None,
                 "The agent could not find a path. Please try again.",
-                {**ERROR_STYLE, "display": "block"},
+                {"display": "block"},
             )
 
         path_elements = []
@@ -1103,31 +809,31 @@ def run_agent(
             path_elements.append(
                 html.Span(
                     step.replace("_", " "),
-                    style=PATH_STEP_DEST_STYLE if is_dest else PATH_STEP_STYLE,
+                    className="wg-path-step-dest" if is_dest else "wg-path-step",
                 )
             )
             if i < len(path) - 1:
-                path_elements.append(html.Span("→", style=PATH_ARROW_STYLE))
+                path_elements.append(html.Span("→", className="wg-path-arrow"))
 
         stats = f"{len(path) - 1} links traveled"
 
         return (
-            {**SPINNER_STYLE, "display": "none"},
-            {**RESULT_CONTAINER_STYLE, "display": "block"},
+            {"display": "none"},
+            {"display": "block"},
             path_elements,
             stats,
             None,
-            {**ERROR_STYLE, "display": "none"},
+            {"display": "none"},
         )
 
     except Exception:
         return (
-            {**SPINNER_STYLE, "display": "none"},
-            result_style,
+            {"display": "none"},
+            {"display": "none"},
             None,
             None,
             "The agent encountered an error. Please try again.",
-            {**ERROR_STYLE, "display": "block"},
+            {"display": "block"},
         )
 
 
