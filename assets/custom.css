@@ -328,6 +328,81 @@
 }
 
 /* ============================================================================
+   Scorecard - Hero Metric + Stats Row
+   ============================================================================ */
+
+.wg-scorecard {
+    margin-top: 32px;
+    text-align: center;
+}
+
+.wg-scorecard-hero {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 4px;
+    margin-bottom: 16px;
+}
+
+.wg-scorecard-hero-number {
+    font-family: var(--font-heading);
+    font-size: 42px;
+    font-weight: 600;
+    color: var(--wg-primary);
+    line-height: 1;
+}
+
+.wg-scorecard-hero-label {
+    font-family: var(--font-heading);
+    font-size: 24px;
+    font-weight: 400;
+    color: var(--wg-text);
+    line-height: 1;
+}
+
+.wg-scorecard-divider {
+    width: 100%;
+    max-width: 480px;
+    height: 1px;
+    background-color: var(--wg-border);
+    margin: 0 auto 16px auto;
+}
+
+.wg-scorecard-stats-row {
+    display: flex;
+    justify-content: center;
+    gap: 48px;
+    flex-wrap: wrap;
+}
+
+.wg-scorecard-stat {
+    text-align: center;
+    min-width: 80px;
+}
+
+.wg-scorecard-stat-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--wg-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-bottom: 4px;
+}
+
+.wg-scorecard-stat-value {
+    font-family: var(--font-mono);
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--wg-text);
+}
+
+/* Highlight cost with subtle gold tint */
+.wg-scorecard-stat:nth-child(2) .wg-scorecard-stat-value {
+    color: var(--wg-accent);
+    font-weight: 600;
+}
+
+/* ============================================================================
    Results & Path Display
    ============================================================================ */
 

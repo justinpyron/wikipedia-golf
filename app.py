@@ -15,7 +15,7 @@ from dash.exceptions import PreventUpdate
 from dotenv import load_dotenv
 from pydantic_ai import UsageLimits
 
-from agent import WikiGolfDeps, build_agent
+from agent import AgentResult, WikiGolfDeps, build_agent, estimate_cost
 from variants import SYSTEM_PROMPT_V1_0, VARIANTS, AgentVariant
 from wiki import find_articles
 
@@ -756,6 +756,10 @@ def run_agent(
 
         deps = WikiGolfDeps(origin=origin_key, destination=dest_key)
 
+        import time
+
+        start_time = time.time()
+
         async def run():
             return await agent.run(
                 variant.user_prompt,
@@ -766,10 +770,50 @@ def run_agent(
                 ),
             )
 
-        asyncio.run(run())
-        path = deps.path
+        result = asyncio.run(run())
+        duration_seconds = time.time() - start_time
 
-        if not path:
+        # Extract usage statistics
+        total_tokens = 0
+        prompt_tokens = 0
+        completion_tokens = 0
+
+        try:
+            # Try to get usage as a property (newer pydantic-ai versions)
+            usage = result.usage
+        except (AttributeError, TypeError):
+            try:
+                # Try as a method (older versions)
+                usage = result.usage()
+            except (AttributeError, TypeError):
+                usage = None
+
+        if usage:
+            # Handle both single model usage and multi-model usage
+            if hasattr(usage, "requests"):
+                # Aggregate across all requests
+                for req in usage.requests:
+                    prompt_tokens += getattr(req, "prompt_tokens", 0) or 0
+                    completion_tokens += getattr(req, "completion_tokens", 0) or 0
+            elif hasattr(usage, "prompt_tokens"):
+                # Single usage object
+                prompt_tokens = getattr(usage, "prompt_tokens", 0) or 0
+                completion_tokens = getattr(usage, "completion_tokens", 0) or 0
+
+            total_tokens = prompt_tokens + completion_tokens
+
+        # Calculate estimated cost
+        estimated_cost = estimate_cost(model, prompt_tokens, completion_tokens)
+
+        # Create result object
+        agent_result = AgentResult(
+            path=deps.path,
+            duration_seconds=duration_seconds,
+            total_tokens=total_tokens,
+            estimated_cost_usd=estimated_cost,
+        )
+
+        if not agent_result.path:
             return (
                 {"display": "none"},
                 {"display": "none"},
@@ -780,24 +824,90 @@ def run_agent(
             )
 
         path_elements = []
-        for i, step in enumerate(path):
-            is_dest = i == len(path) - 1
+        for i, step in enumerate(agent_result.path):
+            is_dest = i == len(agent_result.path) - 1
             path_elements.append(
                 html.Span(
                     step.replace("_", " "),
                     className="wg-path-step-dest" if is_dest else "wg-path-step",
                 )
             )
-            if i < len(path) - 1:
+            if i < len(agent_result.path) - 1:
                 path_elements.append(html.Span("→", className="wg-path-arrow"))
 
-        stats = f"{len(path) - 1} links traveled"
+        # Format the scorecard statistics
+        links_count = len(agent_result.path) - 1
+        duration_formatted = f"{agent_result.duration_seconds:.1f}s"
+        cost_formatted = f"${agent_result.estimated_cost_usd:.4f}"
+        tokens_formatted = f"{agent_result.total_tokens:,}"
+
+        # Build the scorecard display
+        scorecard = html.Div(
+            [
+                # Hero metric: Links traveled
+                html.Div(
+                    [
+                        html.Span(
+                            str(links_count), className="wg-scorecard-hero-number"
+                        ),
+                        html.Span(
+                            " link" if links_count == 1 else " links",
+                            className="wg-scorecard-hero-label",
+                        ),
+                        html.Span(" traveled", className="wg-scorecard-hero-label"),
+                    ],
+                    className="wg-scorecard-hero",
+                ),
+                # Divider line
+                html.Div(className="wg-scorecard-divider"),
+                # Three-column stats
+                html.Div(
+                    [
+                        html.Div(
+                            [
+                                html.Div(
+                                    "Duration", className="wg-scorecard-stat-label"
+                                ),
+                                html.Div(
+                                    duration_formatted,
+                                    className="wg-scorecard-stat-value",
+                                ),
+                            ],
+                            className="wg-scorecard-stat",
+                        ),
+                        html.Div(
+                            [
+                                html.Div(
+                                    "Est. Cost", className="wg-scorecard-stat-label"
+                                ),
+                                html.Div(
+                                    cost_formatted, className="wg-scorecard-stat-value"
+                                ),
+                            ],
+                            className="wg-scorecard-stat",
+                        ),
+                        html.Div(
+                            [
+                                html.Div("Tokens", className="wg-scorecard-stat-label"),
+                                html.Div(
+                                    tokens_formatted,
+                                    className="wg-scorecard-stat-value",
+                                ),
+                            ],
+                            className="wg-scorecard-stat",
+                        ),
+                    ],
+                    className="wg-scorecard-stats-row",
+                ),
+            ],
+            className="wg-scorecard",
+        )
 
         return (
             {"display": "none"},
             {"display": "block"},
             path_elements,
-            stats,
+            scorecard,
             None,
             {"display": "none"},
         )

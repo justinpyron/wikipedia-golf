@@ -17,6 +17,16 @@ class WikiGolfDeps:
     candidate_keys: set[str] = field(default_factory=set)
 
 
+@dataclass
+class AgentResult:
+    """Result of a Wikipedia Golf agent run with usage statistics."""
+
+    path: list[str]
+    duration_seconds: float
+    total_tokens: int
+    estimated_cost_usd: float
+
+
 def build_agent(variant: AgentVariant) -> Agent[WikiGolfDeps, str]:
     """Construct a fully-configured Wikipedia Golf agent from a variant."""
     model_settings: ModelSettings | None = None
@@ -105,3 +115,30 @@ def build_agent(variant: AgentVariant) -> Agent[WikiGolfDeps, str]:
         return message
 
     return agent
+
+
+# Pricing per 1M tokens (as of May 2025)
+MODEL_PRICING: dict[str, tuple[float, float]] = {
+    # (input_price_per_1m, output_price_per_1m) in USD
+    "gpt-5.4-mini": (0.50, 2.00),
+    "claude-haiku-4-5": (0.80, 4.00),
+}
+
+
+def estimate_cost(model: str, prompt_tokens: int, completion_tokens: int) -> float:
+    """Estimate cost in USD based on model and token usage."""
+    # Normalize model name to find pricing
+    model_key = None
+    for key in MODEL_PRICING:
+        if key in model.lower():
+            model_key = key
+            break
+
+    if model_key is None:
+        # Default to GPT-5.4-mini pricing if unknown
+        model_key = "gpt-5.4-mini"
+
+    input_price, output_price = MODEL_PRICING[model_key]
+    input_cost = (prompt_tokens / 1_000_000) * input_price
+    output_cost = (completion_tokens / 1_000_000) * output_price
+    return input_cost + output_cost
