@@ -98,6 +98,7 @@
     letter-spacing: 0.05em;
     margin: 0 0 8px 0;
     font-family: var(--font-heading);
+    white-space: pre;
 }
 
 .wg-section-label {
