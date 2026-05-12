@@ -637,6 +637,7 @@ app.layout = html.Div(
                                     step=0.1,
                                     value=0.7,
                                     marks={i / 10: str(i / 10) for i in range(11)},
+                                    allow_direct_input=False,
                                 ),
                             ],
                             className="settings-content",
