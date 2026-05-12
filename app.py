@@ -583,7 +583,7 @@ app.layout = html.Div(
                                         {
                                             "label": [
                                                 html.Img(
-                                                    src="/assets/logo_open_ai.png",
+                                                    src="/assets/logo_openai.svg",
                                                     height=20,
                                                     style={"marginRight": "10px"},
                                                 ),
@@ -600,7 +600,7 @@ app.layout = html.Div(
                                         {
                                             "label": [
                                                 html.Img(
-                                                    src="/assets/logo_open_ai.png",
+                                                    src="/assets/logo_claude.svg",
                                                     height=20,
                                                     style={"marginRight": "10px"},
                                                 ),
