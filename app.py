@@ -391,7 +391,7 @@ app.layout = html.Div(
                 # Origin Section
                 html.Div(
                     [
-                        html.Div("From", style=SECTION_LABEL_STYLE),
+                        html.Div("Origin", style=SECTION_LABEL_STYLE),
                         # Search container (shown when no selection)
                         html.Div(
                             [
@@ -439,7 +439,7 @@ app.layout = html.Div(
                 # Destination Section
                 html.Div(
                     [
-                        html.Div("To", style=SECTION_LABEL_STYLE),
+                        html.Div("Destination", style=SECTION_LABEL_STYLE),
                         # Search container (shown when no selection)
                         html.Div(
                             [
