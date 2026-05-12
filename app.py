@@ -91,16 +91,10 @@ def create_selected_display(
 # ============================================================================
 
 
-# Load Google Fonts for the Augusta aesthetic
-external_stylesheets = [
-    "https://fonts.googleapis.com/css2?family=Crimson+Text:wght@400;600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap",
-]
-
 app = Dash(
     __name__,
     title="Wikipedia Golf",
     suppress_callback_exceptions=True,
-    external_stylesheets=external_stylesheets,
 )
 
 app.layout = html.Div(
