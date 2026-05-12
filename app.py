@@ -401,7 +401,7 @@ app.layout = html.Div(
                                         dcc.Input(
                                             id="origin-input",
                                             type="text",
-                                            placeholder="Search for origin article...",
+                                            placeholder="Search...",
                                             style=INPUT_STYLE,
                                             autoComplete="off",
                                         ),
@@ -449,7 +449,7 @@ app.layout = html.Div(
                                         dcc.Input(
                                             id="dest-input",
                                             type="text",
-                                            placeholder="Search for destination article...",
+                                            placeholder="Search...",
                                             style=INPUT_STYLE,
                                             autoComplete="off",
                                         ),
