@@ -462,29 +462,30 @@
     height: 1em;
 }
 
-/* About Collapse Panel - Smooth slide out animation */
-.wg-about-collapse {
+/* Collapse Panel - Smooth slide out animation */
+.wg-collapse {
     transition: opacity 0.35s ease-out, transform 0.35s ease-out, height 0.35s ease-out;
     overflow: hidden;
 }
 
-.wg-about-collapse:not(.show) {
+.wg-collapse:not(.show) {
     opacity: 0;
     transform: translateY(-8px);
     height: 0;
 }
 
-.wg-about-collapse.show {
+.wg-collapse.show {
     opacity: 1;
     transform: translateY(0);
     height: auto;
 }
 
-.wg-about-inner {
+/* Panel Content */
+.wg-panel-content {
     width: 420px;
     max-width: 90vw;
     margin: 1rem auto 0;
-    padding: 1.25rem;
+    padding: 1rem 1.25rem 1.25rem;
     background-color: var(--wg-surface);
     border: 1px solid var(--wg-border);
     border-radius: var(--radius-md);
@@ -511,37 +512,6 @@
     text-decoration: underline;
 }
 
-/* Settings Collapse Panel - Smooth slide out animation */
-.wg-settings-collapse {
-    transition: opacity 0.35s ease-out, transform 0.35s ease-out, height 0.35s ease-out;
-    overflow: hidden;
-}
-
-.wg-settings-collapse:not(.show) {
-    opacity: 0;
-    transform: translateY(-8px);
-    height: 0;
-}
-
-.wg-settings-collapse.show {
-    opacity: 1;
-    transform: translateY(0);
-    height: auto;
-}
-
-/* Settings Content Panel */
-.wg-settings-content {
-    width: 420px;
-    max-width: 90vw;
-    margin: 1rem auto 0;
-    padding: 1rem 1.25rem 1.25rem;
-    background-color: var(--wg-surface);
-    border: 1px solid var(--wg-border);
-    border-radius: var(--radius-md);
-    text-align: left;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-}
-
 .wg-settings-label {
     font-size: 0.7rem;
     font-weight: 600;
@@ -557,7 +527,7 @@
 }
 
 /* Fix radio button vertical alignment */
-.wg-settings-content input[type="radio"] {
+.wg-panel-content input[type="radio"] {
     vertical-align: middle;
     margin-top: 0;
     margin-bottom: 0;
@@ -565,7 +535,7 @@
     top: -1px;
 }
 
-.wg-settings-content label {
+.wg-panel-content label {
     display: flex !important;
     align-items: center !important;
     width: 100% !important;
