@@ -8,6 +8,7 @@ import asyncio
 import os
 
 import dash
+import dash_bootstrap_components as dbc
 import logfire
 from dash import Dash, Input, Output, State, callback, dcc, html
 from dash.exceptions import PreventUpdate
@@ -106,47 +107,48 @@ app.layout = html.Div(
                 # About Section - Collapsible pill below title
                 html.Div(
                     [
-                        html.Details(
+                        html.Button(
                             [
-                                html.Summary(
-                                    [
-                                        html.Span("ℹ", className="wg-pill-icon"),
-                                        html.Span("About", className="wg-pill-text"),
-                                    ],
-                                    className="wg-pill",
-                                ),
-                                html.Div(
-                                    [
-                                        # Section 1: What is Wikipedia Golf
-                                        html.P(
-                                            "Wikipedia Golf is the game of navigating from one Wikipedia article to another "
-                                            "using the fewest links possible.",
-                                            className="wg-about-text",
-                                        ),
-                                        html.A(
-                                            html.B("Learn more →"),
-                                            href="https://en.wikipedia.org/wiki/Wikipedia:Wiki_Game",
-                                            target="_blank",
-                                            className="wg-about-link",
-                                        ),
-                                        # Section 2: About this app
-                                        html.Div(style={"height": "40px"}),
-                                        html.P(
-                                            "In this app, an AI agent plays the game, based on start/end articles you set.",
-                                            className="wg-about-text",
-                                        ),
-                                        html.A(
-                                            html.B("View source code →"),
-                                            href="https://github.com/justinpyron/wikipedia-golf",
-                                            target="_blank",
-                                            className="wg-about-link",
-                                        ),
-                                    ],
-                                    className="wg-about-content",
-                                ),
+                                html.Span("ℹ", className="wg-pill-icon info-icon"),
+                                html.Span("About", className="wg-pill-text"),
                             ],
-                            id="about-details",
-                            className="wg-pill-details",
+                            id="about-toggle",
+                            n_clicks=0,
+                            className="wg-pill",
+                        ),
+                        dbc.Collapse(
+                            html.Div(
+                                [
+                                    # Section 1: What is Wikipedia Golf
+                                    html.P(
+                                        "Wikipedia Golf is the game of navigating from one Wikipedia article to another "
+                                        "using the fewest links possible.",
+                                        className="wg-about-text",
+                                    ),
+                                    html.A(
+                                        html.B("Learn more →"),
+                                        href="https://en.wikipedia.org/wiki/Wikipedia:Wiki_Game",
+                                        target="_blank",
+                                        className="wg-about-link",
+                                    ),
+                                    # Section 2: About this app
+                                    html.Div(style={"height": "40px"}),
+                                    html.P(
+                                        "In this app, an AI agent plays the game, based on start/end articles you set.",
+                                        className="wg-about-text",
+                                    ),
+                                    html.A(
+                                        html.B("View source code →"),
+                                        href="https://github.com/justinpyron/wikipedia-golf",
+                                        target="_blank",
+                                        className="wg-about-link",
+                                    ),
+                                ],
+                                className="wg-about-inner",
+                            ),
+                            id="about-collapse",
+                            is_open=False,
+                            className="wg-about-collapse",
                         ),
                     ],
                     className="wg-about-wrapper",
@@ -256,86 +258,87 @@ app.layout = html.Div(
         # Settings Section - Collapsible pill below Tee Off
         html.Div(
             [
-                html.Details(
+                html.Button(
                     [
-                        html.Summary(
-                            [
-                                html.Span("⚙", className="wg-pill-icon"),
-                                html.Span("Settings", className="wg-pill-text"),
-                            ],
-                            className="wg-pill",
-                        ),
-                        html.Div(
-                            [
-                                html.Div("Model", className="wg-settings-label"),
-                                dcc.RadioItems(
-                                    id="llm-radio",
-                                    options=[
-                                        {
-                                            "label": [
-                                                html.Img(
-                                                    src="/assets/logo_openai.svg",
-                                                    height=20,
-                                                    style={"marginRight": "10px"},
-                                                ),
-                                                html.Span(
-                                                    "GPT-5.4 Mini",
-                                                    style={
-                                                        "fontSize": "14px",
-                                                        "lineHeight": "1",
-                                                    },
-                                                ),
-                                            ],
-                                            "value": "openai:gpt-5.4-mini",
-                                        },
-                                        {
-                                            "label": [
-                                                html.Img(
-                                                    src="/assets/logo_claude.svg",
-                                                    height=20,
-                                                    style={"marginRight": "10px"},
-                                                ),
-                                                html.Span(
-                                                    "Claude Haiku 4.5",
-                                                    style={
-                                                        "fontSize": "14px",
-                                                        "lineHeight": "1",
-                                                    },
-                                                ),
-                                            ],
-                                            "value": "anthropic:claude-haiku-4-5-20251001",
-                                        },
-                                    ],
-                                    value="openai:gpt-5.4-mini",
-                                    labelStyle={
-                                        "display": "flex",
-                                        "alignItems": "center",
-                                        "marginBottom": "2px",
-                                        "cursor": "pointer",
-                                        "padding": "6px 0",
-                                    },
-                                    inputStyle={
-                                        "marginRight": "10px",
-                                        "marginTop": "0",
-                                        "marginBottom": "0",
-                                    },
-                                ),
-                                html.Div("Temperature", className="wg-settings-label"),
-                                dcc.Slider(
-                                    id="temperature-slider",
-                                    min=0.0,
-                                    max=1.0,
-                                    step=0.1,
-                                    value=0.7,
-                                    marks={i / 10: str(i / 10) for i in range(11)},
-                                    allow_direct_input=False,
-                                ),
-                            ],
-                            className="wg-settings-content",
-                        ),
+                        html.Span("⚙", className="wg-pill-icon gear"),
+                        html.Span("Settings", className="wg-pill-text"),
                     ],
-                    id="settings-details",
-                    className="wg-pill-details",
+                    id="settings-toggle",
+                    n_clicks=0,
+                    className="wg-pill",
+                ),
+                dbc.Collapse(
+                    html.Div(
+                        [
+                            html.Div("Model", className="wg-settings-label"),
+                            dcc.RadioItems(
+                                id="llm-radio",
+                                options=[
+                                    {
+                                        "label": [
+                                            html.Img(
+                                                src="/assets/logo_openai.svg",
+                                                height=20,
+                                                style={"marginRight": "10px"},
+                                            ),
+                                            html.Span(
+                                                "GPT-5.4 Mini",
+                                                style={
+                                                    "fontSize": "14px",
+                                                    "lineHeight": "1",
+                                                },
+                                            ),
+                                        ],
+                                        "value": "openai:gpt-5.4-mini",
+                                    },
+                                    {
+                                        "label": [
+                                            html.Img(
+                                                src="/assets/logo_claude.svg",
+                                                height=20,
+                                                style={"marginRight": "10px"},
+                                            ),
+                                            html.Span(
+                                                "Claude Haiku 4.5",
+                                                style={
+                                                    "fontSize": "14px",
+                                                    "lineHeight": "1",
+                                                },
+                                            ),
+                                        ],
+                                        "value": "anthropic:claude-haiku-4-5-20251001",
+                                    },
+                                ],
+                                value="openai:gpt-5.4-mini",
+                                labelStyle={
+                                    "display": "flex",
+                                    "alignItems": "center",
+                                    "marginBottom": "2px",
+                                    "cursor": "pointer",
+                                    "padding": "6px 0",
+                                },
+                                inputStyle={
+                                    "marginRight": "10px",
+                                    "marginTop": "0",
+                                    "marginBottom": "0",
+                                },
+                            ),
+                            html.Div("Temperature", className="wg-settings-label"),
+                            dcc.Slider(
+                                id="temperature-slider",
+                                min=0.0,
+                                max=1.0,
+                                step=0.1,
+                                value=0.7,
+                                marks={i / 10: str(i / 10) for i in range(11)},
+                                allow_direct_input=False,
+                            ),
+                        ],
+                        className="wg-settings-content",
+                    ),
+                    id="settings-collapse",
+                    is_open=False,
+                    className="wg-settings-collapse",
                 ),
             ],
             className="wg-settings-wrapper",
@@ -833,6 +836,43 @@ def store_llm_selection(value: str | None) -> str | None:
 def store_temperature(value: float | None) -> float | None:
     """Store temperature setting."""
     return value
+
+
+# ============================================================================
+# CALLBACKS - About & Settings Toggle
+# ============================================================================
+
+
+@callback(
+    Output("about-collapse", "is_open"),
+    Output("about-toggle", "className"),
+    Input("about-toggle", "n_clicks"),
+    State("about-collapse", "is_open"),
+    prevent_initial_call=True,
+)
+def toggle_about(n_clicks: int | None, is_open: bool) -> tuple:
+    """Toggle About panel open/closed and update button active state."""
+    if not n_clicks:
+        raise PreventUpdate
+    new_is_open = not is_open
+    class_name = "wg-pill active" if new_is_open else "wg-pill"
+    return new_is_open, class_name
+
+
+@callback(
+    Output("settings-collapse", "is_open"),
+    Output("settings-toggle", "className"),
+    Input("settings-toggle", "n_clicks"),
+    State("settings-collapse", "is_open"),
+    prevent_initial_call=True,
+)
+def toggle_settings(n_clicks: int | None, is_open: bool) -> tuple:
+    """Toggle Settings panel open/closed and update button active state."""
+    if not n_clicks:
+        raise PreventUpdate
+    new_is_open = not is_open
+    class_name = "wg-pill active" if new_is_open else "wg-pill"
+    return new_is_open, class_name
 
 
 if __name__ == "__main__":
