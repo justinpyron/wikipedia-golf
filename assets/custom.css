@@ -464,15 +464,13 @@
 
 /* Collapse Panel - Smooth slide out animation */
 .wg-collapse {
-    transition: max-height 0.35s ease-out, transform 0.35s ease-out;
+    transition: max-height 0.35s ease-out;
     overflow: hidden;
     max-height: 0;
-    transform: translateY(-8px);
 }
 
 .wg-collapse.show {
     max-height: 500px;
-    transform: translateY(0);
 }
 
 /* Panel Content */
