@@ -37,19 +37,6 @@ SEARCH_RESULTS_LIMIT = 5
 # STYLES & THEME
 # ============================================================================
 
-# Augusta-inspired color palette - kept for reference, but styles are in CSS
-COLORS = {
-    "whisper": "#F8F7F4",
-    "white": "#FFFFFF",
-    "augusta_green": "#1E4D2B",
-    "billiard_green": "#2D5A3D",
-    "championship_gold": "#F4C430",
-    "charcoal": "#1A1A1A",
-    "slate": "#5A5A5A",
-    "mist": "#E5E3DF",
-    "light_mist": "#F0EFED",
-}
-
 
 def create_selected_display(
     data: dict | None, is_destination: bool = False
