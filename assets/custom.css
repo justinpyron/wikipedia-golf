@@ -20,10 +20,11 @@
     --wg-paper: #f8f8f6;
     --wg-surface: #ffffff;
 
-    /* Readable “green-black,” not neutral charcoal */
-    --wg-text: #15261c;
-    /* Secondary prose (about, bios, placeholders)—darker than before */
-    --wg-text-muted: rgba(var(--wg-green-rgb), 0.72);
+    --wg-primary: var(--wg-augusta-green);
+    --wg-primary-hover: var(--wg-billiard-green);
+
+    --wg-text: var(--wg-primary);
+    --wg-text-muted: var(--wg-primary);
 
     /* Lines & fills derived from Augusta (no gray chrome) */
     --wg-line-faint: rgba(var(--wg-green-rgb), 0.07);
@@ -41,9 +42,6 @@
     --wg-bg: var(--wg-paper);
     --wg-border: var(--wg-line);
     --wg-divider: var(--wg-line-faint);
-
-    --wg-primary: var(--wg-augusta-green);
-    --wg-primary-hover: var(--wg-billiard-green);
 
     --wg-error-bg: #fef8f8;
     --wg-error-border: rgba(185, 48, 48, 0.35);
@@ -97,6 +95,7 @@
     background-color: var(--wg-bg);
     min-height: 100vh;
     font-family: var(--font-body);
+    color: var(--wg-primary);
 }
 
 .wg-header {
@@ -151,6 +150,20 @@
 .wg-input:focus {
     border-color: var(--wg-primary);
     box-shadow: 0 0 0 2px var(--wg-focus-ring);
+}
+
+.wg-input::placeholder {
+    color: var(--wg-primary);
+    opacity: 1;
+}
+
+.wg-input::-webkit-input-placeholder {
+    color: var(--wg-primary);
+}
+
+.wg-input::-moz-placeholder {
+    color: var(--wg-primary);
+    opacity: 1;
 }
 
 .wg-search-wrapper {
@@ -568,7 +581,7 @@
 }
 
 .wg-header-link:hover {
-    color: var(--wg-primary-hover);
+    color: var(--wg-primary);
 }
 
 .wg-header-link-active {
@@ -635,7 +648,7 @@
 }
 
 .wg-about-link:hover {
-    color: var(--wg-primary-hover);
+    color: var(--wg-primary);
     text-decoration: underline;
 }
 
