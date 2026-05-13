@@ -6,6 +6,8 @@ Aesthetic: Augusta-inspired (whisper white, Augusta green, championship gold).
 
 import asyncio
 import os
+import time
+from decimal import Decimal
 
 import dash
 import dash_bootstrap_components as dbc
@@ -14,8 +16,9 @@ from dash import ClientsideFunction, Dash, Input, Output, State, callback, dcc, 
 from dash.exceptions import PreventUpdate
 from dotenv import load_dotenv
 from pydantic_ai import UsageLimits
+from pydantic_ai.agent import AgentRunResult
 
-from agent import AgentResult, WikiGolfDeps, build_agent
+from agent import AgentResult, WikiGolfDeps, build_agent, estimate_cost
 from variants import SYSTEM_PROMPT_V1_0, VARIANTS, AgentVariant
 from wiki import find_articles
 
@@ -811,6 +814,94 @@ def toggle_button(origin_data: dict | None, dest_data: dict | None) -> tuple:
     return True, "wg-button wg-button-disabled"
 
 
+def build_scorecard(agent_result: AgentResult) -> html.Div:
+    """Build the scorecard display from agent results."""
+    links_count = len(agent_result.path) - 1
+    duration_formatted = f"{agent_result.duration_seconds:.1f}s"
+    tokens_formatted = f"{agent_result.total_tokens:,}"
+    cost_formatted = f"${agent_result.estimated_cost_usd:.4f}"
+
+    return html.Div(
+        [
+            # Hero metric: Links traveled
+            html.Div(
+                [
+                    html.Span(str(links_count), className="wg-scorecard-hero-number"),
+                    html.Span(
+                        " link" if links_count == 1 else " links",
+                        className="wg-scorecard-hero-label",
+                    ),
+                    html.Span(" traveled", className="wg-scorecard-hero-label"),
+                ],
+                className="wg-scorecard-hero",
+            ),
+            # Divider line
+            html.Div(className="wg-scorecard-divider"),
+            # Three-column stats
+            html.Div(
+                [
+                    html.Div(
+                        [
+                            html.Div("Duration", className="wg-scorecard-stat-label"),
+                            html.Div(
+                                duration_formatted,
+                                className="wg-scorecard-stat-value",
+                            ),
+                        ],
+                        className="wg-scorecard-stat",
+                    ),
+                    html.Div(
+                        [
+                            html.Div("Cost", className="wg-scorecard-stat-label"),
+                            html.Div(
+                                cost_formatted,
+                                className="wg-scorecard-stat-value",
+                            ),
+                        ],
+                        className="wg-scorecard-stat",
+                    ),
+                    html.Div(
+                        [
+                            html.Div("Tokens", className="wg-scorecard-stat-label"),
+                            html.Div(
+                                tokens_formatted,
+                                className="wg-scorecard-stat-value",
+                            ),
+                        ],
+                        className="wg-scorecard-stat",
+                    ),
+                ],
+                className="wg-scorecard-stats-row",
+            ),
+        ],
+        className="wg-scorecard",
+    )
+
+
+def build_path_elements(path: list[str]) -> list:
+    """Build the path display elements with arrows."""
+    elements = []
+    for i, step in enumerate(path):
+        is_dest = i == len(path) - 1
+        elements.append(
+            html.Span(
+                step.replace("_", " "),
+                className="wg-path-step-dest" if is_dest else "wg-path-step",
+            )
+        )
+        if i < len(path) - 1:
+            elements.append(html.Span("→", className="wg-path-arrow"))
+    return elements
+
+
+def calculate_cost(result: AgentRunResult) -> Decimal:
+    """Calculate cost from agent run result, returning Decimal."""
+    try:
+        return estimate_cost(result)
+    except Exception:
+        return Decimal("0")
+
+
 # ============================================================================
 # CALLBACKS - Run Agent
 # ============================================================================
@@ -870,9 +961,6 @@ def run_agent(
         agent = build_agent(variant)
 
         deps = WikiGolfDeps(origin=origin_key, destination=dest_key)
-
-        import time
-
         start_time = time.time()
 
         async def run():
@@ -888,16 +976,15 @@ def run_agent(
         result = asyncio.run(run())
         duration_seconds = time.time() - start_time
 
-        # Extract usage statistics from result
         usage = result.usage()
         total_tokens = usage.total_tokens if usage else 0
+        estimated_cost = calculate_cost(result)
 
-        # Create result object
         agent_result = AgentResult(
             path=deps.path,
             duration_seconds=duration_seconds,
             total_tokens=total_tokens,
-            estimated_cost_usd=0.0,  # Cost estimation disabled for now
+            estimated_cost_usd=float(estimated_cost),
         )
 
         if not agent_result.path:
@@ -910,73 +997,8 @@ def run_agent(
                 {"display": "block"},
             )
 
-        path_elements = []
-        for i, step in enumerate(agent_result.path):
-            is_dest = i == len(agent_result.path) - 1
-            path_elements.append(
-                html.Span(
-                    step.replace("_", " "),
-                    className="wg-path-step-dest" if is_dest else "wg-path-step",
-                )
-            )
-            if i < len(agent_result.path) - 1:
-                path_elements.append(html.Span("→", className="wg-path-arrow"))
-
-        # Format the scorecard statistics
-        links_count = len(agent_result.path) - 1
-        duration_formatted = f"{agent_result.duration_seconds:.1f}s"
-        tokens_formatted = f"{agent_result.total_tokens:,}"
-
-        # Build the scorecard display
-        scorecard = html.Div(
-            [
-                # Hero metric: Links traveled
-                html.Div(
-                    [
-                        html.Span(
-                            str(links_count), className="wg-scorecard-hero-number"
-                        ),
-                        html.Span(
-                            " link" if links_count == 1 else " links",
-                            className="wg-scorecard-hero-label",
-                        ),
-                        html.Span(" traveled", className="wg-scorecard-hero-label"),
-                    ],
-                    className="wg-scorecard-hero",
-                ),
-                # Divider line
-                html.Div(className="wg-scorecard-divider"),
-                # Three-column stats
-                html.Div(
-                    [
-                        html.Div(
-                            [
-                                html.Div(
-                                    "Duration", className="wg-scorecard-stat-label"
-                                ),
-                                html.Div(
-                                    duration_formatted,
-                                    className="wg-scorecard-stat-value",
-                                ),
-                            ],
-                            className="wg-scorecard-stat",
-                        ),
-                        html.Div(
-                            [
-                                html.Div("Tokens", className="wg-scorecard-stat-label"),
-                                html.Div(
-                                    tokens_formatted,
-                                    className="wg-scorecard-stat-value",
-                                ),
-                            ],
-                            className="wg-scorecard-stat",
-                        ),
-                    ],
-                    className="wg-scorecard-stats-row",
-                ),
-            ],
-            className="wg-scorecard",
-        )
+        path_elements = build_path_elements(agent_result.path)
+        scorecard = build_scorecard(agent_result)
 
         return (
             {"display": "block"},

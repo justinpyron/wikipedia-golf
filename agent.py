@@ -1,8 +1,11 @@
 """Factory for building Wikipedia Golf agents from variant configurations."""
 
 from dataclasses import dataclass, field
+from decimal import Decimal
 
 from pydantic_ai import Agent, ModelRetry, RunContext
+from pydantic_ai.agent import AgentRunResult
+from pydantic_ai.messages import ModelResponse
 from pydantic_ai.settings import ModelSettings
 
 from variants import AgentVariant
@@ -117,28 +120,13 @@ def build_agent(variant: AgentVariant) -> Agent[WikiGolfDeps, str]:
     return agent
 
 
-# Pricing per 1M tokens (as of May 2025)
-MODEL_PRICING: dict[str, tuple[float, float]] = {
-    # (input_price_per_1m, output_price_per_1m) in USD
-    "gpt-5.4-mini": (0.50, 2.00),
-    "claude-haiku-4-5": (0.80, 4.00),
-}
-
-
-def estimate_cost(model: str, prompt_tokens: int, completion_tokens: int) -> float:
-    """Estimate cost in USD based on model and token usage."""
-    # Normalize model name to find pricing
-    model_key = None
-    for key in MODEL_PRICING:
-        if key in model.lower():
-            model_key = key
-            break
-
-    if model_key is None:
-        # Default to GPT-5.4-mini pricing if unknown
-        model_key = "gpt-5.4-mini"
-
-    input_price, output_price = MODEL_PRICING[model_key]
-    input_cost = (prompt_tokens / 1_000_000) * input_price
-    output_cost = (completion_tokens / 1_000_000) * output_price
-    return input_cost + output_cost
+def estimate_cost(result: AgentRunResult) -> Decimal:
+    """Sum the estimated USD cost across every model response in the run."""
+    return sum(
+        (
+            m.cost().total_price
+            for m in result.all_messages()
+            if isinstance(m, ModelResponse)
+        ),
+        Decimal(0),
+    )
