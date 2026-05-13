@@ -462,13 +462,18 @@
     text-align: center;
 }
 
-.wg-result-header {
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--wg-text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
+.wg-result-links-hero {
     margin-bottom: 24px;
+    text-align: center;
+}
+
+.wg-result-links-hero .wg-scorecard-hero {
+    margin-bottom: 0;
+}
+
+.wg-result-usage {
+    margin-top: 24px;
+    text-align: center;
 }
 
 .wg-path-container {

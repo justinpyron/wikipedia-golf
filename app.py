@@ -443,9 +443,9 @@ app.layout = html.Div(
         # Result Section
         html.Div(
             [
-                html.Div("Path Found", className="wg-result-header"),
+                html.Div(id="result-links-hero", className="wg-result-links-hero"),
                 html.Div(id="result-path", className="wg-path-container"),
-                html.Div(id="result-stats", className="wg-path-stats"),
+                html.Div(id="result-usage-stats", className="wg-result-usage"),
             ],
             id="result-container",
             className="wg-result-container",
@@ -814,30 +814,31 @@ def toggle_button(origin_data: dict | None, dest_data: dict | None) -> tuple:
     return True, "wg-button wg-button-disabled"
 
 
-def build_scorecard(agent_result: AgentResult) -> html.Div:
-    """Build the scorecard display from agent results."""
+def build_links_traveled_hero(agent_result: AgentResult) -> html.Div:
+    """Hero line: N link(s) traveled."""
     links_count = len(agent_result.path) - 1
+    return html.Div(
+        [
+            html.Span(str(links_count), className="wg-scorecard-hero-number"),
+            html.Span(
+                " link" if links_count == 1 else " links",
+                className="wg-scorecard-hero-label",
+            ),
+            html.Span(" traveled", className="wg-scorecard-hero-label"),
+        ],
+        className="wg-scorecard-hero",
+    )
+
+
+def build_usage_stats_block(agent_result: AgentResult) -> html.Div:
+    """Duration, cost, and tokens row with divider."""
     duration_formatted = f"{agent_result.duration_seconds:.1f}s"
     tokens_formatted = f"{agent_result.total_tokens:,}"
     cost_formatted = f"${agent_result.estimated_cost_usd:.4f}"
 
     return html.Div(
         [
-            # Hero metric: Links traveled
-            html.Div(
-                [
-                    html.Span(str(links_count), className="wg-scorecard-hero-number"),
-                    html.Span(
-                        " link" if links_count == 1 else " links",
-                        className="wg-scorecard-hero-label",
-                    ),
-                    html.Span(" traveled", className="wg-scorecard-hero-label"),
-                ],
-                className="wg-scorecard-hero",
-            ),
-            # Divider line
             html.Div(className="wg-scorecard-divider"),
-            # Three-column stats
             html.Div(
                 [
                     html.Div(
@@ -874,7 +875,6 @@ def build_scorecard(agent_result: AgentResult) -> html.Div:
                 className="wg-scorecard-stats-row",
             ),
         ],
-        className="wg-scorecard",
     )
 
 
@@ -909,8 +909,9 @@ def calculate_cost(result: AgentRunResult) -> Decimal:
 
 @callback(
     Output("result-container", "style"),
+    Output("result-links-hero", "children"),
     Output("result-path", "children"),
-    Output("result-stats", "children"),
+    Output("result-usage-stats", "children"),
     Output("agent-error", "children"),
     Output("agent-error", "style"),
     Input("tee-off-button", "n_clicks"),
@@ -990,7 +991,7 @@ def run_agent(
         if not agent_result.path:
             return (
                 {"display": "none"},
-                {"display": "none"},
+                None,
                 None,
                 None,
                 "The agent could not find a path. Please try again.",
@@ -998,12 +999,12 @@ def run_agent(
             )
 
         path_elements = build_path_elements(agent_result.path)
-        scorecard = build_scorecard(agent_result)
 
         return (
             {"display": "block"},
+            build_links_traveled_hero(agent_result),
             path_elements,
-            scorecard,
+            build_usage_stats_block(agent_result),
             None,
             {"display": "none"},
         )
@@ -1011,6 +1012,7 @@ def run_agent(
     except Exception:
         return (
             {"display": "none"},
+            None,
             None,
             None,
             "The agent encountered an error. Please try again.",
