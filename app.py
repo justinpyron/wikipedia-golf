@@ -461,6 +461,8 @@ app.layout = html.Div(
             className="wg-loading-container",
             style={"display": "none"},
         ),
+        # Updated by clientside when Tee Off fires so stale results hide immediately.
+        dcc.Store(id="tee-off-clear-sentinel", data=None),
         # Result Section
         html.Div(
             [
@@ -1117,6 +1119,27 @@ def store_temperature(value: float | None) -> float | None:
 # ============================================================================
 # CLIENTSIDE CALLBACK - Loading Counter
 # ============================================================================
+
+# Clear prior run output as soon as Tee Off is clicked (before server returns).
+app.clientside_callback(
+    """
+    function(n_clicks) {
+        if (!n_clicks) {
+            return window.dash_clientside.no_update;
+        }
+        const sp = window.dash_clientside.set_props;
+        sp("result-container", {style: {display: "none"}});
+        sp("result-links-hero", {children: null});
+        sp("result-path", {children: null});
+        sp("result-usage-stats", {children: null});
+        sp("agent-error", {style: {display: "none"}, children: null});
+        return Date.now();
+    }
+    """,
+    Output("tee-off-clear-sentinel", "data"),
+    Input("tee-off-button", "n_clicks"),
+    prevent_initial_call=True,
+)
 
 # JavaScript for the loading counter - runs in browser for smooth updates
 app.clientside_callback(
