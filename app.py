@@ -34,6 +34,9 @@ MAX_LLM_REQUESTS = 30
 # Number of search results to display
 SEARCH_RESULTS_LIMIT = 5
 
+# Default LLM model - used as initial value and fallback
+DEFAULT_MODEL = "openai:gpt-5.4-nano"
+
 # ============================================================================
 # STYLES & THEME
 # ============================================================================
@@ -245,9 +248,9 @@ app.layout = html.Div(
         dcc.Store(id="dest-search-results-data", data=[]),
         dcc.Store(id="origin-data", data=None),
         dcc.Store(id="dest-data", data=None),
-        # Settings Stores
-        dcc.Store(id="selected-llm", data="openai:gpt-5.4-mini"),
-        dcc.Store(id="selected-temperature", data=0.7),
+        # Settings Stores - defaults come from RadioItems/slider value props
+        dcc.Store(id="selected-llm", data=None),
+        dcc.Store(id="selected-temperature", data=None),
         # Tee Off Button
         html.Button(
             "Tee Off",
@@ -274,6 +277,23 @@ app.layout = html.Div(
                             dcc.RadioItems(
                                 id="llm-radio",
                                 options=[
+                                    {
+                                        "label": [
+                                            html.Img(
+                                                src="/assets/logo_openai.svg",
+                                                height=20,
+                                                style={"marginRight": "10px"},
+                                            ),
+                                            html.Span(
+                                                "GPT-5.4 Nano",
+                                                style={
+                                                    "fontSize": "14px",
+                                                    "lineHeight": "1",
+                                                },
+                                            ),
+                                        ],
+                                        "value": "openai:gpt-5.4-nano",
+                                    },
                                     {
                                         "label": [
                                             html.Img(
@@ -309,7 +329,7 @@ app.layout = html.Div(
                                         "value": "anthropic:claude-haiku-4-5-20251001",
                                     },
                                 ],
-                                value="openai:gpt-5.4-mini",
+                                value=DEFAULT_MODEL,
                                 labelStyle={
                                     "display": "flex",
                                     "alignItems": "center",
@@ -760,7 +780,7 @@ def run_agent(
         dest_key = dest_data.get("key")
 
         # Use selected settings or defaults
-        model = selected_llm or "openai:gpt-5.4-mini"
+        model = selected_llm or DEFAULT_MODEL
         temperature = selected_temperature if selected_temperature is not None else 0.7
         variant = AgentVariant(
             name="user_configured",
