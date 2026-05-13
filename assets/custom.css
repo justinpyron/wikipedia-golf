@@ -530,77 +530,80 @@
 }
 
 /* ============================================================================
-   About & Settings - Pill Buttons
+   Header utilities — About / Settings (anchored flyouts)
    ============================================================================ */
 
-.wg-pill {
+.wg-header-flyout-anchor {
+    position: relative;
+    z-index: 2000;
+    margin-top: 24px;
+    text-align: center;
+}
+
+.wg-header-util-row {
     display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
-    padding: 0.45rem 1rem;
+    justify-content: center;
+    gap: 12px;
+}
+
+.wg-header-link {
     font-family: var(--font-body);
-    font-size: 0.75rem;
-    font-weight: 500;
-    letter-spacing: 0.12em;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
     color: var(--wg-text-muted);
-    background-color: var(--wg-surface);
-    border: 1px solid var(--wg-border);
-    border-radius: var(--radius-md);
+    background: none;
+    border: none;
+    padding: 4px 2px;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: color 0.15s ease;
+    border-bottom: 1px solid transparent;
+    line-height: 1.2;
+}
+
+.wg-header-link:hover {
+    color: var(--wg-text);
+}
+
+.wg-header-link-active {
+    color: var(--wg-primary);
+    border-bottom-color: var(--wg-primary);
+}
+
+.wg-header-util-sep {
+    color: var(--wg-border);
+    font-size: 14px;
     user-select: none;
     line-height: 1;
 }
 
-.wg-pill:hover {
-    color: var(--wg-text);
-    border-color: #D4D2CE;
-    background-color: var(--wg-bg);
+.wg-flyout-stack {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 100%;
+    margin-top: 8px;
+    text-align: left;
+    pointer-events: none;
 }
 
-.wg-pill.active {
-    color: var(--wg-primary);
-    background-color: rgba(30, 77, 43, 0.08);
-    border-color: var(--wg-primary);
+.wg-header-flyout-anchor.is-open .wg-flyout-stack {
+    pointer-events: auto;
 }
 
-.wg-pill.active:hover {
-    background-color: rgba(30, 77, 43, 0.12);
+.wg-flyout-panel .wg-panel-content {
+    width: 100%;
+    max-width: 420px;
+    margin: 0 auto;
+    box-sizing: border-box;
+    max-height: min(70vh, 520px);
+    overflow-y: auto;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-.wg-pill-icon {
-    display: inline-block;
-    transition: transform 0.3s ease;
-}
-
-.wg-pill.active .info-icon {
-    transform: scale(1.1);
-}
-
-.wg-pill.active .gear {
-    transform: rotate(90deg);
-}
-
-.wg-pill-text {
-    display: inline-flex;
-    align-items: center;
-    line-height: 1;
-    height: 1em;
-}
-
-/* Collapse Panel - Smooth slide out animation */
-.wg-collapse {
-    transition: max-height 0.35s ease-out;
-    overflow: hidden;
-    max-height: 0;
-}
-
-.wg-collapse.show {
-    max-height: 500px;
-}
-
-/* Panel Content */
+/* Panel content (shared; centered in flyouts via rules above) */
 .wg-panel-content {
     width: 420px;
     max-width: 90vw;
@@ -704,16 +707,4 @@
 .wg-origin-dest-item {
     flex: 1;
     min-width: 300px;
-}
-
-/* About wrapper for centering */
-.wg-about-wrapper {
-    text-align: center;
-    margin-top: 24px;
-}
-
-/* Settings wrapper for centering */
-.wg-settings-wrapper {
-    text-align: center;
-    margin-top: 24px;
 }

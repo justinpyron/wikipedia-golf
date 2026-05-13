@@ -10,9 +10,8 @@ import time
 from decimal import Decimal
 
 import dash
-import dash_bootstrap_components as dbc
 import logfire
-from dash import ClientsideFunction, Dash, Input, Output, State, callback, dcc, html
+from dash import Dash, Input, Output, State, callback, dcc, html
 from dash.exceptions import PreventUpdate
 from dotenv import load_dotenv
 from pydantic_ai import UsageLimits
@@ -112,58 +111,218 @@ app = Dash(
 
 app.layout = html.Div(
     [
-        # Header
+        # Header (About / Settings: anchored flyouts, no layout reflow)
         html.Div(
             [
                 html.H1("W I K I P E D I A   G O L F", className="wg-title"),
-                # About Section - Collapsible pill below title
                 html.Div(
                     [
-                        html.Button(
+                        html.Div(
                             [
-                                html.Span("ℹ", className="wg-pill-icon info-icon"),
-                                html.Span("About", className="wg-pill-text"),
+                                html.Button(
+                                    "About",
+                                    id="about-toggle",
+                                    type="button",
+                                    n_clicks=0,
+                                    className="wg-header-link",
+                                ),
+                                html.Span(
+                                    "·",
+                                    className="wg-header-util-sep",
+                                    **{"aria-hidden": "true"},
+                                ),
+                                html.Button(
+                                    "Settings",
+                                    id="settings-toggle",
+                                    type="button",
+                                    n_clicks=0,
+                                    className="wg-header-link",
+                                ),
                             ],
-                            id="about-toggle",
-                            n_clicks=0,
-                            className="wg-pill",
+                            className="wg-header-util-row",
                         ),
-                        dbc.Collapse(
-                            html.Div(
-                                [
-                                    # Section 1: What is Wikipedia Golf
-                                    html.P(
-                                        "Wikipedia Golf is the game of navigating from one Wikipedia article to another "
-                                        "using the fewest links possible.",
-                                        className="wg-about-text",
+                        html.Div(
+                            [
+                                html.Div(
+                                    html.Div(
+                                        [
+                                            html.P(
+                                                "Wikipedia Golf is the game of navigating from one Wikipedia article to another "
+                                                "using the fewest links possible.",
+                                                className="wg-about-text",
+                                            ),
+                                            html.A(
+                                                html.B("Learn more →"),
+                                                href="https://en.wikipedia.org/wiki/Wikipedia:Wiki_Game",
+                                                target="_blank",
+                                                className="wg-about-link",
+                                            ),
+                                            html.Div(style={"height": "40px"}),
+                                            html.P(
+                                                "In this app, an AI agent plays the game, based on start/end articles you set.",
+                                                className="wg-about-text",
+                                            ),
+                                            html.A(
+                                                html.B("View source code →"),
+                                                href="https://github.com/justinpyron/wikipedia-golf",
+                                                target="_blank",
+                                                className="wg-about-link",
+                                            ),
+                                        ],
+                                        className="wg-panel-content",
                                     ),
-                                    html.A(
-                                        html.B("Learn more →"),
-                                        href="https://en.wikipedia.org/wiki/Wikipedia:Wiki_Game",
-                                        target="_blank",
-                                        className="wg-about-link",
+                                    id="about-panel",
+                                    className="wg-flyout-panel",
+                                    style={"display": "none"},
+                                ),
+                                html.Div(
+                                    html.Div(
+                                        [
+                                            html.Div(
+                                                "Model", className="wg-settings-label"
+                                            ),
+                                            dcc.RadioItems(
+                                                id="llm-radio",
+                                                options=[
+                                                    {
+                                                        "label": [
+                                                            html.Img(
+                                                                src="/assets/logo_openai.svg",
+                                                                height=20,
+                                                                style={
+                                                                    "marginRight": "10px"
+                                                                },
+                                                            ),
+                                                            html.Span(
+                                                                "GPT-5.4 Nano",
+                                                                style={
+                                                                    "fontSize": "14px",
+                                                                    "lineHeight": "1",
+                                                                },
+                                                            ),
+                                                        ],
+                                                        "value": "openai:gpt-5.4-nano",
+                                                    },
+                                                    {
+                                                        "label": [
+                                                            html.Img(
+                                                                src="/assets/logo_openai.svg",
+                                                                height=20,
+                                                                style={
+                                                                    "marginRight": "10px"
+                                                                },
+                                                            ),
+                                                            html.Span(
+                                                                "GPT-5.4 Mini",
+                                                                style={
+                                                                    "fontSize": "14px",
+                                                                    "lineHeight": "1",
+                                                                },
+                                                            ),
+                                                        ],
+                                                        "value": "openai:gpt-5.4-mini",
+                                                    },
+                                                    {
+                                                        "label": [
+                                                            html.Img(
+                                                                src="/assets/logo_openai.svg",
+                                                                height=20,
+                                                                style={
+                                                                    "marginRight": "10px"
+                                                                },
+                                                            ),
+                                                            html.Span(
+                                                                "GPT-5.4",
+                                                                style={
+                                                                    "fontSize": "14px",
+                                                                    "lineHeight": "1",
+                                                                },
+                                                            ),
+                                                        ],
+                                                        "value": "openai:gpt-5.4",
+                                                    },
+                                                    {
+                                                        "label": [
+                                                            html.Img(
+                                                                src="/assets/logo_claude.svg",
+                                                                height=20,
+                                                                style={
+                                                                    "marginRight": "10px"
+                                                                },
+                                                            ),
+                                                            html.Span(
+                                                                "Claude Haiku 4.5",
+                                                                style={
+                                                                    "fontSize": "14px",
+                                                                    "lineHeight": "1",
+                                                                },
+                                                            ),
+                                                        ],
+                                                        "value": "anthropic:claude-haiku-4-5",
+                                                    },
+                                                    {
+                                                        "label": [
+                                                            html.Img(
+                                                                src="/assets/logo_claude.svg",
+                                                                height=20,
+                                                                style={
+                                                                    "marginRight": "10px"
+                                                                },
+                                                            ),
+                                                            html.Span(
+                                                                "Claude Sonnet 4.6",
+                                                                style={
+                                                                    "fontSize": "14px",
+                                                                    "lineHeight": "1",
+                                                                },
+                                                            ),
+                                                        ],
+                                                        "value": "anthropic:claude-sonnet-4-6",
+                                                    },
+                                                ],
+                                                value=DEFAULT_MODEL,
+                                                labelStyle={
+                                                    "display": "flex",
+                                                    "alignItems": "center",
+                                                    "marginBottom": "2px",
+                                                    "cursor": "pointer",
+                                                    "padding": "6px 0",
+                                                },
+                                                inputStyle={
+                                                    "marginRight": "10px",
+                                                    "marginTop": "0",
+                                                    "marginBottom": "0",
+                                                },
+                                            ),
+                                            html.Div(
+                                                "Temperature",
+                                                className="wg-settings-label",
+                                            ),
+                                            dcc.Slider(
+                                                id="temperature-slider",
+                                                min=0.0,
+                                                max=1.0,
+                                                step=0.1,
+                                                value=DEFAULT_TEMPERATURE,
+                                                marks={
+                                                    i / 10: str(i / 10)
+                                                    for i in range(11)
+                                                },
+                                                allow_direct_input=False,
+                                            ),
+                                        ],
+                                        className="wg-panel-content",
                                     ),
-                                    # Section 2: About this app
-                                    html.Div(style={"height": "40px"}),
-                                    html.P(
-                                        "In this app, an AI agent plays the game, based on start/end articles you set.",
-                                        className="wg-about-text",
-                                    ),
-                                    html.A(
-                                        html.B("View source code →"),
-                                        href="https://github.com/justinpyron/wikipedia-golf",
-                                        target="_blank",
-                                        className="wg-about-link",
-                                    ),
-                                ],
-                                className="wg-panel-content",
-                            ),
-                            id="about-collapse",
-                            is_open=False,
-                            className="wg-collapse",
+                                    id="settings-panel",
+                                    className="wg-flyout-panel",
+                                    style={"display": "none"},
+                                ),
+                            ],
+                            className="wg-flyout-stack",
                         ),
                     ],
-                    className="wg-about-wrapper",
+                    id="header-flyout-anchor",
+                    className="wg-header-flyout-anchor",
                 ),
             ],
             className="wg-header",
@@ -247,6 +406,7 @@ app.layout = html.Div(
         dcc.Store(id="dest-search-results-data", data=[]),
         dcc.Store(id="origin-data", data=None),
         dcc.Store(id="dest-data", data=None),
+        dcc.Store(id="header-flyout-store", data=None),
         # Search debounce: intervals fire once after SEARCH_DEBOUNCE_MS of inactivity
         dcc.Interval(
             id="origin-debounce-interval",
@@ -273,145 +433,6 @@ app.layout = html.Div(
             id="tee-off-button",
             className="wg-button wg-button-disabled",
             disabled=True,
-        ),
-        # Settings Section - Collapsible pill below Tee Off
-        html.Div(
-            [
-                html.Button(
-                    [
-                        html.Span("⚙", className="wg-pill-icon gear"),
-                        html.Span("Settings", className="wg-pill-text"),
-                    ],
-                    id="settings-toggle",
-                    n_clicks=0,
-                    className="wg-pill",
-                ),
-                dbc.Collapse(
-                    html.Div(
-                        [
-                            html.Div("Model", className="wg-settings-label"),
-                            dcc.RadioItems(
-                                id="llm-radio",
-                                options=[
-                                    {
-                                        "label": [
-                                            html.Img(
-                                                src="/assets/logo_openai.svg",
-                                                height=20,
-                                                style={"marginRight": "10px"},
-                                            ),
-                                            html.Span(
-                                                "GPT-5.4 Nano",
-                                                style={
-                                                    "fontSize": "14px",
-                                                    "lineHeight": "1",
-                                                },
-                                            ),
-                                        ],
-                                        "value": "openai:gpt-5.4-nano",
-                                    },
-                                    {
-                                        "label": [
-                                            html.Img(
-                                                src="/assets/logo_openai.svg",
-                                                height=20,
-                                                style={"marginRight": "10px"},
-                                            ),
-                                            html.Span(
-                                                "GPT-5.4 Mini",
-                                                style={
-                                                    "fontSize": "14px",
-                                                    "lineHeight": "1",
-                                                },
-                                            ),
-                                        ],
-                                        "value": "openai:gpt-5.4-mini",
-                                    },
-                                    {
-                                        "label": [
-                                            html.Img(
-                                                src="/assets/logo_openai.svg",
-                                                height=20,
-                                                style={"marginRight": "10px"},
-                                            ),
-                                            html.Span(
-                                                "GPT-5.4",
-                                                style={
-                                                    "fontSize": "14px",
-                                                    "lineHeight": "1",
-                                                },
-                                            ),
-                                        ],
-                                        "value": "openai:gpt-5.4",
-                                    },
-                                    {
-                                        "label": [
-                                            html.Img(
-                                                src="/assets/logo_claude.svg",
-                                                height=20,
-                                                style={"marginRight": "10px"},
-                                            ),
-                                            html.Span(
-                                                "Claude Haiku 4.5",
-                                                style={
-                                                    "fontSize": "14px",
-                                                    "lineHeight": "1",
-                                                },
-                                            ),
-                                        ],
-                                        "value": "anthropic:claude-haiku-4-5",
-                                    },
-                                    {
-                                        "label": [
-                                            html.Img(
-                                                src="/assets/logo_claude.svg",
-                                                height=20,
-                                                style={"marginRight": "10px"},
-                                            ),
-                                            html.Span(
-                                                "Claude Sonnet 4.6",
-                                                style={
-                                                    "fontSize": "14px",
-                                                    "lineHeight": "1",
-                                                },
-                                            ),
-                                        ],
-                                        "value": "anthropic:claude-sonnet-4-6",
-                                    },
-                                ],
-                                value=DEFAULT_MODEL,
-                                labelStyle={
-                                    "display": "flex",
-                                    "alignItems": "center",
-                                    "marginBottom": "2px",
-                                    "cursor": "pointer",
-                                    "padding": "6px 0",
-                                },
-                                inputStyle={
-                                    "marginRight": "10px",
-                                    "marginTop": "0",
-                                    "marginBottom": "0",
-                                },
-                            ),
-                            html.Div("Temperature", className="wg-settings-label"),
-                            dcc.Slider(
-                                id="temperature-slider",
-                                min=0.0,
-                                max=1.0,
-                                step=0.1,
-                                value=DEFAULT_TEMPERATURE,
-                                marks={i / 10: str(i / 10) for i in range(11)},
-                                allow_direct_input=False,
-                            ),
-                        ],
-                        className="wg-panel-content",
-                    ),
-                    id="settings-collapse",
-                    is_open=False,
-                    className="wg-collapse",
-                ),
-            ],
-            className="wg-settings-wrapper",
         ),
         # Loading state with pulsing dot and counter
         html.Div(
@@ -1021,6 +1042,54 @@ def run_agent(
 
 
 # ============================================================================
+# CALLBACKS - Header flyout (About / Settings)
+# ============================================================================
+
+
+@callback(
+    Output("header-flyout-store", "data"),
+    Input("about-toggle", "n_clicks"),
+    Input("settings-toggle", "n_clicks"),
+    State("header-flyout-store", "data"),
+    prevent_initial_call=True,
+)
+def toggle_header_flyout(
+    about_clicks: int | None,
+    settings_clicks: int | None,
+    current: str | None,
+) -> str | None:
+    """Accordion: one panel at a time; click active toggle closes."""
+    ctx = dash.callback_context
+    if not ctx.triggered_id:
+        raise PreventUpdate
+    tid = ctx.triggered_id
+    if tid == "about-toggle":
+        return None if current == "about" else "about"
+    if tid == "settings-toggle":
+        return None if current == "settings" else "settings"
+    raise PreventUpdate
+
+
+@callback(
+    Output("about-toggle", "className"),
+    Output("settings-toggle", "className"),
+    Output("header-flyout-anchor", "className"),
+    Output("about-panel", "style"),
+    Output("settings-panel", "style"),
+    Input("header-flyout-store", "data"),
+)
+def render_header_flyout(data: str | None) -> tuple:
+    """Sync link state and panel visibility from store (incl. outside click)."""
+    link = "wg-header-link"
+    about_cls = f"{link} {link}-active" if data == "about" else link
+    settings_cls = f"{link} {link}-active" if data == "settings" else link
+    anchor_cls = "wg-header-flyout-anchor" + (" is-open" if data else "")
+    about_style = {"display": "block"} if data == "about" else {"display": "none"}
+    settings_style = {"display": "block"} if data == "settings" else {"display": "none"}
+    return about_cls, settings_cls, anchor_cls, about_style, settings_style
+
+
+# ============================================================================
 # CALLBACKS - Settings Persistence
 # ============================================================================
 
@@ -1043,43 +1112,6 @@ def store_llm_selection(value: str | None) -> str | None:
 def store_temperature(value: float | None) -> float | None:
     """Store temperature setting."""
     return value
-
-
-# ============================================================================
-# CALLBACKS - About & Settings Toggle
-# ============================================================================
-
-
-@callback(
-    Output("about-collapse", "is_open"),
-    Output("about-toggle", "className"),
-    Input("about-toggle", "n_clicks"),
-    State("about-collapse", "is_open"),
-    prevent_initial_call=True,
-)
-def toggle_about(n_clicks: int | None, is_open: bool) -> tuple:
-    """Toggle About panel open/closed and update button active state."""
-    if not n_clicks:
-        raise PreventUpdate
-    new_is_open = not is_open
-    class_name = "wg-pill active" if new_is_open else "wg-pill"
-    return new_is_open, class_name
-
-
-@callback(
-    Output("settings-collapse", "is_open"),
-    Output("settings-toggle", "className"),
-    Input("settings-toggle", "n_clicks"),
-    State("settings-collapse", "is_open"),
-    prevent_initial_call=True,
-)
-def toggle_settings(n_clicks: int | None, is_open: bool) -> tuple:
-    """Toggle Settings panel open/closed and update button active state."""
-    if not n_clicks:
-        raise PreventUpdate
-    new_is_open = not is_open
-    class_name = "wg-pill active" if new_is_open else "wg-pill"
-    return new_is_open, class_name
 
 
 # ============================================================================
