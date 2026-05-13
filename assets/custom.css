@@ -403,7 +403,7 @@
 }
 
 /* ============================================================================
-   Loading State - Pulsing Dot with Counter
+   Loading State — label + pulsating dot
    ============================================================================ */
 
 .wg-loading-container {
@@ -412,12 +412,23 @@
     transition: opacity 0.3s ease;
 }
 
+.wg-loading-label {
+    font-family: var(--font-body);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--wg-text-muted);
+    line-height: 1.2;
+    margin: 0 0 12px 0;
+}
+
 .wg-pulse-dot {
     width: 12px;
     height: 12px;
     background-color: var(--wg-primary);
     border-radius: 50%;
-    margin: 0 auto 16px auto;
+    margin: 0 auto;
     animation: pulse 2s ease-in-out infinite;
 }
 
@@ -430,23 +441,6 @@
         opacity: 1;
         transform: scale(1.1);
     }
-}
-
-.wg-loading-counter {
-    font-family: var(--font-mono);
-    font-size: 18px;
-    font-weight: 500;
-    color: var(--wg-text);
-    line-height: 1;
-    margin-bottom: 8px;
-}
-
-.wg-loading-label {
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--wg-text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
 }
 
 /* ============================================================================

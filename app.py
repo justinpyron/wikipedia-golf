@@ -434,28 +434,14 @@ app.layout = html.Div(
             className="wg-button wg-button-disabled",
             disabled=True,
         ),
-        # Loading state with pulsing dot and counter
+        # Loading state: label + pulsating dot (duration shown in results)
         html.Div(
             [
-                html.Div(className="wg-pulse-dot"),
                 html.Div(
-                    "0s",
-                    id="loading-counter",
-                    className="wg-loading-counter",
-                ),
-                html.Div(
-                    "FINDING PATH",
+                    "Finding path",
                     className="wg-loading-label",
                 ),
-                # Interval for counter updates (clientside)
-                dcc.Interval(
-                    id="loading-interval",
-                    interval=100,  # Update every 100ms for smoothness
-                    n_intervals=0,
-                    disabled=True,  # Start disabled, enable when loading begins
-                ),
-                # Store for tracking start time
-                dcc.Store(id="loading-start-time", data=None),
+                html.Div(className="wg-pulse-dot"),
             ],
             id="loading-spinner",
             className="wg-loading-container",
@@ -1138,46 +1124,6 @@ app.clientside_callback(
     """,
     Output("tee-off-clear-sentinel", "data"),
     Input("tee-off-button", "n_clicks"),
-    prevent_initial_call=True,
-)
-
-# JavaScript for the loading counter - runs in browser for smooth updates
-app.clientside_callback(
-    """
-    function(n_intervals, start_time) {
-        if (!start_time) {
-            return ["0s", window.dash_clientside.no_update];
-        }
-        const elapsed = Date.now() - start_time;
-        const seconds = Math.floor(elapsed / 1000);
-        return [seconds + "s", window.dash_clientside.no_update];
-    }
-    """,
-    Output("loading-counter", "children"),
-    Output("loading-start-time", "data", allow_duplicate=True),
-    Input("loading-interval", "n_intervals"),
-    State("loading-start-time", "data"),
-    prevent_initial_call=True,
-)
-
-# Start/stop the counter based on loading visibility
-app.clientside_callback(
-    """
-    function(style) {
-        const isVisible = style && style.display !== "none";
-        if (isVisible) {
-            // Loading became visible - start counter
-            return [0, false, Date.now()];
-        } else {
-            // Loading hidden - stop counter
-            return [0, true, window.dash_clientside.no_update];
-        }
-    }
-    """,
-    Output("loading-interval", "n_intervals"),
-    Output("loading-interval", "disabled"),
-    Output("loading-start-time", "data"),
-    Input("loading-spinner", "style"),
     prevent_initial_call=True,
 )
 
