@@ -40,6 +40,9 @@ DEFAULT_MODEL = "openai:gpt-5.4-nano"
 # Default temperature setting
 DEFAULT_TEMPERATURE = 0.7
 
+# Debounce delay for search-as-you-type (milliseconds)
+SEARCH_DEBOUNCE_MS = 1000
+
 # ============================================================================
 # STYLES & THEME
 # ============================================================================
@@ -180,7 +183,6 @@ app.layout = html.Div(
                                             placeholder="Search...",
                                             className="wg-input",
                                             autoComplete="off",
-                                            debounce=True,
                                         ),
                                         html.Div(id="origin-search-results"),
                                         html.Div(
@@ -215,7 +217,6 @@ app.layout = html.Div(
                                             placeholder="Search...",
                                             className="wg-input",
                                             autoComplete="off",
-                                            debounce=True,
                                         ),
                                         html.Div(id="dest-search-results"),
                                         html.Div(
@@ -243,6 +244,23 @@ app.layout = html.Div(
         dcc.Store(id="dest-search-results-data", data=[]),
         dcc.Store(id="origin-data", data=None),
         dcc.Store(id="dest-data", data=None),
+        # Search debounce: intervals fire once after SEARCH_DEBOUNCE_MS of inactivity
+        dcc.Interval(
+            id="origin-debounce-interval",
+            interval=SEARCH_DEBOUNCE_MS,
+            n_intervals=0,
+            disabled=True,
+            max_intervals=1,
+        ),
+        dcc.Store(id="origin-pending-query", data=None),
+        dcc.Interval(
+            id="dest-debounce-interval",
+            interval=SEARCH_DEBOUNCE_MS,
+            n_intervals=0,
+            disabled=True,
+            max_intervals=1,
+        ),
+        dcc.Store(id="dest-pending-query", data=None),
         # Settings Stores - defaults come from RadioItems/slider value props
         dcc.Store(id="selected-llm", data=None),
         dcc.Store(id="selected-temperature", data=None),
@@ -450,12 +468,13 @@ app.layout = html.Div(
     Output("origin-search-results-data", "data"),
     Output("origin-error", "children"),
     Output("origin-error", "style"),
-    Input("origin-input", "value"),
+    Input("origin-debounce-interval", "n_intervals"),
+    State("origin-pending-query", "data"),
     prevent_initial_call=True,
 )
-def search_origin(input_value: str | None) -> tuple:
-    """Search Wikipedia as user types in origin input (debounced)."""
-    if not input_value or len(input_value) < 2:
+def search_origin(n_intervals: int, input_value: str | None) -> tuple:
+    """Search Wikipedia after debounce period elapses."""
+    if not n_intervals or not input_value or len(input_value) < 2:
         return [], None, {"display": "none"}
 
     try:
@@ -492,12 +511,13 @@ def search_origin(input_value: str | None) -> tuple:
     Output("dest-search-results-data", "data"),
     Output("dest-error", "children"),
     Output("dest-error", "style"),
-    Input("dest-input", "value"),
+    Input("dest-debounce-interval", "n_intervals"),
+    State("dest-pending-query", "data"),
     prevent_initial_call=True,
 )
-def search_dest(input_value: str | None) -> tuple:
-    """Search Wikipedia as user types in destination input (debounced)."""
-    if not input_value or len(input_value) < 2:
+def search_dest(n_intervals: int, input_value: str | None) -> tuple:
+    """Search Wikipedia after debounce period elapses."""
+    if not n_intervals or not input_value or len(input_value) < 2:
         return [], None, {"display": "none"}
 
     try:
@@ -527,6 +547,34 @@ def search_dest(input_value: str | None) -> tuple:
             "Unable to search. Please try again.",
             {"display": "block"},
         )
+
+
+# Clientside debounce: each keystroke stores the query and restarts the timer
+app.clientside_callback(
+    """
+    function(value) {
+        return [value, 0, false];
+    }
+    """,
+    Output("origin-pending-query", "data"),
+    Output("origin-debounce-interval", "n_intervals"),
+    Output("origin-debounce-interval", "disabled"),
+    Input("origin-input", "value"),
+    prevent_initial_call=True,
+)
+
+app.clientside_callback(
+    """
+    function(value) {
+        return [value, 0, false];
+    }
+    """,
+    Output("dest-pending-query", "data"),
+    Output("dest-debounce-interval", "n_intervals"),
+    Output("dest-debounce-interval", "disabled"),
+    Input("dest-input", "value"),
+    prevent_initial_call=True,
+)
 
 
 # ============================================================================
