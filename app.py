@@ -15,7 +15,7 @@ from dash.exceptions import PreventUpdate
 from dotenv import load_dotenv
 from pydantic_ai import UsageLimits
 
-from agent import AgentResult, WikiGolfDeps, build_agent, estimate_cost
+from agent import AgentResult, WikiGolfDeps, build_agent
 from variants import SYSTEM_PROMPT_V1_0, VARIANTS, AgentVariant
 from wiki import find_articles
 
@@ -773,44 +773,16 @@ def run_agent(
         result = asyncio.run(run())
         duration_seconds = time.time() - start_time
 
-        # Extract usage statistics
-        total_tokens = 0
-        prompt_tokens = 0
-        completion_tokens = 0
-
-        try:
-            # Try to get usage as a property (newer pydantic-ai versions)
-            usage = result.usage
-        except (AttributeError, TypeError):
-            try:
-                # Try as a method (older versions)
-                usage = result.usage()
-            except (AttributeError, TypeError):
-                usage = None
-
-        if usage:
-            # Handle both single model usage and multi-model usage
-            if hasattr(usage, "requests"):
-                # Aggregate across all requests
-                for req in usage.requests:
-                    prompt_tokens += getattr(req, "prompt_tokens", 0) or 0
-                    completion_tokens += getattr(req, "completion_tokens", 0) or 0
-            elif hasattr(usage, "prompt_tokens"):
-                # Single usage object
-                prompt_tokens = getattr(usage, "prompt_tokens", 0) or 0
-                completion_tokens = getattr(usage, "completion_tokens", 0) or 0
-
-            total_tokens = prompt_tokens + completion_tokens
-
-        # Calculate estimated cost
-        estimated_cost = estimate_cost(model, prompt_tokens, completion_tokens)
+        # Extract usage statistics from result
+        usage = result.usage()
+        total_tokens = usage.total_tokens if usage else 0
 
         # Create result object
         agent_result = AgentResult(
             path=deps.path,
             duration_seconds=duration_seconds,
             total_tokens=total_tokens,
-            estimated_cost_usd=estimated_cost,
+            estimated_cost_usd=0.0,  # Cost estimation disabled for now
         )
 
         if not agent_result.path:
@@ -838,7 +810,6 @@ def run_agent(
         # Format the scorecard statistics
         links_count = len(agent_result.path) - 1
         duration_formatted = f"{agent_result.duration_seconds:.1f}s"
-        cost_formatted = f"${agent_result.estimated_cost_usd:.4f}"
         tokens_formatted = f"{agent_result.total_tokens:,}"
 
         # Build the scorecard display
@@ -871,17 +842,6 @@ def run_agent(
                                 html.Div(
                                     duration_formatted,
                                     className="wg-scorecard-stat-value",
-                                ),
-                            ],
-                            className="wg-scorecard-stat",
-                        ),
-                        html.Div(
-                            [
-                                html.Div(
-                                    "Est. Cost", className="wg-scorecard-stat-label"
-                                ),
-                                html.Div(
-                                    cost_formatted, className="wg-scorecard-stat-value"
                                 ),
                             ],
                             className="wg-scorecard-stat",
