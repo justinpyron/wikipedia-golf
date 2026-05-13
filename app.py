@@ -114,7 +114,7 @@ app.layout = html.Div(
         # Header (About / Settings: anchored flyouts, no layout reflow)
         html.Div(
             [
-                html.H1("W I K I P E D I A   G O L F", className="wg-title"),
+                html.H1("Wikipedia Golf", className="wg-title"),
                 html.Div(
                     [
                         html.Div(

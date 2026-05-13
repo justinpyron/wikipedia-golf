@@ -4,7 +4,7 @@
    ============================================================================ */
 
 /* Import Google Fonts */
-@import url('https://fonts.googleapis.com/css2?family=Crimson+Text:wght@400;600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@400;500;600&family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap');
 
 /* ============================================================================
    CSS Custom Properties - Augusta Color Palette
@@ -36,10 +36,12 @@
     --wg-error-border: #FECACA;
     --wg-error-text: #DC2626;
 
-    /* Typography */
-    --font-heading: 'Crimson Text', Georgia, serif;
-    --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    --font-mono: 'JetBrains Mono', monospace;
+    /* Typography — Crimson for editorial/UI; Barlow Semi Condensed for caps */
+    --font-display: 'Barlow Semi Condensed', system-ui, sans-serif;
+    --font-heading: 'Crimson Text', Georgia, 'Times New Roman', serif;
+    --font-body: 'Crimson Text', Georgia, 'Times New Roman', serif;
+    /* Revert path/steps + .wg-scorecard-stat-value to this when preferred */
+    --font-mono: 'JetBrains Mono', ui-monospace, monospace;
 
     /* Spacing Scale */
     --space-xs: 4px;
@@ -92,21 +94,22 @@
    ============================================================================ */
 
 .wg-title {
-    font-size: 32px;
+    font-family: var(--font-display);
+    font-size: 31px;
     font-weight: 500;
     color: var(--wg-primary);
-    letter-spacing: 0.05em;
+    letter-spacing: 0.14em;
     margin: 0 0 8px 0;
-    font-family: var(--font-heading);
-    white-space: pre;
+    text-transform: uppercase;
 }
 
 .wg-section-label {
+    font-family: var(--font-display);
     font-size: 12px;
     font-weight: 600;
     color: var(--wg-text-muted);
     text-transform: uppercase;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.12em;
     margin-bottom: 8px;
 }
 
@@ -202,17 +205,17 @@
 .wg-button {
     width: 100%;
     padding: 16px 32px;
-    font-size: 14px;
+    font-family: var(--font-display);
+    font-size: 13px;
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.15em;
+    letter-spacing: 0.14em;
     color: var(--wg-surface);
     background-color: var(--wg-primary);
     border: none;
     border-radius: var(--radius-sm);
     cursor: pointer;
     transition: background-color 0.2s ease;
-    font-family: var(--font-body);
 }
 
 .wg-button:hover {
@@ -381,6 +384,7 @@
 }
 
 .wg-scorecard-stat-label {
+    font-family: var(--font-display);
     font-size: 11px;
     font-weight: 600;
     color: var(--wg-text-muted);
@@ -390,9 +394,10 @@
 }
 
 .wg-scorecard-stat-value {
-    font-family: var(--font-mono);
-    font-size: 15px;
+    font-family: var(--font-body);
+    font-size: 16px;
     font-weight: 500;
+    font-variant-numeric: lining-nums proportional-nums;
     color: var(--wg-text);
 }
 
@@ -413,10 +418,10 @@
 }
 
 .wg-loading-label {
-    font-family: var(--font-body);
+    font-family: var(--font-display);
     font-size: 12px;
     font-weight: 600;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--wg-text-muted);
     line-height: 1.2;
@@ -479,10 +484,10 @@
 }
 
 .wg-path-step {
-    font-size: 15px;
+    font-family: var(--font-body);
+    font-size: 16px;
     font-weight: 500;
     color: var(--wg-text);
-    font-family: var(--font-mono);
 }
 
 .wg-path-step-dest {
@@ -542,10 +547,10 @@
 }
 
 .wg-header-link {
-    font-family: var(--font-body);
+    font-family: var(--font-display);
     font-size: 12px;
     font-weight: 600;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--wg-text-muted);
     background: none;
@@ -630,9 +635,10 @@
 }
 
 .wg-settings-label {
+    font-family: var(--font-display);
     font-size: 0.7rem;
     font-weight: 600;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--wg-text-muted);
     margin-bottom: 0.5rem;
