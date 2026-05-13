@@ -6,16 +6,20 @@ Aesthetic: Augusta-inspired (whisper white, Augusta green, championship gold).
 
 import asyncio
 import os
+import time
+from decimal import Decimal
 
 import dash
+import dash_bootstrap_components as dbc
 import logfire
-from dash import Dash, Input, Output, State, callback, dcc, html
+from dash import ClientsideFunction, Dash, Input, Output, State, callback, dcc, html
 from dash.exceptions import PreventUpdate
 from dotenv import load_dotenv
 from pydantic_ai import UsageLimits
+from pydantic_ai.agent import AgentRunResult
 
-from agent import WikiGolfDeps, build_agent
-from variants import VARIANTS
+from agent import AgentResult, WikiGolfDeps, build_agent, estimate_cost
+from variants import SYSTEM_PROMPT_V1_0, VARIANTS, AgentVariant
 from wiki import find_articles
 
 load_dotenv()
@@ -33,291 +37,18 @@ MAX_LLM_REQUESTS = 30
 # Number of search results to display
 SEARCH_RESULTS_LIMIT = 5
 
-# Augusta-inspired color palette
-COLORS = {
-    "whisper": "#F8F7F4",
-    "white": "#FFFFFF",
-    "augusta_green": "#1E4D2B",
-    "billiard_green": "#2D5A3D",
-    "championship_gold": "#F4C430",
-    "charcoal": "#1A1A1A",
-    "slate": "#5A5A5A",
-    "mist": "#E5E3DF",
-    "light_mist": "#F0EFED",
-}
+# Default LLM model - used as initial value and fallback
+DEFAULT_MODEL = "openai:gpt-5.4-nano"
 
-app = Dash(
-    __name__,
-    title="Wikipedia Golf",
-    suppress_callback_exceptions=True,
-)
+# Default temperature setting
+DEFAULT_TEMPERATURE = 0.7
 
-# Styles
-CONTAINER_STYLE = {
-    "maxWidth": "900px",
-    "margin": "0 auto",
-    "padding": "48px 24px",
-    "backgroundColor": COLORS["whisper"],
-    "minHeight": "100vh",
-    "fontFamily": "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
-}
+# Debounce delay for search-as-you-type (milliseconds)
+SEARCH_DEBOUNCE_MS = 1000
 
-HEADER_STYLE = {
-    "textAlign": "center",
-    "marginBottom": "48px",
-}
-
-TITLE_STYLE = {
-    "fontSize": "32px",
-    "fontWeight": "500",
-    "color": COLORS["augusta_green"],
-    "letterSpacing": "0.05em",
-    "margin": "0 0 8px 0",
-    "fontFamily": "'Crimson Text', Georgia, serif",
-}
-
-SUBTITLE_STYLE = {
-    "fontSize": "14px",
-    "color": COLORS["slate"],
-    "margin": "0",
-    "fontWeight": "400",
-}
-
-SECTION_LABEL_STYLE = {
-    "fontSize": "12px",
-    "fontWeight": "600",
-    "color": COLORS["slate"],
-    "textTransform": "uppercase",
-    "letterSpacing": "0.1em",
-    "marginBottom": "8px",
-}
-
-INPUT_STYLE = {
-    "width": "100%",
-    "height": "48px",
-    "padding": "0 16px",
-    "fontSize": "16px",
-    "lineHeight": "1.5",
-    "border": f"1px solid {COLORS['mist']}",
-    "borderRadius": "4px",
-    "backgroundColor": COLORS["white"],
-    "color": COLORS["charcoal"],
-    "outline": "none",
-    "boxSizing": "border-box",
-    "transition": "border-color 0.2s ease",
-}
-
-SEARCH_WRAPPER_STYLE = {
-    "position": "relative",
-    "zIndex": "100",
-}
-
-SEARCH_RESULTS_CONTAINER_STYLE = {
-    "position": "absolute",
-    "top": "100%",
-    "left": "0",
-    "right": "0",
-    "marginTop": "4px",
-    "border": f"1px solid {COLORS['mist']}",
-    "borderRadius": "4px",
-    "overflow": "hidden",
-    "boxShadow": "0 4px 12px rgba(0,0,0,0.15)",
-    "zIndex": "1000",
-    "backgroundColor": COLORS["white"],
-}
-
-SEARCH_RESULT_ITEM_STYLE = {
-    "padding": "12px 16px",
-    "cursor": "pointer",
-    "backgroundColor": COLORS["white"],
-    "borderBottom": f"1px solid {COLORS['light_mist']}",
-    "transition": "background-color 0.15s ease",
-}
-
-
-BUTTON_STYLE = {
-    "width": "100%",
-    "padding": "16px 32px",
-    "fontSize": "14px",
-    "fontWeight": "600",
-    "textTransform": "uppercase",
-    "letterSpacing": "0.15em",
-    "color": COLORS["white"],
-    "backgroundColor": COLORS["augusta_green"],
-    "border": "none",
-    "borderRadius": "2px",
-    "cursor": "pointer",
-    "transition": "background-color 0.2s ease",
-}
-
-BUTTON_DISABLED_STYLE = {
-    **BUTTON_STYLE,
-    "backgroundColor": COLORS["mist"],
-    "color": COLORS["slate"],
-    "cursor": "not-allowed",
-}
-
-SPINNER_STYLE = {
-    "textAlign": "center",
-    "padding": "48px 0",
-    "color": COLORS["augusta_green"],
-    "fontSize": "14px",
-}
-
-# Selected article display styles (inline card)
-SELECTED_CARD_STYLE = {
-    "display": "flex",
-    "alignItems": "flex-start",
-    "gap": "16px",
-    "padding": "16px",
-    "backgroundColor": COLORS["white"],
-    "border": f"1px solid {COLORS['mist']}",
-    "borderRadius": "4px",
-    "position": "relative",
-    "transition": "all 0.3s ease",
-}
-
-SELECTED_CARD_ORIGIN_STYLE = {
-    **SELECTED_CARD_STYLE,
-    "borderLeft": f"4px solid {COLORS['augusta_green']}",
-}
-
-SELECTED_CARD_DEST_STYLE = {
-    **SELECTED_CARD_STYLE,
-    "borderLeft": f"4px solid {COLORS['championship_gold']}",
-}
-
-SELECTED_THUMBNAIL_STYLE = {
-    "width": "48px",
-    "height": "48px",
-    "objectFit": "cover",
-    "borderRadius": "4px",
-    "flexShrink": "0",
-    "border": f"1px solid {COLORS['light_mist']}",
-}
-
-SELECTED_THUMBNAIL_PLACEHOLDER_STYLE = {
-    "width": "48px",
-    "height": "48px",
-    "backgroundColor": COLORS["light_mist"],
-    "borderRadius": "4px",
-    "flexShrink": "0",
-    "display": "flex",
-    "alignItems": "center",
-    "justifyContent": "center",
-    "fontSize": "20px",
-    "color": COLORS["slate"],
-}
-
-SELECTED_CONTENT_STYLE = {
-    "flex": "1",
-    "minWidth": "0",
-}
-
-SELECTED_TITLE_STYLE = {
-    "fontSize": "18px",
-    "fontWeight": "600",
-    "color": COLORS["charcoal"],
-    "margin": "0 0 4px 0",
-    "lineHeight": "1.3",
-}
-
-SELECTED_DESC_STYLE = {
-    "fontSize": "13px",
-    "color": COLORS["slate"],
-    "margin": "0",
-    "lineHeight": "1.4",
-    "display": "-webkit-box",
-    "WebkitLineClamp": "2",
-    "WebkitBoxOrient": "vertical",
-    "overflow": "hidden",
-    "textOverflow": "ellipsis",
-}
-
-RESET_BUTTON_STYLE = {
-    "position": "absolute",
-    "top": "12px",
-    "right": "12px",
-    "width": "28px",
-    "height": "28px",
-    "border": "none",
-    "borderRadius": "4px",
-    "backgroundColor": COLORS["light_mist"],
-    "color": COLORS["slate"],
-    "fontSize": "16px",
-    "cursor": "pointer",
-    "display": "flex",
-    "alignItems": "center",
-    "justifyContent": "center",
-    "transition": "all 0.2s ease",
-    "padding": "0",
-    "lineHeight": "1",
-}
-
-# Animation style for search container transitions
-SEARCH_CONTAINER_STYLE = {
-    "transition": "all 0.3s ease",
-}
-
-RESULT_CONTAINER_STYLE = {
-    "marginTop": "48px",
-    "padding": "32px",
-    "backgroundColor": COLORS["white"],
-    "border": f"1px solid {COLORS['mist']}",
-    "borderRadius": "4px",
-    "textAlign": "center",
-}
-
-RESULT_HEADER_STYLE = {
-    "fontSize": "12px",
-    "fontWeight": "600",
-    "color": COLORS["slate"],
-    "textTransform": "uppercase",
-    "letterSpacing": "0.1em",
-    "marginBottom": "24px",
-}
-
-PATH_CONTAINER_STYLE = {
-    "display": "flex",
-    "alignItems": "center",
-    "justifyContent": "center",
-    "gap": "12px",
-    "flexWrap": "wrap",
-}
-
-PATH_STEP_STYLE = {
-    "fontSize": "15px",
-    "fontWeight": "500",
-    "color": COLORS["charcoal"],
-    "fontFamily": "'JetBrains Mono', monospace",
-}
-
-PATH_STEP_DEST_STYLE = {
-    **PATH_STEP_STYLE,
-    "color": COLORS["championship_gold"],
-    "fontWeight": "700",
-}
-
-PATH_ARROW_STYLE = {
-    "fontSize": "14px",
-    "color": COLORS["slate"],
-}
-
-PATH_STATS_STYLE = {
-    "marginTop": "24px",
-    "fontSize": "13px",
-    "color": COLORS["slate"],
-}
-
-ERROR_STYLE = {
-    "marginTop": "8px",
-    "padding": "10px 12px",
-    "backgroundColor": "#FEF2F2",
-    "border": "1px solid #FECACA",
-    "borderRadius": "4px",
-    "color": "#DC2626",
-    "fontSize": "13px",
-}
+# ============================================================================
+# STYLES & THEME
+# ============================================================================
 
 
 def create_selected_display(
@@ -329,13 +60,15 @@ def create_selected_display(
 
     thumbnail_url = data.get("thumbnail")
     thumbnail = (
-        html.Img(src=thumbnail_url, style=SELECTED_THUMBNAIL_STYLE)
+        html.Img(src=thumbnail_url, className="wg-selected-thumbnail")
         if thumbnail_url
-        else html.Div("📄", style=SELECTED_THUMBNAIL_PLACEHOLDER_STYLE)
+        else html.Div("📄", className="wg-selected-thumbnail-placeholder")
     )
 
-    card_style = (
-        SELECTED_CARD_DEST_STYLE if is_destination else SELECTED_CARD_ORIGIN_STYLE
+    card_class = (
+        "wg-selected-card wg-selected-card-dest"
+        if is_destination
+        else "wg-selected-card wg-selected-card-origin"
     )
 
     return html.Div(
@@ -345,45 +78,95 @@ def create_selected_display(
                 [
                     html.Div(
                         data.get("title", ""),
-                        style=SELECTED_TITLE_STYLE,
+                        className="wg-selected-title",
                     ),
                     html.Div(
                         data.get("description") or "No description available",
-                        style=SELECTED_DESC_STYLE,
+                        className="wg-selected-desc",
                     ),
                 ],
-                style=SELECTED_CONTENT_STYLE,
+                className="wg-selected-content",
             ),
             html.Button(
                 "×",
                 id=f"{'dest' if is_destination else 'origin'}-reset-btn",
-                style=RESET_BUTTON_STYLE,
-                className="reset-btn",
+                className="wg-reset-btn",
                 n_clicks=0,
             ),
         ],
         id=f"{'dest' if is_destination else 'origin'}-selected-display",
-        style=card_style,
-        className="selected-card slide-in",
+        className=f"{card_class} slide-in",
     )
 
-
-# CSS animations via inline style tag since Dash doesn't support index_string well with debug mode
-# We'll add a clientside callback or use dcc.Store to trigger CSS classes
 
 # ============================================================================
 # LAYOUT
 # ============================================================================
+
+
+app = Dash(
+    __name__,
+    title="Wikipedia Golf",
+    suppress_callback_exceptions=True,
+)
 
 app.layout = html.Div(
     [
         # Header
         html.Div(
             [
-                html.H1("W I K I P E D I A   G O L F", style=TITLE_STYLE),
-                html.P("with an AI agent", style=SUBTITLE_STYLE),
+                html.H1("W I K I P E D I A   G O L F", className="wg-title"),
+                # About Section - Collapsible pill below title
+                html.Div(
+                    [
+                        html.Button(
+                            [
+                                html.Span("ℹ", className="wg-pill-icon info-icon"),
+                                html.Span("About", className="wg-pill-text"),
+                            ],
+                            id="about-toggle",
+                            n_clicks=0,
+                            className="wg-pill",
+                        ),
+                        dbc.Collapse(
+                            html.Div(
+                                [
+                                    # Section 1: What is Wikipedia Golf
+                                    html.P(
+                                        "Wikipedia Golf is the game of navigating from one Wikipedia article to another "
+                                        "using the fewest links possible.",
+                                        className="wg-about-text",
+                                    ),
+                                    html.A(
+                                        html.B("Learn more →"),
+                                        href="https://en.wikipedia.org/wiki/Wikipedia:Wiki_Game",
+                                        target="_blank",
+                                        className="wg-about-link",
+                                    ),
+                                    # Section 2: About this app
+                                    html.Div(style={"height": "40px"}),
+                                    html.P(
+                                        "In this app, an AI agent plays the game, based on start/end articles you set.",
+                                        className="wg-about-text",
+                                    ),
+                                    html.A(
+                                        html.B("View source code →"),
+                                        href="https://github.com/justinpyron/wikipedia-golf",
+                                        target="_blank",
+                                        className="wg-about-link",
+                                    ),
+                                ],
+                                className="wg-panel-content",
+                            ),
+                            id="about-collapse",
+                            is_open=False,
+                            className="wg-collapse",
+                        ),
+                    ],
+                    className="wg-about-wrapper",
+                ),
             ],
-            style=HEADER_STYLE,
+            className="wg-header",
         ),
         # Search Section - Origin and Destination side by side
         html.Div(
@@ -391,7 +174,7 @@ app.layout = html.Div(
                 # Origin Section
                 html.Div(
                     [
-                        html.Div("From", style=SECTION_LABEL_STYLE),
+                        html.Div("Origin", className="wg-section-label"),
                         # Search container (shown when no selection)
                         html.Div(
                             [
@@ -400,46 +183,32 @@ app.layout = html.Div(
                                         dcc.Input(
                                             id="origin-input",
                                             type="text",
-                                            placeholder="Search for origin article...",
-                                            style=INPUT_STYLE,
+                                            placeholder="Search...",
+                                            className="wg-input",
                                             autoComplete="off",
                                         ),
                                         html.Div(id="origin-search-results"),
                                         html.Div(
                                             id="origin-error",
-                                            style={
-                                                **ERROR_STYLE,
-                                                "display": "none",
-                                                "marginTop": "4px",
-                                            },
-                                        ),
-                                        html.Button(
-                                            "Search",
-                                            id="origin-search-btn",
-                                            style={
-                                                **BUTTON_STYLE,
-                                                "marginTop": "12px",
-                                                "width": "100%",
-                                                "position": "relative",
-                                                "zIndex": "1",
-                                            },
+                                            className="wg-error mt-sm",
+                                            style={"display": "none"},
                                         ),
                                     ],
-                                    style=SEARCH_WRAPPER_STYLE,
+                                    className="wg-search-wrapper",
                                 ),
                             ],
                             id="origin-search-container",
-                            className="search-container",
+                            className="wg-search-container",
                         ),
                         # Selected display (shown when article selected)
                         html.Div(id="origin-selected-wrapper"),
                     ],
-                    style={"flex": "1", "minWidth": "300px"},
+                    className="wg-origin-dest-item",
                 ),
                 # Destination Section
                 html.Div(
                     [
-                        html.Div("To", style=SECTION_LABEL_STYLE),
+                        html.Div("Destination", className="wg-section-label"),
                         # Search container (shown when no selection)
                         html.Div(
                             [
@@ -448,90 +217,248 @@ app.layout = html.Div(
                                         dcc.Input(
                                             id="dest-input",
                                             type="text",
-                                            placeholder="Search for destination article...",
-                                            style=INPUT_STYLE,
+                                            placeholder="Search...",
+                                            className="wg-input",
                                             autoComplete="off",
                                         ),
                                         html.Div(id="dest-search-results"),
                                         html.Div(
                                             id="dest-error",
-                                            style={
-                                                **ERROR_STYLE,
-                                                "display": "none",
-                                                "marginTop": "4px",
-                                            },
-                                        ),
-                                        html.Button(
-                                            "Search",
-                                            id="dest-search-btn",
-                                            style={
-                                                **BUTTON_STYLE,
-                                                "marginTop": "12px",
-                                                "width": "100%",
-                                                "position": "relative",
-                                                "zIndex": "1",
-                                            },
+                                            className="wg-error mt-sm",
+                                            style={"display": "none"},
                                         ),
                                     ],
-                                    style=SEARCH_WRAPPER_STYLE,
+                                    className="wg-search-wrapper",
                                 ),
                             ],
                             id="dest-search-container",
-                            className="search-container",
+                            className="wg-search-container",
                         ),
                         # Selected display (shown when article selected)
                         html.Div(id="dest-selected-wrapper"),
                     ],
-                    style={"flex": "1", "minWidth": "300px"},
+                    className="wg-origin-dest-item",
                 ),
             ],
-            style={
-                "display": "flex",
-                "gap": "48px",
-                "marginBottom": "32px",
-                "flexWrap": "wrap",
-            },
+            className="wg-origin-dest-container",
         ),
         # Data Stores
         dcc.Store(id="origin-search-results-data", data=[]),
         dcc.Store(id="dest-search-results-data", data=[]),
         dcc.Store(id="origin-data", data=None),
         dcc.Store(id="dest-data", data=None),
+        # Search debounce: intervals fire once after SEARCH_DEBOUNCE_MS of inactivity
+        dcc.Interval(
+            id="origin-debounce-interval",
+            interval=SEARCH_DEBOUNCE_MS,
+            n_intervals=0,
+            disabled=True,
+            max_intervals=1,
+        ),
+        dcc.Store(id="origin-pending-query", data=None),
+        dcc.Interval(
+            id="dest-debounce-interval",
+            interval=SEARCH_DEBOUNCE_MS,
+            n_intervals=0,
+            disabled=True,
+            max_intervals=1,
+        ),
+        dcc.Store(id="dest-pending-query", data=None),
+        # Settings Stores - defaults come from RadioItems/slider value props
+        dcc.Store(id="selected-llm", data=None),
+        dcc.Store(id="selected-temperature", data=None),
         # Tee Off Button
         html.Button(
             "Tee Off",
             id="tee-off-button",
-            style=BUTTON_DISABLED_STYLE,
+            className="wg-button wg-button-disabled",
             disabled=True,
         ),
-        # Loading spinner
+        # Settings Section - Collapsible pill below Tee Off
         html.Div(
             [
-                html.Div(
-                    "⛳ The agent is finding the best path...",
-                    style={"color": COLORS["augusta_green"], "fontSize": "16px"},
+                html.Button(
+                    [
+                        html.Span("⚙", className="wg-pill-icon gear"),
+                        html.Span("Settings", className="wg-pill-text"),
+                    ],
+                    id="settings-toggle",
+                    n_clicks=0,
+                    className="wg-pill",
+                ),
+                dbc.Collapse(
+                    html.Div(
+                        [
+                            html.Div("Model", className="wg-settings-label"),
+                            dcc.RadioItems(
+                                id="llm-radio",
+                                options=[
+                                    {
+                                        "label": [
+                                            html.Img(
+                                                src="/assets/logo_openai.svg",
+                                                height=20,
+                                                style={"marginRight": "10px"},
+                                            ),
+                                            html.Span(
+                                                "GPT-5.4 Nano",
+                                                style={
+                                                    "fontSize": "14px",
+                                                    "lineHeight": "1",
+                                                },
+                                            ),
+                                        ],
+                                        "value": "openai:gpt-5.4-nano",
+                                    },
+                                    {
+                                        "label": [
+                                            html.Img(
+                                                src="/assets/logo_openai.svg",
+                                                height=20,
+                                                style={"marginRight": "10px"},
+                                            ),
+                                            html.Span(
+                                                "GPT-5.4 Mini",
+                                                style={
+                                                    "fontSize": "14px",
+                                                    "lineHeight": "1",
+                                                },
+                                            ),
+                                        ],
+                                        "value": "openai:gpt-5.4-mini",
+                                    },
+                                    {
+                                        "label": [
+                                            html.Img(
+                                                src="/assets/logo_openai.svg",
+                                                height=20,
+                                                style={"marginRight": "10px"},
+                                            ),
+                                            html.Span(
+                                                "GPT-5.4",
+                                                style={
+                                                    "fontSize": "14px",
+                                                    "lineHeight": "1",
+                                                },
+                                            ),
+                                        ],
+                                        "value": "openai:gpt-5.4",
+                                    },
+                                    {
+                                        "label": [
+                                            html.Img(
+                                                src="/assets/logo_claude.svg",
+                                                height=20,
+                                                style={"marginRight": "10px"},
+                                            ),
+                                            html.Span(
+                                                "Claude Haiku 4.5",
+                                                style={
+                                                    "fontSize": "14px",
+                                                    "lineHeight": "1",
+                                                },
+                                            ),
+                                        ],
+                                        "value": "anthropic:claude-haiku-4-5",
+                                    },
+                                    {
+                                        "label": [
+                                            html.Img(
+                                                src="/assets/logo_claude.svg",
+                                                height=20,
+                                                style={"marginRight": "10px"},
+                                            ),
+                                            html.Span(
+                                                "Claude Sonnet 4.6",
+                                                style={
+                                                    "fontSize": "14px",
+                                                    "lineHeight": "1",
+                                                },
+                                            ),
+                                        ],
+                                        "value": "anthropic:claude-sonnet-4-6",
+                                    },
+                                ],
+                                value=DEFAULT_MODEL,
+                                labelStyle={
+                                    "display": "flex",
+                                    "alignItems": "center",
+                                    "marginBottom": "2px",
+                                    "cursor": "pointer",
+                                    "padding": "6px 0",
+                                },
+                                inputStyle={
+                                    "marginRight": "10px",
+                                    "marginTop": "0",
+                                    "marginBottom": "0",
+                                },
+                            ),
+                            html.Div("Temperature", className="wg-settings-label"),
+                            dcc.Slider(
+                                id="temperature-slider",
+                                min=0.0,
+                                max=1.0,
+                                step=0.1,
+                                value=DEFAULT_TEMPERATURE,
+                                marks={i / 10: str(i / 10) for i in range(11)},
+                                allow_direct_input=False,
+                            ),
+                        ],
+                        className="wg-panel-content",
+                    ),
+                    id="settings-collapse",
+                    is_open=False,
+                    className="wg-collapse",
                 ),
             ],
+            className="wg-settings-wrapper",
+        ),
+        # Loading state with pulsing dot and counter
+        html.Div(
+            [
+                html.Div(className="wg-pulse-dot"),
+                html.Div(
+                    "0s",
+                    id="loading-counter",
+                    className="wg-loading-counter",
+                ),
+                html.Div(
+                    "FINDING PATH",
+                    className="wg-loading-label",
+                ),
+                # Interval for counter updates (clientside)
+                dcc.Interval(
+                    id="loading-interval",
+                    interval=100,  # Update every 100ms for smoothness
+                    n_intervals=0,
+                    disabled=True,  # Start disabled, enable when loading begins
+                ),
+                # Store for tracking start time
+                dcc.Store(id="loading-start-time", data=None),
+            ],
             id="loading-spinner",
-            style={**SPINNER_STYLE, "display": "none"},
+            className="wg-loading-container",
+            style={"display": "none"},
         ),
         # Result Section
         html.Div(
             [
-                html.Div("Path Found", style=RESULT_HEADER_STYLE),
-                html.Div(id="result-path", style=PATH_CONTAINER_STYLE),
-                html.Div(id="result-stats", style=PATH_STATS_STYLE),
+                html.Div("Path Found", className="wg-result-header"),
+                html.Div(id="result-path", className="wg-path-container"),
+                html.Div(id="result-stats", className="wg-path-stats"),
             ],
             id="result-container",
-            style={**RESULT_CONTAINER_STYLE, "display": "none"},
+            className="wg-result-container",
+            style={"display": "none"},
         ),
         # Agent error
         html.Div(
             id="agent-error",
-            style={**ERROR_STYLE, "marginTop": "24px", "display": "none"},
+            className="wg-error mt-lg",
+            style={"display": "none"},
         ),
     ],
-    style=CONTAINER_STYLE,
+    className="wg-container",
 )
 
 
@@ -544,14 +471,14 @@ app.layout = html.Div(
     Output("origin-search-results-data", "data"),
     Output("origin-error", "children"),
     Output("origin-error", "style"),
-    Input("origin-search-btn", "n_clicks"),
-    State("origin-input", "value"),
+    Input("origin-debounce-interval", "n_intervals"),
+    State("origin-pending-query", "data"),
     prevent_initial_call=True,
 )
-def search_origin(n_clicks: int | None, input_value: str | None) -> tuple:
-    """Search Wikipedia when user clicks origin search button."""
-    if not n_clicks or not input_value or len(input_value) < 2:
-        return [], None, {**ERROR_STYLE, "display": "none"}
+def search_origin(n_intervals: int, input_value: str | None) -> tuple:
+    """Search Wikipedia after debounce period elapses."""
+    if not n_intervals or not input_value or len(input_value) < 2:
+        return [], None, {"display": "none"}
 
     try:
         results = find_articles(input_value, limit=SEARCH_RESULTS_LIMIT)
@@ -559,7 +486,7 @@ def search_origin(n_clicks: int | None, input_value: str | None) -> tuple:
             return (
                 [],
                 f'No articles found matching "{input_value}"',
-                {**ERROR_STYLE, "display": "block"},
+                {"display": "block"},
             )
 
         # Store search results as list of dicts
@@ -573,13 +500,13 @@ def search_origin(n_clicks: int | None, input_value: str | None) -> tuple:
             for r in results
         ]
 
-        return search_results_data, None, {**ERROR_STYLE, "display": "none"}
+        return search_results_data, None, {"display": "none"}
 
     except Exception:
         return (
             [],
             "Unable to search. Please try again.",
-            {**ERROR_STYLE, "display": "block"},
+            {"display": "block"},
         )
 
 
@@ -587,14 +514,14 @@ def search_origin(n_clicks: int | None, input_value: str | None) -> tuple:
     Output("dest-search-results-data", "data"),
     Output("dest-error", "children"),
     Output("dest-error", "style"),
-    Input("dest-search-btn", "n_clicks"),
-    State("dest-input", "value"),
+    Input("dest-debounce-interval", "n_intervals"),
+    State("dest-pending-query", "data"),
     prevent_initial_call=True,
 )
-def search_dest(n_clicks: int | None, input_value: str | None) -> tuple:
-    """Search Wikipedia when user clicks destination search button."""
-    if not n_clicks or not input_value or len(input_value) < 2:
-        return [], None, {**ERROR_STYLE, "display": "none"}
+def search_dest(n_intervals: int, input_value: str | None) -> tuple:
+    """Search Wikipedia after debounce period elapses."""
+    if not n_intervals or not input_value or len(input_value) < 2:
+        return [], None, {"display": "none"}
 
     try:
         results = find_articles(input_value, limit=SEARCH_RESULTS_LIMIT)
@@ -602,7 +529,7 @@ def search_dest(n_clicks: int | None, input_value: str | None) -> tuple:
             return (
                 [],
                 f'No articles found matching "{input_value}"',
-                {**ERROR_STYLE, "display": "block"},
+                {"display": "block"},
             )
 
         search_results_data = [
@@ -615,14 +542,42 @@ def search_dest(n_clicks: int | None, input_value: str | None) -> tuple:
             for r in results
         ]
 
-        return search_results_data, None, {**ERROR_STYLE, "display": "none"}
+        return search_results_data, None, {"display": "none"}
 
     except Exception:
         return (
             [],
             "Unable to search. Please try again.",
-            {**ERROR_STYLE, "display": "block"},
+            {"display": "block"},
         )
+
+
+# Clientside debounce: each keystroke stores the query and restarts the timer
+app.clientside_callback(
+    """
+    function(value) {
+        return [value, 0, false];
+    }
+    """,
+    Output("origin-pending-query", "data"),
+    Output("origin-debounce-interval", "n_intervals"),
+    Output("origin-debounce-interval", "disabled"),
+    Input("origin-input", "value"),
+    prevent_initial_call=True,
+)
+
+app.clientside_callback(
+    """
+    function(value) {
+        return [value, 0, false];
+    }
+    """,
+    Output("dest-pending-query", "data"),
+    Output("dest-debounce-interval", "n_intervals"),
+    Output("dest-debounce-interval", "disabled"),
+    Input("dest-input", "value"),
+    prevent_initial_call=True,
+)
 
 
 # ============================================================================
@@ -647,28 +602,20 @@ def render_origin_search_results(search_results_data: list[dict]) -> html.Div | 
                 [
                     html.Div(
                         result["title"],
-                        style={
-                            "fontSize": "14px",
-                            "fontWeight": "500",
-                            "color": COLORS["charcoal"],
-                        },
+                        className="wg-search-result-title",
                     ),
                     html.Div(
                         result.get("description") or "",
-                        style={
-                            "fontSize": "12px",
-                            "color": COLORS["slate"],
-                            "marginTop": "2px",
-                        },
+                        className="wg-search-result-desc",
                     ),
                 ],
                 id={"type": "origin-search-result", "index": i},
-                style=SEARCH_RESULT_ITEM_STYLE,
+                className="wg-search-result-item",
                 n_clicks=0,
             )
         )
 
-    return html.Div(result_items, style=SEARCH_RESULTS_CONTAINER_STYLE)
+    return html.Div(result_items, className="wg-search-results-container")
 
 
 @callback(
@@ -688,28 +635,20 @@ def render_dest_search_results(search_results_data: list[dict]) -> html.Div | No
                 [
                     html.Div(
                         result["title"],
-                        style={
-                            "fontSize": "14px",
-                            "fontWeight": "500",
-                            "color": COLORS["charcoal"],
-                        },
+                        className="wg-search-result-title",
                     ),
                     html.Div(
                         result.get("description") or "",
-                        style={
-                            "fontSize": "12px",
-                            "color": COLORS["slate"],
-                            "marginTop": "2px",
-                        },
+                        className="wg-search-result-desc",
                     ),
                 ],
                 id={"type": "dest-search-result", "index": i},
-                style=SEARCH_RESULT_ITEM_STYLE,
+                className="wg-search-result-item",
                 n_clicks=0,
             )
         )
 
-    return html.Div(result_items, style=SEARCH_RESULTS_CONTAINER_STYLE)
+    return html.Div(result_items, className="wg-search-results-container")
 
 
 # ============================================================================
@@ -785,7 +724,7 @@ def select_dest(n_clicks: list[int | None], search_results_data: list[dict]) -> 
 
 
 @callback(
-    Output("origin-search-container", "style"),
+    Output("origin-search-container", "className"),
     Output("origin-selected-wrapper", "children"),
     Input("origin-data", "data"),
 )
@@ -793,18 +732,18 @@ def update_origin_display(origin_data: dict | None) -> tuple:
     """Show/hide origin search container and update selected display."""
     if origin_data is None:
         # No selection - show search, hide selected
-        search_style = SEARCH_CONTAINER_STYLE
+        search_class = "wg-search-container"
         selected_display = create_selected_display(None, False)
     else:
         # Has selection - hide search, show selected
-        search_style = {**SEARCH_CONTAINER_STYLE, "display": "none"}
+        search_class = "wg-search-container hidden"
         selected_display = create_selected_display(origin_data, False)
 
-    return search_style, selected_display
+    return search_class, selected_display
 
 
 @callback(
-    Output("dest-search-container", "style"),
+    Output("dest-search-container", "className"),
     Output("dest-selected-wrapper", "children"),
     Input("dest-data", "data"),
 )
@@ -812,14 +751,14 @@ def update_dest_display(dest_data: dict | None) -> tuple:
     """Show/hide destination search container and update selected display."""
     if dest_data is None:
         # No selection - show search, hide selected
-        search_style = SEARCH_CONTAINER_STYLE
+        search_class = "wg-search-container"
         selected_display = create_selected_display(None, True)
     else:
         # Has selection - hide search, show selected
-        search_style = {**SEARCH_CONTAINER_STYLE, "display": "none"}
+        search_class = "wg-search-container hidden"
         selected_display = create_selected_display(dest_data, True)
 
-    return search_style, selected_display
+    return search_class, selected_display
 
 
 # ============================================================================
@@ -862,7 +801,7 @@ def reset_dest(n_clicks: int | None) -> tuple:
 
 @callback(
     Output("tee-off-button", "disabled"),
-    Output("tee-off-button", "style"),
+    Output("tee-off-button", "className"),
     Input("origin-data", "data"),
     Input("dest-data", "data"),
 )
@@ -871,8 +810,96 @@ def toggle_button(origin_data: dict | None, dest_data: dict | None) -> tuple:
     can_tee_off = origin_data is not None and dest_data is not None
 
     if can_tee_off:
-        return False, BUTTON_STYLE
-    return True, BUTTON_DISABLED_STYLE
+        return False, "wg-button"
+    return True, "wg-button wg-button-disabled"
+
+
+def build_scorecard(agent_result: AgentResult) -> html.Div:
+    """Build the scorecard display from agent results."""
+    links_count = len(agent_result.path) - 1
+    duration_formatted = f"{agent_result.duration_seconds:.1f}s"
+    tokens_formatted = f"{agent_result.total_tokens:,}"
+    cost_formatted = f"${agent_result.estimated_cost_usd:.4f}"
+
+    return html.Div(
+        [
+            # Hero metric: Links traveled
+            html.Div(
+                [
+                    html.Span(str(links_count), className="wg-scorecard-hero-number"),
+                    html.Span(
+                        " link" if links_count == 1 else " links",
+                        className="wg-scorecard-hero-label",
+                    ),
+                    html.Span(" traveled", className="wg-scorecard-hero-label"),
+                ],
+                className="wg-scorecard-hero",
+            ),
+            # Divider line
+            html.Div(className="wg-scorecard-divider"),
+            # Three-column stats
+            html.Div(
+                [
+                    html.Div(
+                        [
+                            html.Div("Duration", className="wg-scorecard-stat-label"),
+                            html.Div(
+                                duration_formatted,
+                                className="wg-scorecard-stat-value",
+                            ),
+                        ],
+                        className="wg-scorecard-stat",
+                    ),
+                    html.Div(
+                        [
+                            html.Div("Cost", className="wg-scorecard-stat-label"),
+                            html.Div(
+                                cost_formatted,
+                                className="wg-scorecard-stat-value",
+                            ),
+                        ],
+                        className="wg-scorecard-stat",
+                    ),
+                    html.Div(
+                        [
+                            html.Div("Tokens", className="wg-scorecard-stat-label"),
+                            html.Div(
+                                tokens_formatted,
+                                className="wg-scorecard-stat-value",
+                            ),
+                        ],
+                        className="wg-scorecard-stat",
+                    ),
+                ],
+                className="wg-scorecard-stats-row",
+            ),
+        ],
+        className="wg-scorecard",
+    )
+
+
+def build_path_elements(path: list[str]) -> list:
+    """Build the path display elements with arrows."""
+    elements = []
+    for i, step in enumerate(path):
+        is_dest = i == len(path) - 1
+        elements.append(
+            html.Span(
+                step.replace("_", " "),
+                className="wg-path-step-dest" if is_dest else "wg-path-step",
+            )
+        )
+        if i < len(path) - 1:
+            elements.append(html.Span("→", className="wg-path-arrow"))
+    return elements
+
+
+def calculate_cost(result: AgentRunResult) -> Decimal:
+    """Calculate cost from agent run result, returning Decimal."""
+    try:
+        return estimate_cost(result)
+    except Exception:
+        return Decimal("0")
 
 
 # ============================================================================
@@ -881,7 +908,6 @@ def toggle_button(origin_data: dict | None, dest_data: dict | None) -> tuple:
 
 
 @callback(
-    Output("loading-spinner", "style"),
     Output("result-container", "style"),
     Output("result-path", "children"),
     Output("result-stats", "children"),
@@ -890,9 +916,17 @@ def toggle_button(origin_data: dict | None, dest_data: dict | None) -> tuple:
     Input("tee-off-button", "n_clicks"),
     State("origin-data", "data"),
     State("dest-data", "data"),
+    State("selected-llm", "data"),
+    State("selected-temperature", "data"),
     running=[
+        # Show loading spinner while agent runs, hide when complete
+        (Output("loading-spinner", "style"), {"display": "block"}, {"display": "none"}),
         (Output("tee-off-button", "disabled"), True, False),
-        (Output("tee-off-button", "style"), BUTTON_DISABLED_STYLE, BUTTON_STYLE),
+        (
+            Output("tee-off-button", "className"),
+            "wg-button wg-button-disabled",
+            "wg-button",
+        ),
     ],
     prevent_initial_call=True,
 )
@@ -900,22 +934,34 @@ def run_agent(
     n_clicks: int | None,
     origin_data: dict | None,
     dest_data: dict | None,
+    selected_llm: str | None,
+    selected_temperature: float | None,
 ) -> tuple:
     """Run the Wikipedia Golf agent and display results."""
     if n_clicks is None or not origin_data or not dest_data:
         raise PreventUpdate
 
-    loading_style = {**SPINNER_STYLE, "display": "block"}
-    result_style = {**RESULT_CONTAINER_STYLE, "display": "none"}
-
     try:
         origin_key = origin_data.get("key")
         dest_key = dest_data.get("key")
 
-        variant = VARIANTS[1]
+        # Use selected settings or defaults
+        model = selected_llm or DEFAULT_MODEL
+        temperature = (
+            selected_temperature
+            if selected_temperature is not None
+            else DEFAULT_TEMPERATURE
+        )
+        variant = AgentVariant(
+            name="user_configured",
+            model=model,
+            system_prompt=SYSTEM_PROMPT_V1_0,
+            temperature=temperature,
+        )
         agent = build_agent(variant)
 
         deps = WikiGolfDeps(origin=origin_key, destination=dest_key)
+        start_time = time.time()
 
         async def run():
             return await agent.run(
@@ -927,51 +973,156 @@ def run_agent(
                 ),
             )
 
-        asyncio.run(run())
-        path = deps.path
+        result = asyncio.run(run())
+        duration_seconds = time.time() - start_time
 
-        if not path:
+        usage = result.usage()
+        total_tokens = usage.total_tokens if usage else 0
+        estimated_cost = calculate_cost(result)
+
+        agent_result = AgentResult(
+            path=deps.path,
+            duration_seconds=duration_seconds,
+            total_tokens=total_tokens,
+            estimated_cost_usd=float(estimated_cost),
+        )
+
+        if not agent_result.path:
             return (
-                {**SPINNER_STYLE, "display": "none"},
-                result_style,
+                {"display": "none"},
+                {"display": "none"},
                 None,
                 None,
                 "The agent could not find a path. Please try again.",
-                {**ERROR_STYLE, "display": "block"},
+                {"display": "block"},
             )
 
-        path_elements = []
-        for i, step in enumerate(path):
-            is_dest = i == len(path) - 1
-            path_elements.append(
-                html.Span(
-                    step.replace("_", " "),
-                    style=PATH_STEP_DEST_STYLE if is_dest else PATH_STEP_STYLE,
-                )
-            )
-            if i < len(path) - 1:
-                path_elements.append(html.Span("→", style=PATH_ARROW_STYLE))
-
-        stats = f"{len(path) - 1} links traveled"
+        path_elements = build_path_elements(agent_result.path)
+        scorecard = build_scorecard(agent_result)
 
         return (
-            {**SPINNER_STYLE, "display": "none"},
-            {**RESULT_CONTAINER_STYLE, "display": "block"},
+            {"display": "block"},
             path_elements,
-            stats,
+            scorecard,
             None,
-            {**ERROR_STYLE, "display": "none"},
+            {"display": "none"},
         )
 
     except Exception:
         return (
-            {**SPINNER_STYLE, "display": "none"},
-            result_style,
+            {"display": "none"},
             None,
             None,
             "The agent encountered an error. Please try again.",
-            {**ERROR_STYLE, "display": "block"},
+            {"display": "block"},
         )
+
+
+# ============================================================================
+# CALLBACKS - Settings Persistence
+# ============================================================================
+
+
+@callback(
+    Output("selected-llm", "data"),
+    Input("llm-radio", "value"),
+    prevent_initial_call=True,
+)
+def store_llm_selection(value: str | None) -> str | None:
+    """Store selected LLM model."""
+    return value
+
+
+@callback(
+    Output("selected-temperature", "data"),
+    Input("temperature-slider", "value"),
+    prevent_initial_call=True,
+)
+def store_temperature(value: float | None) -> float | None:
+    """Store temperature setting."""
+    return value
+
+
+# ============================================================================
+# CALLBACKS - About & Settings Toggle
+# ============================================================================
+
+
+@callback(
+    Output("about-collapse", "is_open"),
+    Output("about-toggle", "className"),
+    Input("about-toggle", "n_clicks"),
+    State("about-collapse", "is_open"),
+    prevent_initial_call=True,
+)
+def toggle_about(n_clicks: int | None, is_open: bool) -> tuple:
+    """Toggle About panel open/closed and update button active state."""
+    if not n_clicks:
+        raise PreventUpdate
+    new_is_open = not is_open
+    class_name = "wg-pill active" if new_is_open else "wg-pill"
+    return new_is_open, class_name
+
+
+@callback(
+    Output("settings-collapse", "is_open"),
+    Output("settings-toggle", "className"),
+    Input("settings-toggle", "n_clicks"),
+    State("settings-collapse", "is_open"),
+    prevent_initial_call=True,
+)
+def toggle_settings(n_clicks: int | None, is_open: bool) -> tuple:
+    """Toggle Settings panel open/closed and update button active state."""
+    if not n_clicks:
+        raise PreventUpdate
+    new_is_open = not is_open
+    class_name = "wg-pill active" if new_is_open else "wg-pill"
+    return new_is_open, class_name
+
+
+# ============================================================================
+# CLIENTSIDE CALLBACK - Loading Counter
+# ============================================================================
+
+# JavaScript for the loading counter - runs in browser for smooth updates
+app.clientside_callback(
+    """
+    function(n_intervals, start_time) {
+        if (!start_time) {
+            return ["0s", window.dash_clientside.no_update];
+        }
+        const elapsed = Date.now() - start_time;
+        const seconds = Math.floor(elapsed / 1000);
+        return [seconds + "s", window.dash_clientside.no_update];
+    }
+    """,
+    Output("loading-counter", "children"),
+    Output("loading-start-time", "data", allow_duplicate=True),
+    Input("loading-interval", "n_intervals"),
+    State("loading-start-time", "data"),
+    prevent_initial_call=True,
+)
+
+# Start/stop the counter based on loading visibility
+app.clientside_callback(
+    """
+    function(style) {
+        const isVisible = style && style.display !== "none";
+        if (isVisible) {
+            // Loading became visible - start counter
+            return [0, false, Date.now()];
+        } else {
+            // Loading hidden - stop counter
+            return [0, true, window.dash_clientside.no_update];
+        }
+    }
+    """,
+    Output("loading-interval", "n_intervals"),
+    Output("loading-interval", "disabled"),
+    Output("loading-start-time", "data"),
+    Input("loading-spinner", "style"),
+    prevent_initial_call=True,
+)
 
 
 if __name__ == "__main__":

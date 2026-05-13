@@ -1,8 +1,11 @@
 """Factory for building Wikipedia Golf agents from variant configurations."""
 
 from dataclasses import dataclass, field
+from decimal import Decimal
 
 from pydantic_ai import Agent, ModelRetry, RunContext
+from pydantic_ai.agent import AgentRunResult
+from pydantic_ai.messages import ModelResponse
 from pydantic_ai.settings import ModelSettings
 
 from variants import AgentVariant
@@ -15,6 +18,16 @@ class WikiGolfDeps:
     destination: str
     path: list[str] = field(default_factory=list)
     candidate_keys: set[str] = field(default_factory=set)
+
+
+@dataclass
+class AgentResult:
+    """Result of a Wikipedia Golf agent run with usage statistics."""
+
+    path: list[str]
+    duration_seconds: float
+    total_tokens: int
+    estimated_cost_usd: float
 
 
 def build_agent(variant: AgentVariant) -> Agent[WikiGolfDeps, str]:
@@ -105,3 +118,15 @@ def build_agent(variant: AgentVariant) -> Agent[WikiGolfDeps, str]:
         return message
 
     return agent
+
+
+def estimate_cost(result: AgentRunResult) -> Decimal:
+    """Sum the estimated USD cost across every model response in the run."""
+    return sum(
+        (
+            m.cost().total_price
+            for m in result.all_messages()
+            if isinstance(m, ModelResponse)
+        ),
+        Decimal(0),
+    )
