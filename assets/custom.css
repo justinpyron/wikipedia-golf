@@ -7,32 +7,49 @@
 @import url('https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@400;500;600&family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap');
 
 /* ============================================================================
-   CSS Custom Properties - Augusta Color Palette
+   CSS Custom Properties — Augusta-first (green ink, tonal rails; no slate/mist stack)
+   Championship gold intentionally unused for now.
    ============================================================================ */
 
 :root {
-    /* Core Colors */
-    --wg-whisper: #F8F7F4;
-    --wg-white: #FFFFFF;
-    --wg-augusta-green: #1E4D2B;
-    --wg-billiard-green: #2D5A3D;
-    --wg-charcoal: #1A1A1A;
-    --wg-slate: #5A5A5A;
-    --wg-mist: #E5E3DF;
-    --wg-light-mist: #F0EFED;
+    --wg-green-rgb: 30, 77, 43;
 
-    /* Semantic Colors */
-    --wg-bg: var(--wg-whisper);
-    --wg-surface: var(--wg-white);
-    --wg-text: var(--wg-charcoal);
-    --wg-text-muted: var(--wg-slate);
-    --wg-border: var(--wg-mist);
-    --wg-border-light: var(--wg-light-mist);
+    --wg-augusta-green: #1e4d2b;
+    --wg-billiard-green: #2d5a3d;
+
+    --wg-paper: #f8f8f6;
+    --wg-surface: #ffffff;
+
+    /* Readable “green-black,” not neutral charcoal */
+    --wg-text: #15261c;
+    /* Secondary prose (about, bios, placeholders)—darker than before */
+    --wg-text-muted: rgba(var(--wg-green-rgb), 0.72);
+
+    /* Lines & fills derived from Augusta (no gray chrome) */
+    --wg-line-faint: rgba(var(--wg-green-rgb), 0.07);
+    --wg-line: rgba(var(--wg-green-rgb), 0.11);
+    --wg-line-strong: rgba(var(--wg-green-rgb), 0.2);
+    --wg-fill-hover: rgba(var(--wg-green-rgb), 0.055);
+    --wg-fill-well: rgba(var(--wg-green-rgb), 0.075);
+
+    /* Elevation tint (greens, not charcoal smog) */
+    --wg-shadow-sm: 0 2px 16px rgba(var(--wg-green-rgb), 0.075);
+    --wg-shadow-md: 0 4px 28px rgba(var(--wg-green-rgb), 0.1);
+    --wg-shadow-dropdown: 0 6px 28px rgba(var(--wg-green-rgb), 0.12);
+
+    /* Semantic shortcuts */
+    --wg-bg: var(--wg-paper);
+    --wg-border: var(--wg-line);
+    --wg-divider: var(--wg-line-faint);
+
     --wg-primary: var(--wg-augusta-green);
     --wg-primary-hover: var(--wg-billiard-green);
-    --wg-error-bg: #FEF2F2;
-    --wg-error-border: #FECACA;
-    --wg-error-text: #DC2626;
+
+    --wg-error-bg: #fef8f8;
+    --wg-error-border: rgba(185, 48, 48, 0.35);
+    --wg-error-text: #b12c2c;
+
+    --wg-focus-ring: rgba(var(--wg-green-rgb), 0.38);
 
     /* Typography — Crimson for editorial/UI; Barlow Semi Condensed for caps */
     --font-display: 'Barlow Semi Condensed', system-ui, sans-serif;
@@ -105,7 +122,7 @@
     font-family: var(--font-display);
     font-size: 12px;
     font-weight: 600;
-    color: var(--wg-text-muted);
+    color: var(--wg-primary);
     text-transform: uppercase;
     letter-spacing: 0.12em;
     margin-bottom: 8px;
@@ -121,18 +138,19 @@
     padding: 0 16px;
     font-size: 16px;
     line-height: 1.5;
-    border: 1px solid var(--wg-border);
+    border: 1px solid var(--wg-line);
     border-radius: var(--radius-md);
     background-color: var(--wg-surface);
     color: var(--wg-text);
     outline: none;
     box-sizing: border-box;
-    transition: border-color 0.2s ease;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
     font-family: var(--font-body);
 }
 
 .wg-input:focus {
     border-color: var(--wg-primary);
+    box-shadow: 0 0 0 2px var(--wg-focus-ring);
 }
 
 .wg-search-wrapper {
@@ -146,10 +164,10 @@
     left: 0;
     right: 0;
     margin-top: 4px;
-    border: 1px solid var(--wg-border);
+    border: none;
     border-radius: var(--radius-md);
     overflow: hidden;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    box-shadow: var(--wg-shadow-dropdown);
     z-index: 1000;
     background-color: var(--wg-surface);
 }
@@ -158,7 +176,7 @@
     padding: 12px 16px;
     cursor: pointer;
     background-color: var(--wg-surface);
-    border-bottom: 1px solid var(--wg-border-light);
+    border-bottom: 1px solid var(--wg-divider);
     transition: background-color 0.15s ease;
 }
 
@@ -167,7 +185,7 @@
 }
 
 .wg-search-result-item:hover {
-    background-color: var(--wg-border-light);
+    background-color: var(--wg-fill-hover);
 }
 
 .wg-search-result-title {
@@ -213,7 +231,7 @@
     border: none;
     border-radius: var(--radius-sm);
     cursor: pointer;
-    transition: background-color 0.2s ease;
+    transition: background-color 0.2s ease, opacity 0.2s ease;
 }
 
 .wg-button:hover {
@@ -222,9 +240,14 @@
 
 .wg-button:disabled,
 .wg-button-disabled {
-    background-color: var(--wg-border);
-    color: var(--wg-text-muted);
+    background-color: rgba(var(--wg-green-rgb), 0.16);
+    color: rgba(255, 255, 255, 0.88);
     cursor: not-allowed;
+}
+
+.wg-button:disabled:hover,
+.wg-button-disabled:hover {
+    background-color: rgba(var(--wg-green-rgb), 0.16);
 }
 
 .wg-reset-btn {
@@ -235,21 +258,21 @@
     height: 28px;
     border: none;
     border-radius: var(--radius-md);
-    background-color: var(--wg-border-light);
+    background-color: var(--wg-fill-well);
     color: var(--wg-text-muted);
     font-size: 16px;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, color 0.2s ease;
     padding: 0;
     line-height: 1;
 }
 
 .wg-reset-btn:hover {
-    background-color: #D4D2CE;
-    color: #3A3A3A;
+    background-color: var(--wg-fill-hover);
+    color: var(--wg-text);
 }
 
 /* ============================================================================
@@ -262,14 +285,15 @@
     gap: 16px;
     padding: 16px;
     background-color: var(--wg-surface);
-    border: 1px solid var(--wg-border);
+    border: none;
     border-radius: var(--radius-md);
     position: relative;
-    transition: all 0.3s ease;
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
+    box-shadow: var(--wg-shadow-sm);
 }
 
 .wg-selected-card:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    box-shadow: var(--wg-shadow-md);
     transform: translateY(-1px);
 }
 
@@ -279,13 +303,13 @@
     object-fit: cover;
     border-radius: var(--radius-md);
     flex-shrink: 0;
-    border: 1px solid var(--wg-border-light);
+    border: 1px solid var(--wg-line-faint);
 }
 
 .wg-selected-thumbnail-placeholder {
     width: 48px;
     height: 48px;
-    background-color: var(--wg-border-light);
+    background-color: var(--wg-fill-well);
     border-radius: var(--radius-md);
     flex-shrink: 0;
     display: flex;
@@ -357,7 +381,7 @@
     width: 100%;
     max-width: 480px;
     height: 1px;
-    background-color: var(--wg-border);
+    background-color: var(--wg-divider);
     margin: 0 auto 16px auto;
 }
 
@@ -377,7 +401,7 @@
     font-family: var(--font-display);
     font-size: 11px;
     font-weight: 600;
-    color: var(--wg-text-muted);
+    color: var(--wg-primary);
     text-transform: uppercase;
     letter-spacing: 0.12em;
     margin-bottom: 4px;
@@ -407,7 +431,7 @@
     font-weight: 600;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: var(--wg-text-muted);
+    color: var(--wg-primary);
     line-height: 1.2;
     margin: 0 0 12px 0;
 }
@@ -440,9 +464,10 @@
     margin-top: 48px;
     padding: 32px;
     background-color: var(--wg-surface);
-    border: 1px solid var(--wg-border);
+    border: none;
     border-radius: var(--radius-md);
     text-align: center;
+    box-shadow: var(--wg-shadow-md);
 }
 
 .wg-result-links-hero {
@@ -532,7 +557,7 @@
     font-weight: 600;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: var(--wg-text-muted);
+    color: var(--wg-primary);
     background: none;
     border: none;
     padding: 4px 2px;
@@ -543,7 +568,7 @@
 }
 
 .wg-header-link:hover {
-    color: var(--wg-text);
+    color: var(--wg-primary-hover);
 }
 
 .wg-header-link-active {
@@ -552,7 +577,7 @@
 }
 
 .wg-header-util-sep {
-    color: var(--wg-border);
+    color: var(--wg-line-strong);
     font-size: 14px;
     user-select: none;
     line-height: 1;
@@ -579,7 +604,7 @@
     box-sizing: border-box;
     max-height: min(70vh, 520px);
     overflow-y: auto;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    box-shadow: var(--wg-shadow-md);
 }
 
 /* Panel content (shared; centered in flyouts via rules above) */
@@ -589,10 +614,10 @@
     margin: 1rem auto 0;
     padding: 1rem 1.25rem 1.25rem;
     background-color: var(--wg-surface);
-    border: 1px solid var(--wg-border);
+    border: 1px solid var(--wg-line-faint);
     border-radius: var(--radius-md);
     text-align: left;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    box-shadow: var(--wg-shadow-sm);
 }
 
 .wg-about-text {
@@ -620,7 +645,7 @@
     font-weight: 600;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: var(--wg-text-muted);
+    color: var(--wg-primary);
     margin-bottom: 0.5rem;
     margin-top: 1rem;
 }
