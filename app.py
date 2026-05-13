@@ -37,6 +37,9 @@ SEARCH_RESULTS_LIMIT = 5
 # Default LLM model - used as initial value and fallback
 DEFAULT_MODEL = "openai:gpt-5.4-nano"
 
+# Default temperature setting
+DEFAULT_TEMPERATURE = 0.7
+
 # ============================================================================
 # STYLES & THEME
 # ============================================================================
@@ -349,7 +352,7 @@ app.layout = html.Div(
                                 min=0.0,
                                 max=1.0,
                                 step=0.1,
-                                value=0.7,
+                                value=DEFAULT_TEMPERATURE,
                                 marks={i / 10: str(i / 10) for i in range(11)},
                                 allow_direct_input=False,
                             ),
@@ -781,7 +784,11 @@ def run_agent(
 
         # Use selected settings or defaults
         model = selected_llm or DEFAULT_MODEL
-        temperature = selected_temperature if selected_temperature is not None else 0.7
+        temperature = (
+            selected_temperature
+            if selected_temperature is not None
+            else DEFAULT_TEMPERATURE
+        )
         variant = AgentVariant(
             name="user_configured",
             model=model,
