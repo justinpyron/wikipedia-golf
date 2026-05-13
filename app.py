@@ -10,7 +10,7 @@ import os
 import dash
 import dash_bootstrap_components as dbc
 import logfire
-from dash import Dash, Input, Output, State, callback, dcc, html
+from dash import ClientsideFunction, Dash, Input, Output, State, callback, dcc, html
 from dash.exceptions import PreventUpdate
 from dotenv import load_dotenv
 from pydantic_ai import UsageLimits
@@ -343,16 +343,31 @@ app.layout = html.Div(
             ],
             className="wg-settings-wrapper",
         ),
-        # Loading spinner
+        # Loading state with pulsing dot and counter
         html.Div(
             [
+                html.Div(className="wg-pulse-dot"),
                 html.Div(
-                    "⛳ The agent is finding the best path...",
-                    className="wg-spinner-text",
+                    "0s",
+                    id="loading-counter",
+                    className="wg-loading-counter",
                 ),
+                html.Div(
+                    "FINDING PATH",
+                    className="wg-loading-label",
+                ),
+                # Interval for counter updates (clientside)
+                dcc.Interval(
+                    id="loading-interval",
+                    interval=100,  # Update every 100ms for smoothness
+                    n_intervals=0,
+                    disabled=True,  # Start disabled, enable when loading begins
+                ),
+                # Store for tracking start time
+                dcc.Store(id="loading-start-time", data=None),
             ],
             id="loading-spinner",
-            className="wg-spinner",
+            className="wg-loading-container",
             style={"display": "none"},
         ),
         # Result Section
@@ -707,7 +722,6 @@ def toggle_button(origin_data: dict | None, dest_data: dict | None) -> tuple:
 
 
 @callback(
-    Output("loading-spinner", "style"),
     Output("result-container", "style"),
     Output("result-path", "children"),
     Output("result-stats", "children"),
@@ -719,6 +733,8 @@ def toggle_button(origin_data: dict | None, dest_data: dict | None) -> tuple:
     State("selected-llm", "data"),
     State("selected-temperature", "data"),
     running=[
+        # Show loading spinner while agent runs, hide when complete
+        (Output("loading-spinner", "style"), {"display": "block"}, {"display": "none"}),
         (Output("tee-off-button", "disabled"), True, False),
         (
             Output("tee-off-button", "className"),
@@ -864,7 +880,6 @@ def run_agent(
         )
 
         return (
-            {"display": "none"},
             {"display": "block"},
             path_elements,
             scorecard,
@@ -874,7 +889,6 @@ def run_agent(
 
     except Exception:
         return (
-            {"display": "none"},
             {"display": "none"},
             None,
             None,
@@ -943,6 +957,51 @@ def toggle_settings(n_clicks: int | None, is_open: bool) -> tuple:
     new_is_open = not is_open
     class_name = "wg-pill active" if new_is_open else "wg-pill"
     return new_is_open, class_name
+
+
+# ============================================================================
+# CLIENTSIDE CALLBACK - Loading Counter
+# ============================================================================
+
+# JavaScript for the loading counter - runs in browser for smooth updates
+app.clientside_callback(
+    """
+    function(n_intervals, start_time) {
+        if (!start_time) {
+            return ["0s", window.dash_clientside.no_update];
+        }
+        const elapsed = Date.now() - start_time;
+        const seconds = Math.floor(elapsed / 1000);
+        return [seconds + "s", window.dash_clientside.no_update];
+    }
+    """,
+    Output("loading-counter", "children"),
+    Output("loading-start-time", "data", allow_duplicate=True),
+    Input("loading-interval", "n_intervals"),
+    State("loading-start-time", "data"),
+    prevent_initial_call=True,
+)
+
+# Start/stop the counter based on loading visibility
+app.clientside_callback(
+    """
+    function(style) {
+        const isVisible = style && style.display !== "none";
+        if (isVisible) {
+            // Loading became visible - start counter
+            return [0, false, Date.now()];
+        } else {
+            // Loading hidden - stop counter
+            return [0, true, window.dash_clientside.no_update];
+        }
+    }
+    """,
+    Output("loading-interval", "n_intervals"),
+    Output("loading-interval", "disabled"),
+    Output("loading-start-time", "data"),
+    Input("loading-spinner", "style"),
+    prevent_initial_call=True,
+)
 
 
 if __name__ == "__main__":
