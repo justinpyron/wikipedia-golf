@@ -317,6 +317,23 @@ app.layout = html.Div(
                                     {
                                         "label": [
                                             html.Img(
+                                                src="/assets/logo_openai.svg",
+                                                height=20,
+                                                style={"marginRight": "10px"},
+                                            ),
+                                            html.Span(
+                                                "GPT-5.4",
+                                                style={
+                                                    "fontSize": "14px",
+                                                    "lineHeight": "1",
+                                                },
+                                            ),
+                                        ],
+                                        "value": "openai:gpt-5.4",
+                                    },
+                                    {
+                                        "label": [
+                                            html.Img(
                                                 src="/assets/logo_claude.svg",
                                                 height=20,
                                                 style={"marginRight": "10px"},
@@ -329,7 +346,24 @@ app.layout = html.Div(
                                                 },
                                             ),
                                         ],
-                                        "value": "anthropic:claude-haiku-4-5-20251001",
+                                        "value": "anthropic:claude-haiku-4-5",
+                                    },
+                                    {
+                                        "label": [
+                                            html.Img(
+                                                src="/assets/logo_claude.svg",
+                                                height=20,
+                                                style={"marginRight": "10px"},
+                                            ),
+                                            html.Span(
+                                                "Claude Sonnet 4.6",
+                                                style={
+                                                    "fontSize": "14px",
+                                                    "lineHeight": "1",
+                                                },
+                                            ),
+                                        ],
+                                        "value": "anthropic:claude-sonnet-4-6",
                                     },
                                 ],
                                 value=DEFAULT_MODEL,
