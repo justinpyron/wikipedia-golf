@@ -16,7 +16,6 @@
     --wg-white: #FFFFFF;
     --wg-augusta-green: #1E4D2B;
     --wg-billiard-green: #2D5A3D;
-    --wg-championship-gold: #F4C430;
     --wg-charcoal: #1A1A1A;
     --wg-slate: #5A5A5A;
     --wg-mist: #E5E3DF;
@@ -31,7 +30,6 @@
     --wg-border-light: var(--wg-light-mist);
     --wg-primary: var(--wg-augusta-green);
     --wg-primary-hover: var(--wg-billiard-green);
-    --wg-accent: var(--wg-championship-gold);
     --wg-error-bg: #FEF2F2;
     --wg-error-border: #FECACA;
     --wg-error-text: #DC2626;
@@ -275,14 +273,6 @@
     transform: translateY(-1px);
 }
 
-.wg-selected-card-origin {
-    border-left: 4px solid var(--wg-primary);
-}
-
-.wg-selected-card-dest {
-    border-left: 4px solid var(--wg-accent);
-}
-
 .wg-selected-thumbnail {
     width: 48px;
     height: 48px;
@@ -401,12 +391,6 @@
     color: var(--wg-text);
 }
 
-/* Highlight cost with subtle gold tint */
-.wg-scorecard-stat:nth-child(2) .wg-scorecard-stat-value {
-    color: var(--wg-accent);
-    font-weight: 600;
-}
-
 /* ============================================================================
    Loading State — label + pulsating dot
    ============================================================================ */
@@ -483,16 +467,12 @@
     flex-wrap: wrap;
 }
 
-.wg-path-step {
+.wg-path-step,
+.wg-path-step-dest {
     font-family: var(--font-body);
     font-size: 16px;
     font-weight: 500;
     color: var(--wg-text);
-}
-
-.wg-path-step-dest {
-    color: var(--wg-accent);
-    font-weight: 700;
 }
 
 .wg-path-arrow {

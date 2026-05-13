@@ -1,7 +1,7 @@
 """Wikipedia Golf Dash Frontend
 
 A clean, minimal web app for playing Wikipedia Golf with an AI agent.
-Aesthetic: Augusta-inspired (whisper white, Augusta green, championship gold).
+Aesthetic: Augusta-inspired (quiet greens, restrained surfaces).
 """
 
 import asyncio
@@ -64,12 +64,6 @@ def create_selected_display(
         else html.Div("📄", className="wg-selected-thumbnail-placeholder")
     )
 
-    card_class = (
-        "wg-selected-card wg-selected-card-dest"
-        if is_destination
-        else "wg-selected-card wg-selected-card-origin"
-    )
-
     return html.Div(
         [
             thumbnail,
@@ -94,7 +88,7 @@ def create_selected_display(
             ),
         ],
         id=f"{'dest' if is_destination else 'origin'}-selected-display",
-        className=f"{card_class} slide-in",
+        className="wg-selected-card slide-in",
     )
 
 
