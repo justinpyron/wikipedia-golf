@@ -565,6 +565,7 @@ body,
 .wg-path-step:hover,
 .wg-path-step-dest:hover {
     color: var(--wg-championship);
+    text-decoration: underline;
 }
 
 .wg-path-arrow {
@@ -719,7 +720,7 @@ body,
 }
 
 .wg-about-link:hover {
-    color: var(--wg-primary);
+    color: var(--wg-championship);
     text-decoration: underline;
 }
 
