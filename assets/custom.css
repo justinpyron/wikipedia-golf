@@ -19,6 +19,9 @@
     --wg-paper: #f8f8f6;
     --wg-surface: #ffffff;
 
+    /* Championship yellow — accent (active nav, trim) */
+    --wg-championship: #f4c430;
+
     --wg-primary: var(--wg-augusta-green);
     --wg-primary-hover: var(--wg-billiard-green);
 
@@ -588,18 +591,20 @@ body,
     border: none;
     padding: 4px 2px;
     cursor: pointer;
-    transition: color 0.15s ease;
+    transition: color 0.15s ease, border-bottom-color 0.15s ease;
     border-bottom: 1px solid transparent;
     line-height: 1.2;
 }
 
-.wg-header-link:hover {
+/* Hover must not beat .wg-header-link-active (:hover alone is higher specificity) */
+.wg-header-link:hover:not(.wg-header-link-active) {
     color: var(--wg-on-field);
 }
 
-.wg-header-link-active {
-    color: var(--wg-on-field);
-    border-bottom-color: var(--wg-on-field);
+.wg-header-link-active,
+.wg-header-link-active:hover {
+    color: var(--wg-championship);
+    border-bottom-color: var(--wg-championship);
 }
 
 .wg-header-util-sep {
