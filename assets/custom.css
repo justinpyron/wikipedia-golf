@@ -674,7 +674,20 @@ body,
     font-size: 0.9rem;
     line-height: 1.6;
     color: var(--wg-text-muted);
-    margin: 0 0 0.75rem 0;
+    margin: 0 0 1rem 0;
+}
+
+.wg-about-links {
+    display: block;
+}
+
+.wg-about-links .wg-about-link {
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.wg-about-links .wg-about-link:last-child {
+    margin-bottom: 0;
 }
 
 .wg-about-link {

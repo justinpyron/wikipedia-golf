@@ -143,25 +143,26 @@ app.layout = html.Div(
                                         [
                                             html.P(
                                                 "Wikipedia Golf is the game of navigating from one Wikipedia article to another "
-                                                "using the fewest links possible.",
+                                                "using the fewest links possible. "
+                                                "In this app, an AI agent plays the game, based on the start/end articles you set.",
                                                 className="wg-about-text",
                                             ),
-                                            html.A(
-                                                html.B("Learn more →"),
-                                                href="https://en.wikipedia.org/wiki/Wikipedia:Wiki_Game",
-                                                target="_blank",
-                                                className="wg-about-link",
-                                            ),
-                                            html.Div(style={"height": "40px"}),
-                                            html.P(
-                                                "In this app, an AI agent plays the game, based on start/end articles you set.",
-                                                className="wg-about-text",
-                                            ),
-                                            html.A(
-                                                html.B("View source code →"),
-                                                href="https://github.com/justinpyron/wikipedia-golf",
-                                                target="_blank",
-                                                className="wg-about-link",
+                                            html.Div(
+                                                [
+                                                    html.A(
+                                                        html.B("Learn the rules →"),
+                                                        href="https://en.wikipedia.org/wiki/Wikipedia:Wiki_Game",
+                                                        target="_blank",
+                                                        className="wg-about-link",
+                                                    ),
+                                                    html.A(
+                                                        html.B("View the GitHub →"),
+                                                        href="https://github.com/justinpyron/wikipedia-golf",
+                                                        target="_blank",
+                                                        className="wg-about-link",
+                                                    ),
+                                                ],
+                                                className="wg-about-links",
                                             ),
                                         ],
                                         className="wg-panel-content",
