@@ -370,6 +370,25 @@ app.layout = html.Div(
                                                         ],
                                                         "value": "together:zai-org/GLM-5.1",
                                                     },
+                                                    {
+                                                        "label": [
+                                                            html.Img(
+                                                                src="/assets/logo_xai.svg",
+                                                                height=20,
+                                                                style={
+                                                                    "marginRight": "10px"
+                                                                },
+                                                            ),
+                                                            html.Span(
+                                                                "Grok 4.3",
+                                                                style={
+                                                                    "fontSize": "14px",
+                                                                    "lineHeight": "1",
+                                                                },
+                                                            ),
+                                                        ],
+                                                        "value": "xai:grok-4.3",
+                                                    },
                                                 ],
                                                 value=DEFAULT_MODEL,
                                                 labelStyle={
