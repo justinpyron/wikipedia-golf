@@ -42,6 +42,11 @@
     --wg-shadow-sm: 0 2px 16px rgba(var(--wg-green-rgb), 0.075);
     --wg-shadow-md: 0 4px 28px rgba(var(--wg-green-rgb), 0.1);
     --wg-shadow-dropdown: 0 6px 28px rgba(var(--wg-green-rgb), 0.12);
+    /* About / Settings panels — contact + deep green cast */
+    --wg-shadow-flyout:
+        0 3px 14px rgba(var(--wg-green-rgb), 0.2),
+        0 22px 56px rgba(var(--wg-green-rgb), 0.36),
+        0 32px 72px rgba(var(--wg-green-rgb), 0.2);
 
     /* Semantic shortcuts */
     --wg-bg: var(--wg-primary);
@@ -637,7 +642,11 @@ body,
     box-sizing: border-box;
     max-height: min(70vh, 520px);
     overflow-y: auto;
-    box-shadow: var(--wg-shadow-md);
+    /* Inner Augusta ring, outer white ring (separates panel from field), then depth */
+    box-shadow:
+        0 0 0 2px var(--wg-primary),
+        0 0 0 4px var(--wg-on-field),
+        var(--wg-shadow-flyout);
 }
 
 /* Panel content (shared; centered in flyouts via rules above) */
@@ -647,10 +656,9 @@ body,
     margin: 1rem auto 0;
     padding: 1rem 1.25rem 1.25rem;
     background-color: var(--wg-surface);
-    border: 1px solid var(--wg-line-faint);
+    border: none;
     border-radius: var(--radius-md);
     text-align: left;
-    box-shadow: var(--wg-shadow-sm);
     color: var(--wg-text);
 }
 
