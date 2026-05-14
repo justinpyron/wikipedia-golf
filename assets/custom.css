@@ -254,7 +254,7 @@ body,
     letter-spacing: 0.14em;
     color: var(--wg-primary);
     background-color: var(--wg-surface);
-    border: 3px solid transparent;
+    border: 2.5px solid transparent;
     border-radius: var(--radius-md);
     cursor: pointer;
     box-shadow: var(--wg-shadow-sm);
@@ -598,9 +598,9 @@ body,
     line-height: 1.2;
 }
 
-/* Hover must not beat .wg-header-link-active (:hover alone is higher specificity) */
+/* Inactive: hover previews championship; underline stays hidden until active */
 .wg-header-link:hover:not(.wg-header-link-active) {
-    color: var(--wg-on-field);
+    color: var(--wg-championship);
 }
 
 .wg-header-link-active,
