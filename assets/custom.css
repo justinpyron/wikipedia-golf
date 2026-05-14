@@ -4,42 +4,72 @@
    ============================================================================ */
 
 /* Import Google Fonts */
-@import url('https://fonts.googleapis.com/css2?family=Crimson+Text:wght@400;600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@400;500;600&family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap');
 
 /* ============================================================================
-   CSS Custom Properties - Augusta Color Palette
+   CSS Custom Properties
    ============================================================================ */
 
 :root {
-    /* Core Colors */
-    --wg-whisper: #F8F7F4;
-    --wg-white: #FFFFFF;
-    --wg-augusta-green: #1E4D2B;
-    --wg-billiard-green: #2D5A3D;
-    --wg-championship-gold: #F4C430;
-    --wg-charcoal: #1A1A1A;
-    --wg-slate: #5A5A5A;
-    --wg-mist: #E5E3DF;
-    --wg-light-mist: #F0EFED;
+    --wg-green-rgb: 30, 77, 43;
 
-    /* Semantic Colors */
-    --wg-bg: var(--wg-whisper);
-    --wg-surface: var(--wg-white);
-    --wg-text: var(--wg-charcoal);
-    --wg-text-muted: var(--wg-slate);
-    --wg-border: var(--wg-mist);
-    --wg-border-light: var(--wg-light-mist);
+    --wg-augusta-green: #1e4d2b;
+    --wg-billiard-green: #2d5a3d;
+
+    --wg-paper: #f8f8f6;
+    --wg-surface: #ffffff;
+
+    /* Championship yellow — accent (active nav, trim) */
+    --wg-championship: #f4c430;
+
     --wg-primary: var(--wg-augusta-green);
     --wg-primary-hover: var(--wg-billiard-green);
-    --wg-accent: var(--wg-championship-gold);
-    --wg-error-bg: #FEF2F2;
-    --wg-error-border: #FECACA;
-    --wg-error-text: #DC2626;
 
-    /* Typography */
-    --font-heading: 'Crimson Text', Georgia, serif;
-    --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    --font-mono: 'JetBrains Mono', monospace;
+    /* Copy on Augusta green rails (title, Origin/Destination, header links …) */
+    --wg-on-field: #ffffff;
+
+    --wg-text: var(--wg-primary);
+    --wg-text-muted: var(--wg-primary);
+
+    /* Lines & fills derived from Augusta (no gray chrome) */
+    --wg-line-faint: rgba(var(--wg-green-rgb), 0.07);
+    --wg-line: rgba(var(--wg-green-rgb), 0.11);
+    --wg-line-strong: rgba(var(--wg-green-rgb), 0.2);
+    --wg-fill-hover: rgba(var(--wg-green-rgb), 0.055);
+    --wg-fill-well: rgba(var(--wg-green-rgb), 0.075);
+
+    /* Elevation tint (greens, not charcoal smog) */
+    --wg-shadow-sm: 0 2px 16px rgba(var(--wg-green-rgb), 0.075);
+    --wg-shadow-md: 0 4px 28px rgba(var(--wg-green-rgb), 0.1);
+    --wg-shadow-dropdown: 0 6px 28px rgba(var(--wg-green-rgb), 0.12);
+    /* About / Settings panels — contact + deep green cast */
+    --wg-shadow-flyout:
+        0 3px 14px rgba(var(--wg-green-rgb), 0.2),
+        0 22px 56px rgba(var(--wg-green-rgb), 0.36),
+        0 32px 72px rgba(var(--wg-green-rgb), 0.2);
+
+    /* Inner Augusta ring + outer white ring (matches flyouts; stack before elevation shadows) */
+    --wg-double-ring:
+        0 0 0 2px var(--wg-primary),
+        0 0 0 4px var(--wg-on-field);
+
+    /* Semantic shortcuts */
+    --wg-bg: var(--wg-primary);
+    --wg-border: var(--wg-line);
+    --wg-divider: var(--wg-line-faint);
+
+    --wg-error-bg: #fef8f8;
+    --wg-error-border: rgba(185, 48, 48, 0.35);
+    --wg-error-text: #b12c2c;
+
+    --wg-focus-ring: rgba(var(--wg-green-rgb), 0.38);
+
+    /* Typography — Crimson for editorial/UI; Barlow Semi Condensed for caps */
+    --font-display: 'Barlow Semi Condensed', system-ui, sans-serif;
+    --font-heading: 'Crimson Text', Georgia, 'Times New Roman', serif;
+    --font-body: 'Crimson Text', Georgia, 'Times New Roman', serif;
+    /* Revert path/steps + .wg-scorecard-stat-value to this when preferred */
+    --font-mono: 'JetBrains Mono', ui-monospace, monospace;
 
     /* Spacing Scale */
     --space-xs: 4px;
@@ -53,6 +83,15 @@
     --radius-sm: 2px;
     --radius-md: 4px;
     --radius-lg: 8px;
+}
+
+/* viewport + Dash root — contiguous Augusta green */
+html,
+body,
+#react-entry-point {
+    margin: 0;
+    min-height: 100vh;
+    background-color: var(--wg-primary);
 }
 
 /* ============================================================================
@@ -92,21 +131,22 @@
    ============================================================================ */
 
 .wg-title {
-    font-size: 32px;
+    font-family: var(--font-display);
+    font-size: 31px;
     font-weight: 500;
-    color: var(--wg-primary);
-    letter-spacing: 0.05em;
+    color: var(--wg-on-field);
+    letter-spacing: 0.14em;
     margin: 0 0 8px 0;
-    font-family: var(--font-heading);
-    white-space: pre;
+    text-transform: uppercase;
 }
 
 .wg-section-label {
+    font-family: var(--font-display);
     font-size: 12px;
     font-weight: 600;
-    color: var(--wg-text-muted);
+    color: var(--wg-on-field);
     text-transform: uppercase;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.12em;
     margin-bottom: 8px;
 }
 
@@ -120,18 +160,33 @@
     padding: 0 16px;
     font-size: 16px;
     line-height: 1.5;
-    border: 1px solid var(--wg-border);
+    border: 1px solid var(--wg-line);
     border-radius: var(--radius-md);
     background-color: var(--wg-surface);
     color: var(--wg-text);
     outline: none;
     box-sizing: border-box;
-    transition: border-color 0.2s ease;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
     font-family: var(--font-body);
 }
 
 .wg-input:focus {
     border-color: var(--wg-primary);
+    box-shadow: 0 0 0 2px var(--wg-focus-ring);
+}
+
+.wg-input::placeholder {
+    color: var(--wg-primary);
+    opacity: 1;
+}
+
+.wg-input::-webkit-input-placeholder {
+    color: var(--wg-primary);
+}
+
+.wg-input::-moz-placeholder {
+    color: var(--wg-primary);
+    opacity: 1;
 }
 
 .wg-search-wrapper {
@@ -145,10 +200,10 @@
     left: 0;
     right: 0;
     margin-top: 4px;
-    border: 1px solid var(--wg-border);
+    border: none;
     border-radius: var(--radius-md);
     overflow: hidden;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    box-shadow: var(--wg-shadow-dropdown);
     z-index: 1000;
     background-color: var(--wg-surface);
 }
@@ -157,7 +212,7 @@
     padding: 12px 16px;
     cursor: pointer;
     background-color: var(--wg-surface);
-    border-bottom: 1px solid var(--wg-border-light);
+    border-bottom: 1px solid var(--wg-divider);
     transition: background-color 0.15s ease;
 }
 
@@ -166,7 +221,7 @@
 }
 
 .wg-search-result-item:hover {
-    background-color: var(--wg-border-light);
+    background-color: var(--wg-fill-hover);
 }
 
 .wg-search-result-title {
@@ -202,28 +257,49 @@
 .wg-button {
     width: 100%;
     padding: 16px 32px;
-    font-size: 14px;
+    font-family: var(--font-display);
+    font-size: 13px;
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.15em;
-    color: var(--wg-surface);
-    background-color: var(--wg-primary);
-    border: none;
-    border-radius: var(--radius-sm);
+    letter-spacing: 0.14em;
+    color: var(--wg-primary);
+    background-color: var(--wg-surface);
+    border: 2.5px solid transparent;
+    border-radius: var(--radius-md);
     cursor: pointer;
-    transition: background-color 0.2s ease;
-    font-family: var(--font-body);
+    box-shadow:
+        var(--wg-double-ring),
+        var(--wg-shadow-sm);
+    transition:
+        box-shadow 0.2s ease,
+        border-color 0.2s ease,
+        opacity 0.2s ease,
+        background-color 0.2s ease;
 }
 
-.wg-button:hover {
-    background-color: var(--wg-primary-hover);
+.wg-button:hover:not(:disabled) {
+    background-color: var(--wg-championship);
+    /* Inner Augusta ring unchanged; outer ring matches former white halo → championship */
+    box-shadow:
+        0 0 0 2px var(--wg-primary),
+        0 0 0 4px var(--wg-championship),
+        var(--wg-shadow-md);
+    border-color: var(--wg-championship);
 }
 
 .wg-button:disabled,
 .wg-button-disabled {
-    background-color: var(--wg-border);
-    color: var(--wg-text-muted);
+    background-color: var(--wg-surface);
+    color: rgba(var(--wg-green-rgb), 0.42);
     cursor: not-allowed;
+    opacity: 0.78;
+    box-shadow: var(--wg-double-ring);
+}
+
+.wg-button:disabled:hover,
+.wg-button-disabled:hover {
+    box-shadow: var(--wg-double-ring);
+    border-color: transparent;
 }
 
 .wg-reset-btn {
@@ -234,21 +310,22 @@
     height: 28px;
     border: none;
     border-radius: var(--radius-md);
-    background-color: var(--wg-border-light);
-    color: var(--wg-text-muted);
+    /* Darker Augusta wash than wg-fill-well (distinct from thumbnail placeholder) */
+    background-color: rgba(var(--wg-green-rgb), 0.14);
+    color: rgba(var(--wg-green-rgb), 0.92);
     font-size: 16px;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, color 0.2s ease;
     padding: 0;
     line-height: 1;
 }
 
 .wg-reset-btn:hover {
-    background-color: #D4D2CE;
-    color: #3A3A3A;
+    background-color: rgba(var(--wg-green-rgb), 0.26);
+    color: var(--wg-augusta-green);
 }
 
 /* ============================================================================
@@ -261,23 +338,20 @@
     gap: 16px;
     padding: 16px;
     background-color: var(--wg-surface);
-    border: 1px solid var(--wg-border);
+    border: none;
     border-radius: var(--radius-md);
     position: relative;
-    transition: all 0.3s ease;
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
+    box-shadow:
+        var(--wg-double-ring),
+        var(--wg-shadow-sm);
 }
 
 .wg-selected-card:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    box-shadow:
+        var(--wg-double-ring),
+        var(--wg-shadow-md);
     transform: translateY(-1px);
-}
-
-.wg-selected-card-origin {
-    border-left: 4px solid var(--wg-primary);
-}
-
-.wg-selected-card-dest {
-    border-left: 4px solid var(--wg-accent);
 }
 
 .wg-selected-thumbnail {
@@ -286,13 +360,13 @@
     object-fit: cover;
     border-radius: var(--radius-md);
     flex-shrink: 0;
-    border: 1px solid var(--wg-border-light);
+    border: 1px solid var(--wg-line-faint);
 }
 
 .wg-selected-thumbnail-placeholder {
     width: 48px;
     height: 48px;
-    background-color: var(--wg-border-light);
+    background-color: var(--wg-fill-well);
     border-radius: var(--radius-md);
     flex-shrink: 0;
     display: flex;
@@ -363,8 +437,8 @@
 .wg-scorecard-divider {
     width: 100%;
     max-width: 480px;
-    height: 1px;
-    background-color: var(--wg-border);
+    height: 1.75px;
+    background-color: var(--wg-championship);
     margin: 0 auto 16px auto;
 }
 
@@ -381,29 +455,25 @@
 }
 
 .wg-scorecard-stat-label {
+    font-family: var(--font-display);
     font-size: 11px;
     font-weight: 600;
-    color: var(--wg-text-muted);
+    color: var(--wg-primary);
     text-transform: uppercase;
     letter-spacing: 0.12em;
     margin-bottom: 4px;
 }
 
 .wg-scorecard-stat-value {
-    font-family: var(--font-mono);
-    font-size: 15px;
+    font-family: var(--font-body);
+    font-size: 16px;
     font-weight: 500;
+    font-variant-numeric: lining-nums proportional-nums;
     color: var(--wg-text);
 }
 
-/* Highlight cost with subtle gold tint */
-.wg-scorecard-stat:nth-child(2) .wg-scorecard-stat-value {
-    color: var(--wg-accent);
-    font-weight: 600;
-}
-
 /* ============================================================================
-   Loading State - Pulsing Dot with Counter
+   Loading State — label + pulsating dot
    ============================================================================ */
 
 .wg-loading-container {
@@ -412,12 +482,23 @@
     transition: opacity 0.3s ease;
 }
 
+.wg-loading-label {
+    font-family: var(--font-display);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--wg-on-field);
+    line-height: 1.2;
+    margin: 0 0 12px 0;
+}
+
 .wg-pulse-dot {
     width: 12px;
     height: 12px;
-    background-color: var(--wg-primary);
+    background-color: var(--wg-on-field);
     border-radius: 50%;
-    margin: 0 auto 16px auto;
+    margin: 0 auto;
     animation: pulse 2s ease-in-out infinite;
 }
 
@@ -432,23 +513,6 @@
     }
 }
 
-.wg-loading-counter {
-    font-family: var(--font-mono);
-    font-size: 18px;
-    font-weight: 500;
-    color: var(--wg-text);
-    line-height: 1;
-    margin-bottom: 8px;
-}
-
-.wg-loading-label {
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--wg-text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-}
-
 /* ============================================================================
    Results & Path Display
    ============================================================================ */
@@ -457,18 +521,26 @@
     margin-top: 48px;
     padding: 32px;
     background-color: var(--wg-surface);
-    border: 1px solid var(--wg-border);
+    border: none;
     border-radius: var(--radius-md);
+    text-align: center;
+    box-shadow:
+        var(--wg-double-ring),
+        var(--wg-shadow-md);
+}
+
+.wg-result-links-hero {
+    margin-bottom: 24px;
     text-align: center;
 }
 
-.wg-result-header {
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--wg-text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    margin-bottom: 24px;
+.wg-result-links-hero .wg-scorecard-hero {
+    margin-bottom: 0;
+}
+
+.wg-result-usage {
+    margin-top: 24px;
+    text-align: center;
 }
 
 .wg-path-container {
@@ -479,16 +551,21 @@
     flex-wrap: wrap;
 }
 
-.wg-path-step {
-    font-size: 15px;
+.wg-path-step,
+.wg-path-step-dest {
+    font-family: var(--font-body);
+    font-size: 16px;
     font-weight: 500;
     color: var(--wg-text);
-    font-family: var(--font-mono);
+    text-decoration: none;
+    cursor: pointer;
+    transition: color 0.15s ease;
 }
 
-.wg-path-step-dest {
-    color: var(--wg-accent);
-    font-weight: 700;
+.wg-path-step:hover,
+.wg-path-step-dest:hover {
+    color: var(--wg-championship);
+    text-decoration: underline;
 }
 
 .wg-path-arrow {
@@ -505,12 +582,12 @@
 .wg-spinner {
     text-align: center;
     padding: 48px 0;
-    color: var(--wg-primary);
+    color: var(--wg-on-field);
     font-size: 14px;
 }
 
 .wg-spinner-text {
-    color: var(--wg-primary);
+    color: var(--wg-on-field);
     font-size: 16px;
 }
 
@@ -525,94 +602,114 @@
 }
 
 /* ============================================================================
-   About & Settings - Pill Buttons
+   Header utilities — About / Settings (anchored flyouts)
    ============================================================================ */
 
-.wg-pill {
+.wg-header-flyout-anchor {
+    position: relative;
+    z-index: 2000;
+    margin-top: 24px;
+    text-align: center;
+}
+
+.wg-header-util-row {
     display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
-    padding: 0.45rem 1rem;
-    font-family: var(--font-body);
-    font-size: 0.75rem;
-    font-weight: 500;
+    justify-content: center;
+    gap: 12px;
+}
+
+.wg-header-link {
+    font-family: var(--font-display);
+    font-size: 12px;
+    font-weight: 600;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: var(--wg-text-muted);
-    background-color: var(--wg-surface);
-    border: 1px solid var(--wg-border);
-    border-radius: var(--radius-md);
+    color: var(--wg-on-field);
+    background: none;
+    border: none;
+    padding: 4px 2px;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: color 0.15s ease;
+    border-bottom: 1px solid transparent;
+    line-height: 1.2;
+}
+
+/* Inactive + hover: championship preview; underline never shown */
+.wg-header-link:hover:not(.wg-header-link-active) {
+    color: var(--wg-championship);
+}
+
+.wg-header-link-active,
+.wg-header-link-active:hover {
+    color: var(--wg-championship);
+}
+
+.wg-header-util-sep {
+    color: var(--wg-on-field);
+    font-size: 14px;
     user-select: none;
     line-height: 1;
 }
 
-.wg-pill:hover {
-    color: var(--wg-text);
-    border-color: #D4D2CE;
-    background-color: var(--wg-bg);
+.wg-flyout-stack {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 100%;
+    margin-top: 8px;
+    text-align: left;
+    pointer-events: none;
 }
 
-.wg-pill.active {
-    color: var(--wg-primary);
-    background-color: rgba(30, 77, 43, 0.08);
-    border-color: var(--wg-primary);
+.wg-header-flyout-anchor.is-open .wg-flyout-stack {
+    pointer-events: auto;
 }
 
-.wg-pill.active:hover {
-    background-color: rgba(30, 77, 43, 0.12);
+.wg-flyout-panel .wg-panel-content {
+    width: 100%;
+    max-width: 420px;
+    margin: 0 auto;
+    box-sizing: border-box;
+    max-height: min(70vh, 520px);
+    overflow-y: auto;
+    /* Inner Augusta ring, outer white ring (separates panel from field), then depth */
+    box-shadow:
+        var(--wg-double-ring),
+        var(--wg-shadow-flyout);
 }
 
-.wg-pill-icon {
-    display: inline-block;
-    transition: transform 0.3s ease;
-}
-
-.wg-pill.active .info-icon {
-    transform: scale(1.1);
-}
-
-.wg-pill.active .gear {
-    transform: rotate(90deg);
-}
-
-.wg-pill-text {
-    display: inline-flex;
-    align-items: center;
-    line-height: 1;
-    height: 1em;
-}
-
-/* Collapse Panel - Smooth slide out animation */
-.wg-collapse {
-    transition: max-height 0.35s ease-out;
-    overflow: hidden;
-    max-height: 0;
-}
-
-.wg-collapse.show {
-    max-height: 500px;
-}
-
-/* Panel Content */
+/* Panel content (shared; centered in flyouts via rules above) */
 .wg-panel-content {
     width: 420px;
     max-width: 90vw;
     margin: 1rem auto 0;
     padding: 1rem 1.25rem 1.25rem;
     background-color: var(--wg-surface);
-    border: 1px solid var(--wg-border);
+    border: none;
     border-radius: var(--radius-md);
     text-align: left;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    color: var(--wg-text);
 }
 
 .wg-about-text {
     font-size: 0.9rem;
     line-height: 1.6;
     color: var(--wg-text-muted);
-    margin: 0 0 0.75rem 0;
+    margin: 0 0 1rem 0;
+}
+
+.wg-about-links {
+    display: block;
+}
+
+.wg-about-links .wg-about-link {
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.wg-about-links .wg-about-link:last-child {
+    margin-bottom: 0;
 }
 
 .wg-about-link {
@@ -623,22 +720,110 @@
 }
 
 .wg-about-link:hover {
-    color: var(--wg-primary-hover);
+    color: var(--wg-championship);
     text-decoration: underline;
 }
 
 .wg-settings-label {
+    font-family: var(--font-display);
     font-size: 0.7rem;
     font-weight: 600;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: var(--wg-text-muted);
+    color: var(--wg-primary);
     margin-bottom: 0.5rem;
     margin-top: 1rem;
 }
 
 .wg-settings-label:first-of-type {
     margin-top: 0;
+}
+
+/* Settings flyout: all text Augusta green (Dash injects neutral text tokens elsewhere). */
+#settings-panel.wg-flyout-panel,
+#settings-panel .wg-panel-content {
+    color: var(--wg-augusta-green) !important;
+}
+
+#settings-panel .wg-settings-label {
+    color: var(--wg-augusta-green) !important;
+}
+
+#settings-panel .dash-radioitems,
+#settings-panel .dash-radioitems label {
+    color: var(--wg-augusta-green) !important;
+    transition: color 0.15s ease;
+}
+
+#settings-panel .dash-radioitems label span {
+    transition: color 0.15s ease;
+}
+
+#settings-panel .dash-radioitems label:hover,
+#settings-panel .dash-radioitems label:hover span {
+    color: var(--wg-championship) !important;
+}
+
+#settings-panel .dash-slider-mark,
+#settings-panel .dash-slider-mark-outside-selection,
+#settings-panel .dash-slider-tooltip,
+#settings-panel .dash-slider-tooltip.always-visible,
+#settings-panel .dash-input-container {
+    color: var(--wg-augusta-green) !important;
+}
+
+/* Championship yellow on Settings radios & temperature slider (scoped to #settings-panel).
+   Native accent-color draws an ugly dark ring between dot and outer ring — custom paint matches panel white. */
+#settings-panel input[type="radio"] {
+    appearance: none;
+    -webkit-appearance: none;
+    flex-shrink: 0;
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    border: 2px solid var(--wg-line-strong);
+    border-radius: 50%;
+    background-color: var(--wg-surface);
+    cursor: pointer;
+    box-sizing: border-box;
+    vertical-align: middle;
+    position: relative;
+    top: -1px;
+}
+
+#settings-panel input[type="radio"]:checked {
+    border-color: var(--wg-championship);
+    background: radial-gradient(
+        circle at center,
+        var(--wg-championship) 0,
+        var(--wg-championship) 28%,
+        var(--wg-surface) 29%,
+        var(--wg-surface) 100%
+    );
+}
+
+#settings-panel input[type="radio"]:focus-visible {
+    outline: 2px solid var(--wg-championship);
+    outline-offset: 2px;
+}
+
+#settings-panel .dash-slider-root:not([data-disabled]) .dash-slider-range {
+    background-color: var(--wg-championship) !important;
+}
+
+#settings-panel .dash-slider-root:not([data-disabled]) .dash-slider-thumb {
+    background-color: var(--wg-championship) !important;
+}
+
+#settings-panel .dash-slider-root:not([data-disabled]) .dash-slider-thumb:focus {
+    outline: 2px solid var(--wg-championship);
+    outline-offset: 2px;
+}
+
+#settings-panel
+    .dash-slider-root:not([data-disabled])
+    .dash-slider-dot:not(.dash-slider-dot-outside-selection) {
+    background-color: var(--wg-championship) !important;
 }
 
 /* Fix radio button vertical alignment */
@@ -701,14 +886,6 @@
     min-width: 300px;
 }
 
-/* About wrapper for centering */
-.wg-about-wrapper {
-    text-align: center;
-    margin-top: 24px;
-}
-
-/* Settings wrapper for centering */
-.wg-settings-wrapper {
-    text-align: center;
-    margin-top: 24px;
+.wg-origin-dest-container > .wg-origin-dest-item:last-child > .wg-section-label {
+    text-align: right;
 }
