@@ -598,12 +598,12 @@ body,
     border: none;
     padding: 4px 2px;
     cursor: pointer;
-    transition: color 0.15s ease, border-bottom-color 0.15s ease;
+    transition: color 0.15s ease;
     border-bottom: 1px solid transparent;
     line-height: 1.2;
 }
 
-/* Inactive: hover previews championship; underline stays hidden until active */
+/* Inactive + hover: championship preview; underline never shown */
 .wg-header-link:hover:not(.wg-header-link-active) {
     color: var(--wg-championship);
 }
@@ -611,7 +611,6 @@ body,
 .wg-header-link-active,
 .wg-header-link-active:hover {
     color: var(--wg-championship);
-    border-bottom-color: var(--wg-championship);
 }
 
 .wg-header-util-sep {
