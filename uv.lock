@@ -3550,7 +3550,6 @@ dependencies = [
     { name = "markdownify" },
     { name = "pydantic" },
     { name = "pydantic-ai" },
-    { name = "pydantic-evals" },
     { name = "python-dotenv" },
     { name = "tabulate" },
 ]
@@ -3559,6 +3558,7 @@ dependencies = [
 dev = [
     { name = "ipykernel" },
     { name = "pre-commit" },
+    { name = "pydantic-evals" },
 ]
 
 [package.metadata]
@@ -3571,7 +3571,6 @@ requires-dist = [
     { name = "markdownify", specifier = ">=1.2.2" },
     { name = "pydantic", specifier = ">=2.13.3" },
     { name = "pydantic-ai", specifier = ">=1.90.0" },
-    { name = "pydantic-evals", specifier = ">=0.2.0" },
     { name = "python-dotenv", specifier = ">=1.2.2" },
     { name = "tabulate", specifier = ">=0.10.0" },
 ]
@@ -3580,6 +3579,7 @@ requires-dist = [
 dev = [
     { name = "ipykernel", specifier = ">=7.2.0" },
     { name = "pre-commit", specifier = ">=4.6.0" },
+    { name = "pydantic-evals", specifier = ">=0.2.0" },
 ]
 
 [[package]]

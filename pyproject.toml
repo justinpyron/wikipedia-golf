@@ -13,7 +13,6 @@ dependencies = [
     "markdownify>=1.2.2",
     "pydantic>=2.13.3",
     "pydantic-ai>=1.90.0",
-    "pydantic-evals>=0.2.0",
     "python-dotenv>=1.2.2",
     "tabulate>=0.10.0",
 ]
@@ -22,4 +21,5 @@ dependencies = [
 dev = [
     "ipykernel>=7.2.0",
     "pre-commit>=4.6.0",
+    "pydantic-evals>=0.2.0",
 ]
