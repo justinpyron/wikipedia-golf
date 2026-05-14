@@ -8,6 +8,7 @@ import asyncio
 import os
 import time
 from decimal import Decimal
+from urllib.parse import quote
 
 import dash
 import logfire
@@ -881,14 +882,22 @@ def build_usage_stats_block(agent_result: AgentResult) -> html.Div:
     )
 
 
+def _wikipedia_article_url(key: str) -> str:
+    """Reader URL for an article key from the Core REST API / agent path."""
+    return f"https://en.wikipedia.org/wiki/{quote(key, safe='/()')}"
+
+
 def build_path_elements(path: list[str]) -> list:
     """Build the path display elements with arrows."""
     elements = []
     for i, step in enumerate(path):
         is_dest = i == len(path) - 1
         elements.append(
-            html.Span(
+            html.A(
                 step.replace("_", " "),
+                href=_wikipedia_article_url(step),
+                target="_blank",
+                rel="noopener noreferrer",
                 className="wg-path-step-dest" if is_dest else "wg-path-step",
             )
         )

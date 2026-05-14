@@ -534,6 +534,14 @@ body,
     font-size: 16px;
     font-weight: 500;
     color: var(--wg-text);
+    text-decoration: none;
+    cursor: pointer;
+    transition: color 0.15s ease;
+}
+
+.wg-path-step:hover,
+.wg-path-step-dest:hover {
+    color: var(--wg-championship);
 }
 
 .wg-path-arrow {
