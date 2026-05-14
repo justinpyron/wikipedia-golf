@@ -19,11 +19,6 @@
     --wg-paper: #f8f8f6;
     --wg-surface: #ffffff;
 
-    /* Championship yellow — primary CTA (Tee Off) */
-    --wg-championship: #f4c430;
-    --wg-championship-hover: #dfaf25;
-    --wg-championship-rgb: 244, 196, 48;
-
     --wg-primary: var(--wg-augusta-green);
     --wg-primary-hover: var(--wg-billiard-green);
 
@@ -254,28 +249,31 @@ body,
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.14em;
-    color: var(--wg-augusta-green);
-    background-color: var(--wg-championship);
+    color: var(--wg-primary);
+    background-color: var(--wg-surface);
     border: none;
-    border-radius: var(--radius-sm);
+    border-radius: var(--radius-md);
     cursor: pointer;
-    transition: background-color 0.2s ease, opacity 0.2s ease;
+    box-shadow: var(--wg-shadow-sm);
+    transition: box-shadow 0.2s ease, opacity 0.2s ease;
 }
 
-.wg-button:hover {
-    background-color: var(--wg-championship-hover);
+.wg-button:hover:not(:disabled) {
+    box-shadow: var(--wg-shadow-md);
 }
 
 .wg-button:disabled,
 .wg-button-disabled {
-    background-color: rgba(var(--wg-championship-rgb), 0.35);
-    color: rgba(var(--wg-green-rgb), 0.45);
+    background-color: var(--wg-surface);
+    color: rgba(var(--wg-green-rgb), 0.42);
     cursor: not-allowed;
+    opacity: 0.78;
+    box-shadow: none;
 }
 
 .wg-button:disabled:hover,
 .wg-button-disabled:hover {
-    background-color: rgba(var(--wg-championship-rgb), 0.35);
+    box-shadow: none;
 }
 
 .wg-reset-btn {
