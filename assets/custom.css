@@ -254,15 +254,16 @@ body,
     letter-spacing: 0.14em;
     color: var(--wg-primary);
     background-color: var(--wg-surface);
-    border: none;
+    border: 3px solid transparent;
     border-radius: var(--radius-md);
     cursor: pointer;
     box-shadow: var(--wg-shadow-sm);
-    transition: box-shadow 0.2s ease, opacity 0.2s ease;
+    transition: box-shadow 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
 }
 
 .wg-button:hover:not(:disabled) {
     box-shadow: var(--wg-shadow-md);
+    border-color: var(--wg-championship);
 }
 
 .wg-button:disabled,
@@ -277,6 +278,7 @@ body,
 .wg-button:disabled:hover,
 .wg-button-disabled:hover {
     box-shadow: none;
+    border-color: transparent;
 }
 
 .wg-reset-btn {
