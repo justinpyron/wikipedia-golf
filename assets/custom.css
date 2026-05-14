@@ -48,6 +48,11 @@
         0 22px 56px rgba(var(--wg-green-rgb), 0.36),
         0 32px 72px rgba(var(--wg-green-rgb), 0.2);
 
+    /* Inner Augusta ring + outer white ring (matches flyouts; stack before elevation shadows) */
+    --wg-double-ring:
+        0 0 0 2px var(--wg-primary),
+        0 0 0 4px var(--wg-on-field);
+
     /* Semantic shortcuts */
     --wg-bg: var(--wg-primary);
     --wg-border: var(--wg-line);
@@ -262,12 +267,23 @@ body,
     border: 2.5px solid transparent;
     border-radius: var(--radius-md);
     cursor: pointer;
-    box-shadow: var(--wg-shadow-sm);
-    transition: box-shadow 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
+    box-shadow:
+        var(--wg-double-ring),
+        var(--wg-shadow-sm);
+    transition:
+        box-shadow 0.2s ease,
+        border-color 0.2s ease,
+        opacity 0.2s ease,
+        background-color 0.2s ease;
 }
 
 .wg-button:hover:not(:disabled) {
-    box-shadow: var(--wg-shadow-md);
+    background-color: var(--wg-championship);
+    /* Inner Augusta ring unchanged; outer ring matches former white halo → championship */
+    box-shadow:
+        0 0 0 2px var(--wg-primary),
+        0 0 0 4px var(--wg-championship),
+        var(--wg-shadow-md);
     border-color: var(--wg-championship);
 }
 
@@ -277,12 +293,12 @@ body,
     color: rgba(var(--wg-green-rgb), 0.42);
     cursor: not-allowed;
     opacity: 0.78;
-    box-shadow: none;
+    box-shadow: var(--wg-double-ring);
 }
 
 .wg-button:disabled:hover,
 .wg-button-disabled:hover {
-    box-shadow: none;
+    box-shadow: var(--wg-double-ring);
     border-color: transparent;
 }
 
@@ -326,11 +342,15 @@ body,
     border-radius: var(--radius-md);
     position: relative;
     transition: box-shadow 0.3s ease, transform 0.3s ease;
-    box-shadow: var(--wg-shadow-sm);
+    box-shadow:
+        var(--wg-double-ring),
+        var(--wg-shadow-sm);
 }
 
 .wg-selected-card:hover {
-    box-shadow: var(--wg-shadow-md);
+    box-shadow:
+        var(--wg-double-ring),
+        var(--wg-shadow-md);
     transform: translateY(-1px);
 }
 
@@ -504,7 +524,9 @@ body,
     border: none;
     border-radius: var(--radius-md);
     text-align: center;
-    box-shadow: var(--wg-shadow-md);
+    box-shadow:
+        var(--wg-double-ring),
+        var(--wg-shadow-md);
 }
 
 .wg-result-links-hero {
@@ -652,8 +674,7 @@ body,
     overflow-y: auto;
     /* Inner Augusta ring, outer white ring (separates panel from field), then depth */
     box-shadow:
-        0 0 0 2px var(--wg-primary),
-        0 0 0 4px var(--wg-on-field),
+        var(--wg-double-ring),
         var(--wg-shadow-flyout);
 }
 
