@@ -623,7 +623,7 @@ body,
 }
 
 .wg-header-util-sep {
-    color: rgba(255, 255, 255, 0.38);
+    color: var(--wg-on-field);
     font-size: 14px;
     user-select: none;
     line-height: 1;
