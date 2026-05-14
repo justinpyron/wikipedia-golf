@@ -3,19 +3,18 @@
 ### Design Philosophy
 Wikipedia Golf embodies **Augusta National elegance**—patrician, timeless, and quietly confident. The aesthetic whispers prestige rather than shouting it. Every element should feel like a perfectly manicured fairway: immaculate, uncluttered, and purposeful.
 
-### Color Palette
+### Color system
+Typography and chrome should **read green-first**, without a parallel gray vocabulary (mist, slate, charcoal boxes).
 
-| Role | Hex | Usage |
-|------|-----|-------|
-| **Background** | `#F8F7F4` (Whisper White) | Page background—warm, inviting, not stark |
-| **Surface** | `#FFFFFF` (Pure White) | Cards, inputs, dropdowns, result panels |
-| **Primary** | `#1E4D2B` (Augusta Green) | Primary buttons, active states, headers, key accents |
-| **Secondary** | `#2D5A3D` (Billiard Green) | Hover states, subtle borders |
-| **Accent** | `#F4C430` (Championship Gold) | Destination indicators, victory states, highlights |
-| **Text Primary** | `#1A1A1A` (Charcoal) | Body text, titles |
-| **Text Secondary** | `#5A5A5A` (Slate) | Descriptions, placeholders, metadata |
-| **Border** | `#E5E3DF` (Mist) | Subtle dividers, input borders, card borders |
-| **Light Mist** | `#F0EFED` | Inner borders, separators within cards |
+- **Paper & surface** — Warm ivory backdrop (`#f8f8f6`-class) plus pure white for elevated panels and inputs keeps the baseline calm.
+- **Ink** — Body text favors a **deep green-black** tint so prose feels club-stationery, not neutral dashboard copy.
+- **Muted text** — Use **Augusta green at fractional opacity** on light surfaces instead of unrelated cool grays.
+- **Rails & sheets** — Hairlines between items and rest-state input edges use **thin green-transparent lines**. Soft shadows borrow the same hue at low intensity so elevations never read as smoky gray.
+- **Interaction** — **Augusta Green** anchors primary fills; **Billiard Green** supports hover/active depth in the same family.
+- **Championship yellow / gold** — Reserved for deliberate ceremony when we introduce it—not required for baseline UI chrome.
+- **Errors** — A restrained red set remains for readability and urgency.
+
+Implementation detail lives as CSS tokens in `assets/custom.css` (`--wg-*`), not duplicated here numerically—palette iteration should happen once in code.
 
 ### Animation & Transitions
 - Subtle transitions (0.15s–0.2s ease) on:
