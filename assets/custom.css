@@ -863,3 +863,7 @@ body,
     flex: 1;
     min-width: 300px;
 }
+
+.wg-origin-dest-container > .wg-origin-dest-item:last-child > .wg-section-label {
+    text-align: right;
+}
