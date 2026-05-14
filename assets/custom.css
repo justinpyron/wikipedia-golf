@@ -717,6 +717,16 @@ body,
 #settings-panel .dash-radioitems,
 #settings-panel .dash-radioitems label {
     color: var(--wg-augusta-green) !important;
+    transition: color 0.15s ease;
+}
+
+#settings-panel .dash-radioitems label span {
+    transition: color 0.15s ease;
+}
+
+#settings-panel .dash-radioitems label:hover,
+#settings-panel .dash-radioitems label:hover span {
+    color: var(--wg-championship) !important;
 }
 
 #settings-panel .dash-slider-mark,
