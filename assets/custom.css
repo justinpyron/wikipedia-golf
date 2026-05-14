@@ -411,7 +411,7 @@ body,
 .wg-scorecard-divider {
     width: 100%;
     max-width: 480px;
-    height: 1px;
+    height: 1.75px;
     background-color: var(--wg-championship);
     margin: 0 auto 16px auto;
 }
