@@ -332,6 +332,44 @@ app.layout = html.Div(
                                                         ],
                                                         "value": "google-gla:gemini-3.1-flash-lite",
                                                     },
+                                                    {
+                                                        "label": [
+                                                            html.Img(
+                                                                src="/assets/logo_moonshotai.svg",
+                                                                height=20,
+                                                                style={
+                                                                    "marginRight": "10px"
+                                                                },
+                                                            ),
+                                                            html.Span(
+                                                                "Kimi K2.6",
+                                                                style={
+                                                                    "fontSize": "14px",
+                                                                    "lineHeight": "1",
+                                                                },
+                                                            ),
+                                                        ],
+                                                        "value": "together:moonshotai/Kimi-K2.6",
+                                                    },
+                                                    {
+                                                        "label": [
+                                                            html.Img(
+                                                                src="/assets/logo_zai.svg",
+                                                                height=20,
+                                                                style={
+                                                                    "marginRight": "10px"
+                                                                },
+                                                            ),
+                                                            html.Span(
+                                                                "GLM 5.1",
+                                                                style={
+                                                                    "fontSize": "14px",
+                                                                    "lineHeight": "1",
+                                                                },
+                                                            ),
+                                                        ],
+                                                        "value": "together:zai-org/GLM-5.1",
+                                                    },
                                                 ],
                                                 value=DEFAULT_MODEL,
                                                 labelStyle={
