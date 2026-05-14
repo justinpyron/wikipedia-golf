@@ -294,8 +294,9 @@ body,
     height: 28px;
     border: none;
     border-radius: var(--radius-md);
-    background-color: var(--wg-fill-well);
-    color: var(--wg-text-muted);
+    /* Darker Augusta wash than wg-fill-well (distinct from thumbnail placeholder) */
+    background-color: rgba(var(--wg-green-rgb), 0.14);
+    color: rgba(var(--wg-green-rgb), 0.92);
     font-size: 16px;
     cursor: pointer;
     display: flex;
@@ -307,8 +308,8 @@ body,
 }
 
 .wg-reset-btn:hover {
-    background-color: var(--wg-fill-hover);
-    color: var(--wg-text);
+    background-color: rgba(var(--wg-green-rgb), 0.26);
+    color: var(--wg-augusta-green);
 }
 
 /* ============================================================================
