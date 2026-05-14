@@ -704,6 +704,29 @@ body,
     margin-top: 0;
 }
 
+/* Settings flyout: all text Augusta green (Dash injects neutral text tokens elsewhere). */
+#settings-panel.wg-flyout-panel,
+#settings-panel .wg-panel-content {
+    color: var(--wg-augusta-green) !important;
+}
+
+#settings-panel .wg-settings-label {
+    color: var(--wg-augusta-green) !important;
+}
+
+#settings-panel .dash-radioitems,
+#settings-panel .dash-radioitems label {
+    color: var(--wg-augusta-green) !important;
+}
+
+#settings-panel .dash-slider-mark,
+#settings-panel .dash-slider-mark-outside-selection,
+#settings-panel .dash-slider-tooltip,
+#settings-panel .dash-slider-tooltip.always-visible,
+#settings-panel .dash-input-container {
+    color: var(--wg-augusta-green) !important;
+}
+
 /* Championship yellow on Settings radios & temperature slider (scoped to #settings-panel).
    Native accent-color draws an ugly dark ring between dot and outer ring — custom paint matches panel white. */
 #settings-panel input[type="radio"] {
