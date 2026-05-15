@@ -7,6 +7,7 @@ Usage:
 import argparse
 import asyncio
 import subprocess
+import uuid
 from collections.abc import Awaitable, Callable, Mapping
 from dataclasses import asdict
 from datetime import datetime
@@ -24,21 +25,6 @@ from evals.datasets import DATASETS
 from evals.types import WikiGolfEvalInput, WikiGolfEvalOutput
 from variants import SYSTEM_PROMPT_V1_0, AgentVariant
 
-load_dotenv()
-logfire.configure(service_name="wiki-golf-evals", environment="dev")
-
-
-LEADERBOARD_MARKDOWN_OUTPUT_DIR = Path(__file__).resolve().parent / "leaderboard"
-
-
-def leaderboard_export_basename() -> str:
-    """Return filename stem ``leaderboard_YYYYMMDD_HHhMM`` using the current local time.
-
-    Example: ``leaderboard_20260309_09h41`` (9 March 2026, 09:41).
-    """
-    return datetime.now().strftime("leaderboard_%Y%m%d_%Hh%M")
-
-
 LEADERBOARD_VARIANTS: list[AgentVariant] = [
     AgentVariant(
         name="leaderboard_dev-gpt-5.4-mini",
@@ -51,12 +37,25 @@ LEADERBOARD_VARIANTS: list[AgentVariant] = [
         system_prompt=SYSTEM_PROMPT_V1_0,
     ),
 ]
-
-# Maximum number of tool calls (page visits) allowed per game
+LEADERBOARD_MARKDOWN_OUTPUT_DIR = Path(__file__).resolve().parent / "leaderboards"
 MAX_TOOL_CALLS = 20
-
-# Maximum number of LLM requests (model turns) allowed per game
 MAX_LLM_REQUESTS = 30
+
+
+load_dotenv()
+logfire.configure(service_name="wiki-golf-evals", environment="dev")
+
+
+def make_leaderboard_run_id() -> str:
+    """Unique sweep id ``leaderboard_YYYYMMDD_<six_hex>`` (local calendar date).
+
+    Uses the first six hex nibbles from a UUID4.
+
+    Example: ``leaderboard_20260309_a3f2e1``.
+    """
+    day = datetime.now().strftime("%Y%m%d")
+    uid = uuid.uuid4().hex[:6]
+    return f"leaderboard_{day}_{uid}"
 
 
 def build_task(variant) -> Callable[[WikiGolfEvalInput], Awaitable[WikiGolfEvalOutput]]:
@@ -96,6 +95,7 @@ def get_git_info() -> tuple[str, str]:
 async def run_all(
     dataset_name: str,
     max_concurrency: int,
+    leaderboard_run_id: str,
 ) -> dict[str, EvaluationReport[WikiGolfEvalInput, WikiGolfEvalOutput, None]]:
     dataset = DATASETS[dataset_name]
     sha, msg = get_git_info()
@@ -106,6 +106,7 @@ async def run_all(
     for variant in LEADERBOARD_VARIANTS:
         task = build_task(variant)
         metadata = {
+            "leaderboard_run_id": leaderboard_run_id,
             "variant": asdict(variant),
             "git_sha": sha,
             "git_commit_message": msg,
@@ -187,16 +188,19 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    reports = asyncio.run(run_all(args.dataset, args.max_concurrency))
+    leaderboard_run_id = make_leaderboard_run_id()
+    print(f"Launching sweep: leaderboard_run_id: {leaderboard_run_id}\n")
+
+    reports = asyncio.run(
+        run_all(args.dataset, args.max_concurrency, leaderboard_run_id)
+    )
     df = make_leaderboard_df(reports)
     print(df)
     print()
 
     if args.save:
         LEADERBOARD_MARKDOWN_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-        out_path = (
-            LEADERBOARD_MARKDOWN_OUTPUT_DIR / f"{leaderboard_export_basename()}.md"
-        )
+        out_path = LEADERBOARD_MARKDOWN_OUTPUT_DIR / f"{leaderboard_run_id}.md"
         out_path.write_text(df.to_markdown(floatfmt=".4g"), encoding="utf-8")
         print(f"\nWrote Markdown table to {out_path}")
 
