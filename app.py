@@ -1024,7 +1024,7 @@ def build_path_elements(path: list[str]) -> list:
 def calculate_cost(result: AgentRunResult) -> Decimal:
     """Calculate cost from agent run result, returning Decimal."""
     try:
-        return estimate_cost(result)
+        return estimate_cost(result.all_messages())
     except Exception:
         return Decimal("0")
 
