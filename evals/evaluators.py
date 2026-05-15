@@ -1,10 +1,9 @@
 """Custom evaluators for Wikipedia Golf experiments."""
 
 from dataclasses import dataclass
-from decimal import Decimal
 
 import numpy as np
-from pydantic_ai.messages import ModelRequest, ModelResponse, RetryPromptPart
+from pydantic_ai.messages import RetryPromptPart
 from pydantic_evals.evaluators import (
     Evaluator,
     EvaluatorContext,
@@ -13,15 +12,8 @@ from pydantic_evals.evaluators import (
 )
 from pydantic_evals.reporting.analyses import ScalarResult
 
+from agent import estimate_cost
 from evals.types import WikiGolfEvalInput, WikiGolfEvalOutput
-
-
-def estimate_cost(messages: list[ModelResponse | ModelRequest]) -> Decimal:
-    """Sum the estimated USD cost across every model response in the run."""
-    return sum(
-        (m.cost().total_price for m in messages if isinstance(m, ModelResponse)),
-        Decimal(0),
-    )
 
 
 class ReachedDestination(Evaluator):

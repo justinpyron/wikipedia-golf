@@ -4,8 +4,7 @@ from dataclasses import dataclass, field
 from decimal import Decimal
 
 from pydantic_ai import Agent, ModelRetry, RunContext
-from pydantic_ai.agent import AgentRunResult
-from pydantic_ai.messages import ModelResponse
+from pydantic_ai.messages import ModelRequest, ModelResponse
 from pydantic_ai.settings import ModelSettings
 
 from variants import AgentVariant
@@ -120,13 +119,9 @@ def build_agent(variant: AgentVariant) -> Agent[WikiGolfDeps, str]:
     return agent
 
 
-def estimate_cost(result: AgentRunResult) -> Decimal:
+def estimate_cost(messages: list[ModelResponse | ModelRequest]) -> Decimal:
     """Sum the estimated USD cost across every model response in the run."""
     return sum(
-        (
-            m.cost().total_price
-            for m in result.all_messages()
-            if isinstance(m, ModelResponse)
-        ),
+        (m.cost().total_price for m in messages if isinstance(m, ModelResponse)),
         Decimal(0),
     )
