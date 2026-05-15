@@ -1,27 +1,43 @@
 """Run Wikipedia Golf evaluations across multiple variants for leaderboard workflows.
 
 Usage:
-    uv run python -m evals.leaderboard [-d easy] [-c 25]
+    uv run python -m evals.leaderboard [-d easy] [-c 25] [--save]
 """
 
 import argparse
 import asyncio
 import subprocess
-from collections.abc import Awaitable, Callable
+from collections.abc import Awaitable, Callable, Mapping
 from dataclasses import asdict
+from datetime import datetime
+from pathlib import Path
 
 import logfire
+import pandas as pd
 from dotenv import load_dotenv
 from pydantic_ai import UsageLimits
 from pydantic_evals.reporting import EvaluationReport
+from pydantic_evals.reporting.analyses import ScalarResult
 
 from agent import WikiGolfDeps, build_agent
 from evals.datasets import DATASETS
 from evals.types import WikiGolfEvalInput, WikiGolfEvalOutput
-from variants import SYSTEM_PROMPT_V0_0, SYSTEM_PROMPT_V1_0, AgentVariant
+from variants import SYSTEM_PROMPT_V1_0, AgentVariant
 
 load_dotenv()
 logfire.configure(service_name="wiki-golf-evals", environment="dev")
+
+
+LEADERBOARD_MARKDOWN_OUTPUT_DIR = Path(__file__).resolve().parent / "leaderboard"
+
+
+def leaderboard_export_basename() -> str:
+    """Return filename stem ``leaderboard_YYYYMMDD_HHhMM`` using the current local time.
+
+    Example: ``leaderboard_20260309_09h41`` (9 March 2026, 09:41).
+    """
+    return datetime.now().strftime("leaderboard_%Y%m%d_%Hh%M")
+
 
 LEADERBOARD_VARIANTS: list[AgentVariant] = [
     AgentVariant(
@@ -106,15 +122,61 @@ async def run_all(
     return results
 
 
+def make_leaderboard_df(
+    reports_by_variant: Mapping[
+        str,
+        EvaluationReport[WikiGolfEvalInput, WikiGolfEvalOutput, None],
+    ],
+) -> pd.DataFrame:
+    """Build a leaderboard table from ``WikiGolfExperimentMetrics`` outputs.
+
+    Each ``EvaluationReport`` should contain ``ScalarResult`` analyses (as produced by
+    :class:`~evals.evaluators.WikiGolfExperimentMetrics`). One row per variant
+    (mapping key), one column per analysis title.
+
+    Ignores non-scalar analyses. Missing scalars for a variant become NA.
+    """
+    variant_names: list[str] = []
+    rows: list[dict[str, int | float]] = []
+    column_order: list[str] = []
+    seen_titles: set[str] = set()
+
+    for variant_name, report in reports_by_variant.items():
+        variant_names.append(variant_name)
+        row: dict[str, int | float] = {}
+        for a in report.analyses:
+            if not isinstance(a, ScalarResult):
+                continue
+            row[a.title] = a.value
+            if a.title not in seen_titles:
+                column_order.append(a.title)
+                seen_titles.add(a.title)
+        rows.append(row)
+
+    if not variant_names:
+        return pd.DataFrame()
+
+    df = pd.DataFrame.from_records(rows, index=variant_names)
+    ordered_cols = [c for c in column_order if c in df.columns]
+    df = df.reindex(columns=ordered_cols)
+    df.index.name = "variant"
+    return df
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Run Wikipedia Golf evaluations across leaderboard variants"
     )
     parser.add_argument(
+        "--save",
+        action="store_true",
+        help="Write the analyses table as Markdown under LEADERBOARD_MARKDOWN_OUTPUT_DIR",
+    )
+    parser.add_argument(
         "-d",
         "--dataset",
         default="easy",
-        choices=list(DATASETS.keys()),
+        choices=sorted(list(DATASETS.keys())),
     )
     parser.add_argument(
         "-c",
@@ -125,7 +187,18 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    asyncio.run(run_all(args.dataset, args.max_concurrency))
+    reports = asyncio.run(run_all(args.dataset, args.max_concurrency))
+    df = make_leaderboard_df(reports)
+    print(df)
+    print()
+
+    if args.save:
+        LEADERBOARD_MARKDOWN_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+        out_path = (
+            LEADERBOARD_MARKDOWN_OUTPUT_DIR / f"{leaderboard_export_basename()}.md"
+        )
+        out_path.write_text(df.to_markdown(floatfmt=".4g"), encoding="utf-8")
+        print(f"\nWrote Markdown table to {out_path}")
 
 
 if __name__ == "__main__":
