@@ -25,13 +25,13 @@ logfire.configure(service_name="wiki-golf-evals", environment="dev")
 
 LEADERBOARD_VARIANTS: list[AgentVariant] = [
     AgentVariant(
-        name="leaderboard_v0_0",
+        name="leaderboard_dev-gpt-5.4-mini",
         model="openai:gpt-5.4-mini",
-        system_prompt=SYSTEM_PROMPT_V0_0,
+        system_prompt=SYSTEM_PROMPT_V1_0,
     ),
     AgentVariant(
-        name="leaderboard_v1_0",
-        model="openai:gpt-5.4-mini",
+        name="leaderboard_dev-gpt-5.4-nano",
+        model="openai:gpt-5.4-nano",
         system_prompt=SYSTEM_PROMPT_V1_0,
     ),
 ]
