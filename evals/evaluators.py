@@ -3,6 +3,7 @@
 from dataclasses import dataclass
 from decimal import Decimal
 
+import numpy as np
 from pydantic_ai.messages import ModelRequest, ModelResponse, RetryPromptPart
 from pydantic_evals.evaluators import (
     Evaluator,
@@ -21,17 +22,6 @@ def estimate_cost(messages: list[ModelResponse | ModelRequest]) -> Decimal:
         (m.cost().total_price for m in messages if isinstance(m, ModelResponse)),
         Decimal(0),
     )
-
-
-def _median(values: list[float]) -> float:
-    if not values:
-        return 0.0
-    s = sorted(values)
-    n = len(s)
-    mid = n // 2
-    if n % 2:
-        return float(s[mid])
-    return (float(s[mid - 1]) + float(s[mid])) / 2.0
 
 
 class ReachedDestination(Evaluator):
@@ -114,13 +104,13 @@ class WikiGolfExperimentMetrics(
         return [
             ScalarResult(
                 title="Median task duration",
-                value=_median(durations),
+                value=float(np.median(durations)) if durations else 0.0,
                 unit="s",
                 description="Median task duration over successful cases (seconds).",
             ),
             ScalarResult(
                 title="Median cost",
-                value=_median(costs),
+                value=float(np.median(costs)) if costs else 0.0,
                 unit="USD",
                 description="Median estimated cost per successful case from model response usage.",
             ),
@@ -132,7 +122,7 @@ class WikiGolfExperimentMetrics(
             ),
             ScalarResult(
                 title="Median step count",
-                value=_median(steps),
+                value=float(np.median(steps)) if steps else 0.0,
                 description="Median hop count (StepCount) over successful cases.",
             ),
             ScalarResult(
