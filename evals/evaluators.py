@@ -61,7 +61,7 @@ SCORE_STEP_COUNT = StepCount.__name__
 class WikiGolfExperimentMetrics(
     ReportEvaluator[WikiGolfEvalInput, WikiGolfEvalOutput, None]
 ):
-    """Aggregate duration, cost, success rate, and step counts across all dataset cases."""
+    """Aggregate duration, cost (per-case and totals), success rate, and step counts."""
 
     def evaluate(
         self, ctx: ReportEvaluatorContext[WikiGolfEvalInput, WikiGolfEvalOutput, None]
@@ -101,10 +101,22 @@ class WikiGolfExperimentMetrics(
                 description="Median task duration over successful cases (seconds).",
             ),
             ScalarResult(
+                title="Total task duration",
+                value=float(sum(durations)) if durations else 0.0,
+                unit="s",
+                description="Sum of task durations over successful cases (seconds).",
+            ),
+            ScalarResult(
                 title="Median cost",
                 value=float(np.median(costs)) if costs else 0.0,
                 unit="USD",
                 description="Median estimated cost per successful case from model response usage.",
+            ),
+            ScalarResult(
+                title="Total cost",
+                value=float(sum(costs)) if costs else 0.0,
+                unit="USD",
+                description="Sum of estimated costs over successful cases from model response usage.",
             ),
             ScalarResult(
                 title="Reached destination rate",
