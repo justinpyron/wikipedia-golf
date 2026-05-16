@@ -171,7 +171,7 @@ def main() -> None:
     parser.add_argument(
         "--save",
         action="store_true",
-        help="Write the analyses table as Markdown under LEADERBOARD_MARKDOWN_OUTPUT_DIR",
+        help="Write analyses table as Markdown and JSON under LEADERBOARD_MARKDOWN_OUTPUT_DIR",
     )
     parser.add_argument(
         "-d",
@@ -200,9 +200,15 @@ def main() -> None:
 
     if args.save:
         LEADERBOARD_MARKDOWN_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-        out_path = LEADERBOARD_MARKDOWN_OUTPUT_DIR / f"{leaderboard_run_id}.md"
-        out_path.write_text(df.to_markdown(floatfmt=".4g"), encoding="utf-8")
-        print(f"\nWrote Markdown table to {out_path}")
+        md_path = LEADERBOARD_MARKDOWN_OUTPUT_DIR / f"{leaderboard_run_id}.md"
+        md_path.write_text(df.to_markdown(floatfmt=".4g"), encoding="utf-8")
+        json_path = LEADERBOARD_MARKDOWN_OUTPUT_DIR / f"{leaderboard_run_id}.json"
+        json_path.write_text(
+            df.to_json(orient="split", indent=4, date_format="iso"),
+            encoding="utf-8",
+        )
+        print(f"\nWrote Markdown table to: {md_path}")
+        print(f"Wrote JSON table to: {json_path}")
 
 
 if __name__ == "__main__":
