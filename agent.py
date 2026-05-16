@@ -56,6 +56,18 @@ def build_agent(variant: AgentVariant) -> Agent[WikiGolfDeps, str]:
         instrument=True,
     )
 
+    @agent.output_validator
+    def require_recorded_victory(ctx: RunContext[WikiGolfDeps], output: str) -> str:
+        if ctx.partial_output:
+            return output
+        if ctx.deps.path and ctx.deps.path[-1] == ctx.deps.destination:
+            return output
+        raise ModelRetry(
+            "You stopped prematurely. You have not visited the destination yet. "
+            "Victory is only possible by calling get_links with the *exact* destination "
+            "key *when that key appears among the current page’s links*."
+        )
+
     @agent.system_prompt
     def game_specs_prompt(ctx: RunContext[WikiGolfDeps]) -> str:
         return (

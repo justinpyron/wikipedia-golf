@@ -34,6 +34,9 @@ MAX_TOOL_CALLS = 20
 # Maximum number of LLM requests (model turns) allowed per game
 MAX_LLM_REQUESTS = 30
 
+# Budget for output validation retries (e.g. ModelRetry from premature finish)
+MAX_OUTPUT_RETRIES = 3
+
 # Number of search results to display
 SEARCH_RESULTS_LIMIT = 5
 
@@ -1099,6 +1102,7 @@ def run_agent(
                     request_limit=MAX_LLM_REQUESTS,
                     tool_calls_limit=MAX_TOOL_CALLS,
                 ),
+                output_retries=MAX_OUTPUT_RETRIES,
             )
 
         result = asyncio.run(run())
