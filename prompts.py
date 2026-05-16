@@ -1,20 +1,4 @@
-"""Agent variant definitions — pure data, no logic."""
-
-from dataclasses import dataclass
-
-from pydantic_ai.settings import ThinkingLevel
-
-
-@dataclass(frozen=True)
-class AgentVariant:
-    name: str
-    model: str
-    system_prompt: str
-    user_prompt: str = "Go"
-    tool_retries: int = 3
-    temperature: float | None = None
-    thinking: ThinkingLevel | None = None
-
+"""System prompts for Wikipedia Golf agents (versioned strings, no logic)."""
 
 SYSTEM_PROMPT_V0_0 = """\
 You are an expert Wikipedia Golf player.
@@ -55,22 +39,3 @@ categories, time periods, geographic regions, scientific fields, etc. Move
 deliberately and efficiently toward the destination's domain. Do NOT explore
 randomly.
 """
-
-
-VARIANTS: list[AgentVariant] = [
-    AgentVariant(
-        name="v0_0",
-        model="openai:gpt-5.4-mini",
-        system_prompt=SYSTEM_PROMPT_V0_0,
-    ),
-    AgentVariant(
-        name="v1_0",
-        model="openai:gpt-5.4-mini",
-        system_prompt=SYSTEM_PROMPT_V1_0,
-    ),
-    AgentVariant(
-        name="v1_0_anthropic",
-        model="anthropic:claude-haiku-4-5-20251001",
-        system_prompt=SYSTEM_PROMPT_V1_0,
-    ),
-]

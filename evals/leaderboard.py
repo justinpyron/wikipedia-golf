@@ -23,20 +23,8 @@ from pydantic_evals.reporting.analyses import ScalarResult
 from agent import WikiGolfDeps, build_agent
 from evals.datasets import DATASETS
 from evals.types import WikiGolfEvalInput, WikiGolfEvalOutput
-from variants import SYSTEM_PROMPT_V1_0, AgentVariant
+from evals.variants_leaderboard import VARIANTS_LEADERBOARD
 
-LEADERBOARD_VARIANTS: list[AgentVariant] = [
-    AgentVariant(
-        name="leaderboard_dev-gpt-5.4-mini",
-        model="openai:gpt-5.4-mini",
-        system_prompt=SYSTEM_PROMPT_V1_0,
-    ),
-    AgentVariant(
-        name="leaderboard_dev-gpt-5.4-nano",
-        model="openai:gpt-5.4-nano",
-        system_prompt=SYSTEM_PROMPT_V1_0,
-    ),
-]
 LEADERBOARD_OUTPUT_DIR = Path(__file__).resolve().parent / "leaderboards"
 MAX_TOOL_CALLS = 20
 MAX_LLM_REQUESTS = 30
@@ -103,7 +91,7 @@ async def run_all(
         str, EvaluationReport[WikiGolfEvalInput, WikiGolfEvalOutput, None]
     ] = {}
 
-    for variant in LEADERBOARD_VARIANTS:
+    for variant in VARIANTS_LEADERBOARD.values():
         task = build_task(variant)
         metadata = {
             "leaderboard_run_id": leaderboard_run_id,

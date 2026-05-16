@@ -18,8 +18,8 @@ from dotenv import load_dotenv
 from pydantic_ai import UsageLimits
 from pydantic_ai.agent import AgentRunResult
 
-from agent import AgentResult, WikiGolfDeps, build_agent, estimate_cost
-from variants import SYSTEM_PROMPT_V1_0, VARIANTS, AgentVariant
+from agent import AgentResult, AgentVariant, WikiGolfDeps, build_agent, estimate_cost
+from prompts import SYSTEM_PROMPT_V1_0
 from wiki import find_articles
 
 load_dotenv()

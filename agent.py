@@ -5,10 +5,20 @@ from decimal import Decimal
 
 from pydantic_ai import Agent, ModelRetry, RunContext
 from pydantic_ai.messages import ModelRequest, ModelResponse
-from pydantic_ai.settings import ModelSettings
+from pydantic_ai.settings import ModelSettings, ThinkingLevel
 
-from variants import AgentVariant
 from wiki import WikiAPIError, WikiArticleNotFoundError, fetch_article_links
+
+
+@dataclass(frozen=True)
+class AgentVariant:
+    name: str
+    model: str
+    system_prompt: str
+    user_prompt: str = "Go"
+    tool_retries: int = 3
+    temperature: float | None = None
+    thinking: ThinkingLevel | None = None
 
 
 @dataclass

@@ -1,7 +1,7 @@
 """CLI runner for Wikipedia Golf evaluation experiments.
 
 Usage:
-    python -m evals.run -d smoke -v baseline
+    python -m evals.run -d smoke -v v1_0
 """
 
 import argparse
@@ -17,7 +17,7 @@ from pydantic_ai import UsageLimits
 from agent import WikiGolfDeps, build_agent
 from evals.datasets import DATASETS
 from evals.types import WikiGolfEvalInput, WikiGolfEvalOutput
-from variants import VARIANTS
+from evals.variants_experiments import VARIANTS_EXPERIMENTS
 
 load_dotenv()
 logfire.configure(service_name="wiki-golf-evals", environment="dev")
@@ -75,7 +75,7 @@ def main() -> None:
         "-v",
         "--variant",
         required=True,
-        choices=[v.name for v in VARIANTS],
+        choices=sorted(VARIANTS_EXPERIMENTS),
     )
     parser.add_argument(
         "-c",
@@ -86,15 +86,8 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    try:
-        variant = next(v for v in VARIANTS if v.name == args.variant)
-    except StopIteration:
-        raise KeyError(f"Variant '{args.variant}' does not exist in VARIANTS.")
-
-    try:
-        dataset = DATASETS[args.dataset]
-    except KeyError:
-        raise KeyError(f"Dataset '{args.dataset}' does not exist in DATASETS.")
+    variant = VARIANTS_EXPERIMENTS[args.variant]
+    dataset = DATASETS[args.dataset]
     task = build_task(variant)
 
     sha, msg = get_git_info()

@@ -10,7 +10,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy necessary application files
-COPY app.py agent.py wiki.py variants.py ./
+COPY app.py agent.py wiki.py prompts.py ./
 COPY assets/ ./assets/
 
 # Expose port 8080 for Cloud Run (match app.py)
