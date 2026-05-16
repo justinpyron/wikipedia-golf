@@ -135,11 +135,12 @@ class ArticleLinks(BaseModel):
             return ""
         return tabulate(data, headers="keys", tablefmt="github")
 
-    def to_list(self) -> str:
+    def to_list(self, sort: bool = True) -> str:
         """Return a newline-separated list of link keys."""
-        keys = sorted([link.key for link in self.links])
-        header = f"Keys of articles linked to from article with key '{self.key}':\n"
-        return header + "\n".join(keys)
+        keys = [link.key for link in self.links]
+        if sort:
+            keys = sorted(keys)
+        return "\n".join(keys)
 
 
 class WikiError(Exception):
