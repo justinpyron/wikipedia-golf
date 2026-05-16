@@ -37,7 +37,7 @@ LEADERBOARD_VARIANTS: list[AgentVariant] = [
         system_prompt=SYSTEM_PROMPT_V1_0,
     ),
 ]
-LEADERBOARD_MARKDOWN_OUTPUT_DIR = Path(__file__).resolve().parent / "leaderboards"
+LEADERBOARD_OUTPUT_DIR = Path(__file__).resolve().parent / "leaderboards"
 MAX_TOOL_CALLS = 20
 MAX_LLM_REQUESTS = 30
 
@@ -171,7 +171,7 @@ def main() -> None:
     parser.add_argument(
         "--save",
         action="store_true",
-        help="Write analyses table as Markdown and JSON under LEADERBOARD_MARKDOWN_OUTPUT_DIR",
+        help="Write analyses table as JSON under evals/leaderboards/",
     )
     parser.add_argument(
         "-d",
@@ -199,16 +199,13 @@ def main() -> None:
     print()
 
     if args.save:
-        LEADERBOARD_MARKDOWN_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-        md_path = LEADERBOARD_MARKDOWN_OUTPUT_DIR / f"{leaderboard_run_id}.md"
-        md_path.write_text(df.to_markdown(floatfmt=".4g"), encoding="utf-8")
-        json_path = LEADERBOARD_MARKDOWN_OUTPUT_DIR / f"{leaderboard_run_id}.json"
+        LEADERBOARD_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+        json_path = LEADERBOARD_OUTPUT_DIR / f"{leaderboard_run_id}.json"
         json_path.write_text(
             df.to_json(orient="split", indent=4, date_format="iso"),
             encoding="utf-8",
         )
-        print(f"\nWrote Markdown table to: {md_path}")
-        print(f"Wrote JSON table to: {json_path}")
+        print(f"\nWrote JSON table to: {json_path}")
 
 
 if __name__ == "__main__":
