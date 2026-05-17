@@ -39,6 +39,14 @@ class AgentResult:
     estimated_cost_usd: float
 
 
+@dataclass(frozen=True)
+class ModelCost:
+    """USD price per million tokens."""
+
+    input_per_1m: float
+    output_per_1m: float
+
+
 def build_agent(variant: AgentVariant) -> Agent[WikiGolfDeps, str]:
     """Construct a fully-configured Wikipedia Golf agent from a variant."""
     model_settings: ModelSettings | None = None
@@ -139,6 +147,55 @@ def build_agent(variant: AgentVariant) -> Agent[WikiGolfDeps, str]:
         )
 
     return agent
+
+
+# TODO: Update the placeholder values with actual figures
+TOKEN_COSTS: dict[str, ModelCost] = {
+    "openai:gpt-5.4-nano": ModelCost(1.0, 2.0),
+    "openai:gpt-5.4-mini": ModelCost(1.0, 2.0),
+    "openai:gpt-5.4": ModelCost(1.0, 2.0),
+    "anthropic:claude-haiku-4-5": ModelCost(1.0, 2.0),
+    "anthropic:claude-sonnet-4-6": ModelCost(1.0, 2.0),
+    "anthropic:claude-haiku-4-5-20251001": ModelCost(1.0, 2.0),
+}
+
+
+def estimate_run_cost_usd(
+    messages: list[ModelResponse | ModelRequest],
+    model_id: str,
+) -> float:
+    """Estimate total USD cost for an agent run using static per-model token rates.
+
+    For each model turn, only the usage counters ``input_tokens`` and ``output_tokens``
+    are considered. Cache-related usage (reads and writes) is not priced at all,
+    even when present on the usage object—so
+    any real-world discount for cached tokens is omitted. That usually makes this a
+    **conservative** estimate: it should not understate cost when caching would have
+    lowered your bill.
+
+    Args:
+        messages: Messages from e.g. ``AgentRunResult.all_messages()``.
+        model_id: Pydantic AI model id in ``provider:model_name`` form.
+
+    Returns:
+        Estimated cost in USD.
+
+    Raises:
+        KeyError: If ``model_id`` is not present in ``TOKEN_COSTS``.
+    """
+    rates = TOKEN_COSTS[model_id]
+    in_per_m = rates.input_per_1m
+    out_per_m = rates.output_per_1m
+    total = 0.0
+    million = 1_000_000.0
+
+    for msg in messages:
+        if not isinstance(msg, ModelResponse):
+            continue
+        u = msg.usage
+        total += (u.input_tokens * in_per_m + u.output_tokens * out_per_m) / million
+
+    return total
 
 
 def estimate_cost(messages: list[ModelResponse | ModelRequest]) -> Decimal:
