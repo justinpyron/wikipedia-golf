@@ -19,7 +19,7 @@ from pydantic_ai import UsageLimits
 from pydantic_ai.agent import AgentRunResult
 
 from agent import AgentResult, AgentVariant, WikiGolfDeps, build_agent, estimate_cost
-from prompts import SYSTEM_PROMPT_V1_0
+from prompts import SYSTEM_PROMPT_V2_0
 from wiki import find_articles
 
 load_dotenv()
@@ -1086,7 +1086,7 @@ def run_agent(
         variant = AgentVariant(
             name="user_configured",
             model=model,
-            system_prompt=SYSTEM_PROMPT_V1_0,
+            system_prompt=SYSTEM_PROMPT_V2_0,
             temperature=temperature,
         )
         agent = build_agent(variant)
@@ -1251,4 +1251,5 @@ app.clientside_callback(
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8080, debug=False)
+    # app.run(host="0.0.0.0", port=8080, debug=False)
+    app.run(host="0.0.0.0", port=8080, debug=True)
