@@ -16,7 +16,7 @@ class AgentVariant:
     model: str
     system_prompt: str
     user_prompt: str = "Go"
-    tool_retries: int = 3
+    tool_retries: int = 5
     temperature: float | None = None
     thinking: ThinkingLevel | None = None
 
