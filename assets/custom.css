@@ -764,15 +764,7 @@ body,
     color: var(--wg-championship) !important;
 }
 
-#settings-panel .dash-slider-mark,
-#settings-panel .dash-slider-mark-outside-selection,
-#settings-panel .dash-slider-tooltip,
-#settings-panel .dash-slider-tooltip.always-visible,
-#settings-panel .dash-input-container {
-    color: var(--wg-augusta-green) !important;
-}
-
-/* Championship yellow on Settings radios & temperature slider (scoped to #settings-panel).
+/* Championship yellow on Settings radios (scoped to #settings-panel).
    Native accent-color draws an ugly dark ring between dot and outer ring — custom paint matches panel white. */
 #settings-panel input[type="radio"] {
     appearance: none;
@@ -805,25 +797,6 @@ body,
 #settings-panel input[type="radio"]:focus-visible {
     outline: 2px solid var(--wg-championship);
     outline-offset: 2px;
-}
-
-#settings-panel .dash-slider-root:not([data-disabled]) .dash-slider-range {
-    background-color: var(--wg-championship) !important;
-}
-
-#settings-panel .dash-slider-root:not([data-disabled]) .dash-slider-thumb {
-    background-color: var(--wg-championship) !important;
-}
-
-#settings-panel .dash-slider-root:not([data-disabled]) .dash-slider-thumb:focus {
-    outline: 2px solid var(--wg-championship);
-    outline-offset: 2px;
-}
-
-#settings-panel
-    .dash-slider-root:not([data-disabled])
-    .dash-slider-dot:not(.dash-slider-dot-outside-selection) {
-    background-color: var(--wg-championship) !important;
 }
 
 /* Fix radio button vertical alignment */

@@ -17,7 +17,6 @@ class AgentVariant:
     system_prompt: str
     user_prompt: str = "Go"
     tool_retries: int = 5
-    temperature: float | None = None
     thinking: ThinkingLevel | None = None
 
 
@@ -50,11 +49,8 @@ class ModelCost:
 def build_agent(variant: AgentVariant) -> Agent[WikiGolfDeps, str]:
     """Construct a fully-configured Wikipedia Golf agent from a variant."""
     model_settings: ModelSettings | None = None
-    if variant.temperature is not None or variant.thinking is not None:
-        model_settings = ModelSettings(
-            temperature=variant.temperature,
-            thinking=variant.thinking,
-        )
+    if variant.thinking is not None:
+        model_settings = ModelSettings(thinking=variant.thinking)
 
     agent = Agent(
         variant.model,

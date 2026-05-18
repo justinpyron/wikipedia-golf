@@ -48,9 +48,6 @@ SEARCH_RESULTS_LIMIT = 5
 # Default LLM model - used as initial value and fallback
 DEFAULT_MODEL = "openai-responses:gpt-5.4-nano"
 
-# Default temperature setting
-DEFAULT_TEMPERATURE = 0.7
-
 # Debounce delay for search-as-you-type (milliseconds)
 SEARCH_DEBOUNCE_MS = 1000
 
@@ -412,22 +409,6 @@ app.layout = html.Div(
                                                     "marginBottom": "0",
                                                 },
                                             ),
-                                            html.Div(
-                                                "Temperature",
-                                                className="wg-settings-label",
-                                            ),
-                                            dcc.Slider(
-                                                id="temperature-slider",
-                                                min=0.0,
-                                                max=1.0,
-                                                step=0.1,
-                                                value=DEFAULT_TEMPERATURE,
-                                                marks={
-                                                    i / 10: str(i / 10)
-                                                    for i in range(11)
-                                                },
-                                                allow_direct_input=False,
-                                            ),
                                         ],
                                         className="wg-panel-content",
                                     ),
@@ -542,9 +523,8 @@ app.layout = html.Div(
             max_intervals=1,
         ),
         dcc.Store(id="dest-pending-query", data=None),
-        # Settings Stores - defaults come from RadioItems/slider value props
+        # Settings Stores - defaults come from RadioItems value props
         dcc.Store(id="selected-llm", data=None),
-        dcc.Store(id="selected-temperature", data=None),
         # Tee Off Button
         html.Button(
             "Tee Off",
@@ -1053,7 +1033,6 @@ def calculate_cost(result: AgentRunResult) -> float:
     State("origin-data", "data"),
     State("dest-data", "data"),
     State("selected-llm", "data"),
-    State("selected-temperature", "data"),
     running=[
         # Show loading spinner while agent runs, hide when complete
         (Output("loading-spinner", "style"), {"display": "block"}, {"display": "none"}),
@@ -1071,7 +1050,6 @@ def run_agent(
     origin_data: dict | None,
     dest_data: dict | None,
     selected_llm: str | None,
-    selected_temperature: float | None,
 ) -> tuple:
     """Run the Wikipedia Golf agent and display results."""
     if n_clicks is None or not origin_data or not dest_data:
@@ -1083,16 +1061,10 @@ def run_agent(
 
         # Use selected settings or defaults
         model = selected_llm or DEFAULT_MODEL
-        temperature = (
-            selected_temperature
-            if selected_temperature is not None
-            else DEFAULT_TEMPERATURE
-        )
         variant = AgentVariant(
             name="user_configured",
             model=model,
             system_prompt=SYSTEM_PROMPT_V2_0,
-            temperature=temperature,
         )
         agent = build_agent(variant)
 
@@ -1216,16 +1188,6 @@ def render_header_flyout(data: str | None) -> tuple:
 )
 def store_llm_selection(value: str | None) -> str | None:
     """Store selected LLM model."""
-    return value
-
-
-@callback(
-    Output("selected-temperature", "data"),
-    Input("temperature-slider", "value"),
-    prevent_initial_call=True,
-)
-def store_temperature(value: float | None) -> float | None:
-    """Store temperature setting."""
     return value
 
 
