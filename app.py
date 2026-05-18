@@ -7,7 +7,6 @@ Aesthetic: Augusta-inspired (quiet greens, restrained surfaces).
 import asyncio
 import os
 import time
-from decimal import Decimal
 from urllib.parse import quote
 
 import dash
@@ -18,7 +17,13 @@ from dotenv import load_dotenv
 from pydantic_ai import UsageLimits
 from pydantic_ai.agent import AgentRunResult
 
-from agent import AgentResult, AgentVariant, WikiGolfDeps, build_agent, estimate_cost
+from agent import (
+    AgentResult,
+    AgentVariant,
+    WikiGolfDeps,
+    build_agent,
+    estimate_run_cost_usd,
+)
 from prompts import SYSTEM_PROMPT_V2_0
 from wiki import find_articles
 
@@ -1024,12 +1029,12 @@ def build_path_elements(path: list[str]) -> list:
     return elements
 
 
-def calculate_cost(result: AgentRunResult) -> Decimal:
-    """Calculate cost from agent run result, returning Decimal."""
+def calculate_cost(result: AgentRunResult, model_id: str) -> float:
+    """Estimate cost from agent run messages and the pydantic-ai model id."""
     try:
-        return estimate_cost(result.all_messages())
+        return estimate_run_cost_usd(result.all_messages(), model_id)
     except Exception:
-        return Decimal("0")
+        return 0.0
 
 
 # ============================================================================
@@ -1108,15 +1113,15 @@ def run_agent(
         result = asyncio.run(run())
         duration_seconds = time.time() - start_time
 
-        usage = result.usage()
+        usage = result.usage()  # TODO: remove () --> latest version of pydantic-ai
         total_tokens = usage.total_tokens if usage else 0
-        estimated_cost = calculate_cost(result)
+        estimated_cost = calculate_cost(result, model)
 
         agent_result = AgentResult(
             path=deps.path,
             duration_seconds=duration_seconds,
             total_tokens=total_tokens,
-            estimated_cost_usd=float(estimated_cost),
+            estimated_cost_usd=estimated_cost,
         )
 
         if not agent_result.path:
@@ -1252,4 +1257,4 @@ app.clientside_callback(
 
 if __name__ == "__main__":
     # app.run(host="0.0.0.0", port=8080, debug=False)
-    app.run(host="0.0.0.0", port=8080, debug=True)
+    app.run(host="0.0.0.0", port=8080, debug=True)  # TODO: Remove after testing
