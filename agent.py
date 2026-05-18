@@ -167,21 +167,13 @@ def estimate_run_cost_usd(
     """Estimate total USD cost for an agent run using static per-model token rates.
 
     For each model turn, only the usage counters ``input_tokens`` and ``output_tokens``
-    are considered. Cache-related usage (reads and writes) is not priced at all,
-    even when present on the usage object—so
-    any real-world discount for cached tokens is omitted. That usually makes this a
-    **conservative** estimate: it should not understate cost when caching would have
-    lowered your bill.
+    are considered. Cache-related usage (reads and writes) is not considered at all,
+    even when present on the usage object. So, any real-world discount for cached
+    tokens is omitted. That makes this a **conservative** estimate.
 
     Args:
         messages: Messages from e.g. ``AgentRunResult.all_messages()``.
         model_id: Pydantic AI model id in ``provider:model_name`` form.
-
-    Returns:
-        Estimated cost in USD.
-
-    Raises:
-        KeyError: If ``model_id`` is not present in ``TOKEN_COSTS``.
     """
     rates = TOKEN_COSTS[model_id]
     in_per_m = rates.input_per_1m
