@@ -300,7 +300,7 @@ app.layout = html.Div(
                                                                 },
                                                             ),
                                                         ],
-                                                        "value": "google-gla:gemini-3.1-pro-preview",
+                                                        "value": "google:gemini-3.1-pro-preview",
                                                     },
                                                     {
                                                         "label": [
@@ -319,7 +319,7 @@ app.layout = html.Div(
                                                                 },
                                                             ),
                                                         ],
-                                                        "value": "google-gla:gemini-3-flash-preview",
+                                                        "value": "google:gemini-3-flash-preview",
                                                     },
                                                     {
                                                         "label": [
@@ -338,7 +338,7 @@ app.layout = html.Div(
                                                                 },
                                                             ),
                                                         ],
-                                                        "value": "google-gla:gemini-3.1-flash-lite",
+                                                        "value": "google:gemini-3.1-flash-lite",
                                                     },
                                                     {
                                                         "label": [
