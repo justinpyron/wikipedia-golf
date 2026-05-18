@@ -4,6 +4,7 @@ from dataclasses import dataclass, field
 from decimal import Decimal
 
 from pydantic_ai import Agent, ModelRetry, RunContext
+from pydantic_ai.capabilities import Instrumentation
 from pydantic_ai.messages import ModelRequest, ModelResponse
 from pydantic_ai.settings import ModelSettings, ThinkingLevel
 
@@ -57,7 +58,7 @@ def build_agent(variant: AgentVariant) -> Agent[WikiGolfDeps, str]:
         deps_type=WikiGolfDeps,
         system_prompt=variant.system_prompt,
         model_settings=model_settings,
-        instrument=True,
+        capabilities=[Instrumentation()],
     )
 
     @agent.system_prompt
