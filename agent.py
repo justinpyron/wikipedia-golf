@@ -189,11 +189,3 @@ def estimate_run_cost_usd(messages: list[ModelResponse | ModelRequest]) -> float
             u.input_tokens * rates.input_per_1m + u.output_tokens * rates.output_per_1m
         ) / million
     return total
-
-
-def estimate_cost(messages: list[ModelResponse | ModelRequest]) -> Decimal:
-    """Sum the estimated USD cost across every model response in the run."""
-    return sum(
-        (m.cost().total_price for m in messages if isinstance(m, ModelResponse)),
-        Decimal(0),
-    )
