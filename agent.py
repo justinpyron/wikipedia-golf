@@ -149,14 +149,18 @@ def build_agent(variant: AgentVariant) -> Agent[WikiGolfDeps, str]:
     return agent
 
 
-# TODO: Update the placeholder values with actual figures
-TOKEN_COSTS: dict[str, ModelCost] = {
-    "openai:gpt-5.4-nano": ModelCost(1.0, 2.0),
-    "openai:gpt-5.4-mini": ModelCost(1.0, 2.0),
-    "openai:gpt-5.4": ModelCost(1.0, 2.0),
-    "anthropic:claude-haiku-4-5": ModelCost(1.0, 2.0),
-    "anthropic:claude-sonnet-4-6": ModelCost(1.0, 2.0),
-    "anthropic:claude-haiku-4-5-20251001": ModelCost(1.0, 2.0),
+TOKEN_COSTS_PER_1M: dict[str, ModelCost] = {
+    "openai:gpt-5.4-nano": ModelCost(0.20, 1.25),
+    "openai:gpt-5.4-mini": ModelCost(0.75, 4.50),
+    "openai:gpt-5.4": ModelCost(2.50, 15.00),
+    "anthropic:claude-haiku-4-5": ModelCost(1.00, 5.00),
+    "anthropic:claude-sonnet-4-6": ModelCost(3.00, 15.00),
+    "google-gla:gemini-3.1-flash-lite": ModelCost(0.25, 1.50),
+    "google-gla:gemini-3-flash-preview": ModelCost(0.50, 3.00),
+    "google-gla:gemini-3.1-pro-preview": ModelCost(2.00, 12.00),
+    "xai:grok-4.3": ModelCost(1.25, 2.50),
+    "together:moonshotai/Kimi-K2.6": ModelCost(1.20, 4.50),
+    "together:zai-org/GLM-5.1": ModelCost(1.40, 4.40),
 }
 
 
@@ -175,7 +179,7 @@ def estimate_run_cost_usd(
         messages: Messages from e.g. ``AgentRunResult.all_messages()``.
         model_id: Pydantic AI model id in ``provider:model_name`` form.
     """
-    rates = TOKEN_COSTS[model_id]
+    rates = TOKEN_COSTS_PER_1M[model_id]
     in_per_m = rates.input_per_1m
     out_per_m = rates.output_per_1m
     total = 0.0
