@@ -17,10 +17,10 @@ dataset: Dataset[WikiGolfEvalInput, WikiGolfEvalOutput] = Dataset(
     cases=[],
     evaluators=[
         ReachedDestination(),
-        PathLength(),
         ModelRequestCount(),
-        RunCostUsd(),
+        PathLength(),
         NoModelRetries(),
+        RunCostUsd(),
     ],
     report_evaluators=[WikiGolfExperimentMetrics()],
 )

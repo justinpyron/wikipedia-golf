@@ -53,10 +53,10 @@ dataset: Dataset[WikiGolfEvalInput, WikiGolfEvalOutput] = Dataset(
     ],
     evaluators=[
         ReachedDestination(),
-        PathLength(),
         ModelRequestCount(),
-        RunCostUsd(),
+        PathLength(),
         NoModelRetries(),
+        RunCostUsd(),
     ],
     report_evaluators=[WikiGolfExperimentMetrics()],
 )
