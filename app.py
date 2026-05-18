@@ -1113,7 +1113,7 @@ def run_agent(
         result = asyncio.run(run())
         duration_seconds = time.time() - start_time
 
-        usage = result.usage()  # TODO: remove () --> latest version of pydantic-ai
+        usage = result.usage
         total_tokens = usage.total_tokens if usage else 0
         estimated_cost = calculate_cost(result, model)
 
