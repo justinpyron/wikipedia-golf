@@ -46,7 +46,7 @@ MAX_OUTPUT_RETRIES = 3
 SEARCH_RESULTS_LIMIT = 5
 
 # Default LLM model - used as initial value and fallback
-DEFAULT_MODEL = "openai:gpt-5.4-nano"
+DEFAULT_MODEL = "openai-responses:gpt-5.4-nano"
 
 # Default temperature setting
 DEFAULT_TEMPERATURE = 0.7
@@ -205,7 +205,7 @@ app.layout = html.Div(
                                                                 },
                                                             ),
                                                         ],
-                                                        "value": "openai:gpt-5.4-nano",
+                                                        "value": "openai-responses:gpt-5.4-nano",
                                                     },
                                                     {
                                                         "label": [
@@ -224,7 +224,7 @@ app.layout = html.Div(
                                                                 },
                                                             ),
                                                         ],
-                                                        "value": "openai:gpt-5.4-mini",
+                                                        "value": "openai-responses:gpt-5.4-mini",
                                                     },
                                                     {
                                                         "label": [
@@ -243,7 +243,7 @@ app.layout = html.Div(
                                                                 },
                                                             ),
                                                         ],
-                                                        "value": "openai:gpt-5.4",
+                                                        "value": "openai-responses:gpt-5.4",
                                                     },
                                                     {
                                                         "label": [

@@ -150,9 +150,9 @@ def build_agent(variant: AgentVariant) -> Agent[WikiGolfDeps, str]:
 
 
 TOKEN_COSTS_PER_1M: dict[str, ModelCost] = {
-    "openai:gpt-5.4-nano": ModelCost(0.20, 1.25),
-    "openai:gpt-5.4-mini": ModelCost(0.75, 4.50),
-    "openai:gpt-5.4": ModelCost(2.50, 15.00),
+    "openai-responses:gpt-5.4-nano": ModelCost(0.20, 1.25),
+    "openai-responses:gpt-5.4-mini": ModelCost(0.75, 4.50),
+    "openai-responses:gpt-5.4": ModelCost(2.50, 15.00),
     "anthropic:claude-haiku-4-5": ModelCost(1.00, 5.00),
     "anthropic:claude-sonnet-4-6": ModelCost(3.00, 15.00),
     "google:gemini-3.1-flash-lite": ModelCost(0.25, 1.50),

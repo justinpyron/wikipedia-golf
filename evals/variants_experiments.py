@@ -5,13 +5,13 @@ from prompts import SYSTEM_PROMPT_V2_0
 
 _EXPERIMENTS: list[AgentVariant] = [
     AgentVariant(
-        name="openai:gpt-5.4-mini",
-        model="openai:gpt-5.4-mini",
+        name="openai-responses:gpt-5.4-mini",
+        model="openai-responses:gpt-5.4-mini",
         system_prompt=SYSTEM_PROMPT_V2_0,
     ),
     AgentVariant(
-        name="openai:gpt-5.4-nano",
-        model="openai:gpt-5.4-nano",
+        name="openai-responses:gpt-5.4-nano",
+        model="openai-responses:gpt-5.4-nano",
         system_prompt=SYSTEM_PROMPT_V2_0,
     ),
     AgentVariant(
