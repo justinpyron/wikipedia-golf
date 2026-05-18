@@ -1,0 +1,29 @@
+{
+    "columns":[
+        "Median task duration",
+        "Median cost",
+        "Reached destination rate",
+        "Median step count",
+        "No model retries rate"
+    ],
+    "index":[
+        "leaderboard_dev-gpt-5.4-mini",
+        "leaderboard_dev-gpt-5.4-nano"
+    ],
+    "data":[
+        [
+            46.56495,
+            0.02568585,
+            60.0,
+            5.0,
+            0.0
+        ],
+        [
+            25.415927,
+            0.00360998,
+            40.0,
+            5.0,
+            60.0
+        ]
+    ]
+}

@@ -3,10 +3,11 @@
 from pydantic_evals import Case, Dataset
 
 from evals.evaluators import (
+    ModelRequestCount,
     NoModelRetries,
+    PathLength,
     ReachedDestination,
     RunCostUsd,
-    StepCount,
     WikiGolfExperimentMetrics,
 )
 from evals.types import WikiGolfEvalInput, WikiGolfEvalOutput
@@ -52,7 +53,8 @@ dataset: Dataset[WikiGolfEvalInput, WikiGolfEvalOutput] = Dataset(
     ],
     evaluators=[
         ReachedDestination(),
-        StepCount(),
+        PathLength(),
+        ModelRequestCount(),
         RunCostUsd(),
         NoModelRetries(),
     ],

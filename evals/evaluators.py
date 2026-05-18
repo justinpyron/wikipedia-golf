@@ -3,7 +3,7 @@
 from dataclasses import dataclass
 
 import numpy as np
-from pydantic_ai.messages import RetryPromptPart
+from pydantic_ai.messages import ModelResponse, RetryPromptPart
 from pydantic_evals.evaluators import (
     Evaluator,
     EvaluatorContext,
@@ -27,8 +27,12 @@ class ReachedDestination(Evaluator):
         return ctx.output.path[-1] == ctx.inputs.destination
 
 
-class StepCount(Evaluator):
-    """Return the number of steps (hops) between origin and destination."""
+class PathLength(Evaluator):
+    """Return the number of edges in the path from origin to destination.
+
+    Counts ``len(path) - 1``: each edge is one legal ``get_links`` navigation
+    from one article to the next.
+    """
 
     def evaluate(
         self, ctx: EvaluatorContext[WikiGolfEvalInput, WikiGolfEvalOutput]
@@ -36,8 +40,17 @@ class StepCount(Evaluator):
         return len(ctx.output.path) - 1
 
 
+class ModelRequestCount(Evaluator):
+    """Return how many LLM requests occurred in the run."""
+
+    def evaluate(
+        self, ctx: EvaluatorContext[WikiGolfEvalInput, WikiGolfEvalOutput]
+    ) -> int:
+        return sum(1 for m in ctx.output.messages if isinstance(m, ModelResponse))
+
+
 class RunCostUsd(Evaluator):
-    """Return estimated USD cost for the run from model response usage."""
+    """Return estimated total USD cost for the run."""
 
     def evaluate(
         self, ctx: EvaluatorContext[WikiGolfEvalInput, WikiGolfEvalOutput]
@@ -63,7 +76,8 @@ class NoModelRetries(Evaluator):
 # Names of evaluator results on case objects
 ASSERTION_REACHED_DESTINATION = ReachedDestination.__name__
 ASSERTION_NO_MODEL_RETRIES = NoModelRetries.__name__
-SCORE_STEP_COUNT = StepCount.__name__
+SCORE_PATH_LENGTH = PathLength.__name__
+SCORE_MODEL_REQUEST_COUNT = ModelRequestCount.__name__
 SCORE_RUN_COST_USD = RunCostUsd.__name__
 
 
@@ -71,7 +85,7 @@ SCORE_RUN_COST_USD = RunCostUsd.__name__
 class WikiGolfExperimentMetrics(
     ReportEvaluator[WikiGolfEvalInput, WikiGolfEvalOutput, None]
 ):
-    """Aggregate duration, cost (per-case and totals), success rate, and step counts."""
+    """Aggregate duration, cost, path length, model request counts, and success rates."""
 
     def evaluate(
         self, ctx: ReportEvaluatorContext[WikiGolfEvalInput, WikiGolfEvalOutput, None]
@@ -83,11 +97,17 @@ class WikiGolfExperimentMetrics(
 
         durations = [c.task_duration for c in cases]
         costs = [estimate_run_cost_usd(c.output.messages) for c in cases]
-        steps: list[int] = []
+        path_lengths: list[int] = []
         for c in cases:
-            sc = c.scores.get(SCORE_STEP_COUNT)
+            sc = c.scores.get(SCORE_PATH_LENGTH)
             if sc is not None:
-                steps.append(int(sc.value))
+                path_lengths.append(int(sc.value))
+
+        model_request_counts: list[int] = []
+        for c in cases:
+            sc = c.scores.get(SCORE_MODEL_REQUEST_COUNT)
+            if sc is not None:
+                model_request_counts.append(int(sc.value))
 
         reached_hits = 0
         for c in cases:
@@ -135,9 +155,16 @@ class WikiGolfExperimentMetrics(
                 description="Share of dataset cases that reached the destination; task failures count as not reached.",
             ),
             ScalarResult(
-                title="Median step count",
-                value=float(np.median(steps)) if steps else 0.0,
-                description="Median hop count (StepCount) over successful cases.",
+                title="Median path length",
+                value=float(np.median(path_lengths)) if path_lengths else 0.0,
+                description="Median hop count (edges on path from origin to destination); not model turns.",
+            ),
+            ScalarResult(
+                title="Median model request count",
+                value=float(np.median(model_request_counts))
+                if model_request_counts
+                else 0.0,
+                description="Median number of LLM requests per successful run (includes retries/tool cycles).",
             ),
             ScalarResult(
                 title="No model retries rate",
