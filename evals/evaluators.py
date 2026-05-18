@@ -45,8 +45,8 @@ class RunCostUsd(Evaluator):
         return estimate_run_cost_usd(ctx.output.messages)
 
 
-class AllValidLinksUsed(Evaluator):
-    """Check if the agent only attempted to use valid links."""
+class NoModelRetries(Evaluator):
+    """Return True iff no RetryPromptPart appears (no ModelRetry in the transcript)."""
 
     def evaluate(
         self, ctx: EvaluatorContext[WikiGolfEvalInput, WikiGolfEvalOutput]
@@ -62,7 +62,7 @@ class AllValidLinksUsed(Evaluator):
 
 # Names of evaluator results on case objects
 ASSERTION_REACHED_DESTINATION = ReachedDestination.__name__
-ASSERTION_ALL_VALID_LINKS = AllValidLinksUsed.__name__
+ASSERTION_NO_MODEL_RETRIES = NoModelRetries.__name__
 SCORE_STEP_COUNT = StepCount.__name__
 SCORE_RUN_COST_USD = RunCostUsd.__name__
 
@@ -83,11 +83,11 @@ class WikiGolfExperimentMetrics(
 
         durations = [c.task_duration for c in cases]
         costs = [estimate_run_cost_usd(c.output.messages) for c in cases]
-        steps: list[float] = []
+        steps: list[int] = []
         for c in cases:
             sc = c.scores.get(SCORE_STEP_COUNT)
             if sc is not None:
-                steps.append(float(sc.value))
+                steps.append(int(sc.value))
 
         reached_hits = 0
         for c in cases:
@@ -96,12 +96,12 @@ class WikiGolfExperimentMetrics(
                 reached_hits += 1
         reached_pct = (100.0 * reached_hits / n_attempts) if n_attempts else 0.0
 
-        valid_hits = 0
+        no_retry_hits = 0
         for c in cases:
-            a = c.assertions.get(ASSERTION_ALL_VALID_LINKS)
+            a = c.assertions.get(ASSERTION_NO_MODEL_RETRIES)
             if a is not None and a.value:
-                valid_hits += 1
-        valid_pct = (100.0 * valid_hits / n_attempts) if n_attempts else 0.0
+                no_retry_hits += 1
+        no_retry_pct = (100.0 * no_retry_hits / n_attempts) if n_attempts else 0.0
 
         return [
             ScalarResult(
@@ -140,9 +140,9 @@ class WikiGolfExperimentMetrics(
                 description="Median hop count (StepCount) over successful cases.",
             ),
             ScalarResult(
-                title="All valid links rate",
-                value=round(valid_pct, 2),
+                title="No model retries rate",
+                value=round(no_retry_pct, 2),
                 unit="%",
-                description="Share of cases with no invalid link attempts; task failures count as invalid.",
+                description="Share of cases with no RetryPromptPart in messages (tool/output ModelRetry); failures count against this.",
             ),
         ]
