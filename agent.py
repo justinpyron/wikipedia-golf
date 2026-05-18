@@ -164,33 +164,30 @@ TOKEN_COSTS_PER_1M: dict[str, ModelCost] = {
 }
 
 
-def estimate_run_cost_usd(
-    messages: list[ModelResponse | ModelRequest],
-    model_id: str,
-) -> float:
+def estimate_run_cost_usd(messages: list[ModelResponse | ModelRequest]) -> float:
     """Estimate total USD cost for an agent run using static per-model token rates.
 
     For each model turn, only the usage counters ``input_tokens`` and ``output_tokens``
     are considered. Cache-related usage (reads and writes) is not considered at all,
     even when present on the usage object. So, any real-world discount for cached
     tokens is omitted. That makes this a **conservative** estimate.
-
-    Args:
-        messages: Messages from e.g. ``AgentRunResult.all_messages()``.
-        model_id: Pydantic AI model id in ``provider:model_name`` form.
     """
-    rates = TOKEN_COSTS_PER_1M[model_id]
-    in_per_m = rates.input_per_1m
-    out_per_m = rates.output_per_1m
     total = 0.0
     million = 1_000_000.0
-
     for msg in messages:
         if not isinstance(msg, ModelResponse):
             continue
+        p, m = msg.provider_name, msg.model_name
+        if not p or not m:
+            continue
+        model_id = f"{p}:{m}"
+        rates = TOKEN_COSTS_PER_1M.get(model_id)
+        if rates is None:
+            continue
         u = msg.usage
-        total += (u.input_tokens * in_per_m + u.output_tokens * out_per_m) / million
-
+        total += (
+            u.input_tokens * rates.input_per_1m + u.output_tokens * rates.output_per_1m
+        ) / million
     return total
 
 

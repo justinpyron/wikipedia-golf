@@ -1029,10 +1029,10 @@ def build_path_elements(path: list[str]) -> list:
     return elements
 
 
-def calculate_cost(result: AgentRunResult, model_id: str) -> float:
-    """Estimate cost from agent run messages and the pydantic-ai model id."""
+def calculate_cost(result: AgentRunResult) -> float:
+    """Estimate cost from agent run messages (per-response model id from Pydantic AI)."""
     try:
-        return estimate_run_cost_usd(result.all_messages(), model_id)
+        return estimate_run_cost_usd(result.all_messages())
     except Exception:
         return 0.0
 
@@ -1115,7 +1115,7 @@ def run_agent(
 
         usage = result.usage
         total_tokens = usage.total_tokens if usage else 0
-        estimated_cost = calculate_cost(result, model)
+        estimated_cost = calculate_cost(result)
 
         agent_result = AgentResult(
             path=deps.path,
