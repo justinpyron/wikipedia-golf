@@ -6,61 +6,17 @@ Usage:
 
 import argparse
 import asyncio
-import subprocess
-from collections.abc import Awaitable, Callable
 from dataclasses import asdict
 
 import logfire
 from dotenv import load_dotenv
-from pydantic_ai import UsageLimits
 
-from agent import WikiGolfDeps, build_agent
 from evals.datasets import DATASETS
-from evals.types import WikiGolfEvalInput, WikiGolfEvalOutput
+from evals.utils import build_task, get_git_info
 from evals.variants_experiments import VARIANTS_EXPERIMENTS
 
 load_dotenv()
 logfire.configure(service_name="wiki-golf-evals", environment="dev")
-
-# Maximum number of tool calls (page visits) allowed per game
-MAX_TOOL_CALLS = 20
-
-# Maximum number of LLM requests (model turns) allowed per game
-MAX_LLM_REQUESTS = 30
-
-
-def build_task(variant) -> Callable[[WikiGolfEvalInput], Awaitable[WikiGolfEvalOutput]]:
-    """Build an eval-compatible async callable from a variant."""
-    agent = build_agent(variant)
-
-    async def task(inputs: WikiGolfEvalInput) -> WikiGolfEvalOutput:
-        deps = WikiGolfDeps(origin=inputs.origin, destination=inputs.destination)
-        result = await agent.run(
-            variant.user_prompt,
-            deps=deps,
-            usage_limits=UsageLimits(
-                request_limit=MAX_LLM_REQUESTS,
-                tool_calls_limit=MAX_TOOL_CALLS,
-            ),
-        )
-        return WikiGolfEvalOutput(
-            path=deps.path,
-            messages=result.all_messages(),
-        )
-
-    return task
-
-
-def get_git_info() -> tuple[str, str]:
-    """Get the current git SHA and commit subject atomically."""
-    try:
-        output = subprocess.check_output(
-            ["git", "log", "-1", "--pretty=format:%H%n%s"], text=True
-        ).strip()
-        sha, msg = output.split("\n", 1)
-        return sha, msg
-    except Exception:
-        return "unknown", "unknown"
 
 
 def main() -> None:

@@ -13,7 +13,7 @@ from pydantic_evals.evaluators import (
 from pydantic_evals.reporting.analyses import ScalarResult
 
 from agent import estimate_run_cost_usd
-from evals.types import WikiGolfEvalInput, WikiGolfEvalOutput
+from evals.utils import WikiGolfEvalInput, WikiGolfEvalOutput
 
 
 class ReachedDestination(Evaluator):

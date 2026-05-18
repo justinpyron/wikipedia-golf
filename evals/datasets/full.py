@@ -10,7 +10,7 @@ from evals.evaluators import (
     RunCostUsd,
     WikiGolfExperimentMetrics,
 )
-from evals.types import WikiGolfEvalInput, WikiGolfEvalOutput
+from evals.utils import WikiGolfEvalInput, WikiGolfEvalOutput
 
 dataset: Dataset[WikiGolfEvalInput, WikiGolfEvalOutput] = Dataset(
     name="full",

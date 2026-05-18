@@ -6,9 +6,8 @@ Usage:
 
 import argparse
 import asyncio
-import subprocess
 import uuid
-from collections.abc import Awaitable, Callable, Mapping
+from collections.abc import Mapping
 from dataclasses import asdict
 from datetime import datetime
 from pathlib import Path
@@ -16,18 +15,14 @@ from pathlib import Path
 import logfire
 import pandas as pd
 from dotenv import load_dotenv
-from pydantic_ai import UsageLimits
 from pydantic_evals.reporting import EvaluationReport
 from pydantic_evals.reporting.analyses import ScalarResult
 
-from agent import WikiGolfDeps, build_agent
 from evals.datasets import DATASETS
-from evals.types import WikiGolfEvalInput, WikiGolfEvalOutput
+from evals.utils import WikiGolfEvalInput, WikiGolfEvalOutput, build_task, get_git_info
 from evals.variants_leaderboard import VARIANTS_LEADERBOARD
 
 LEADERBOARD_OUTPUT_DIR = Path(__file__).resolve().parent / "leaderboards"
-MAX_TOOL_CALLS = 20
-MAX_LLM_REQUESTS = 30
 
 
 load_dotenv()
@@ -44,40 +39,6 @@ def make_leaderboard_run_id() -> str:
     day = datetime.now().strftime("%Y%m%d")
     uid = uuid.uuid4().hex[:6]
     return f"leaderboard_{day}_{uid}"
-
-
-def build_task(variant) -> Callable[[WikiGolfEvalInput], Awaitable[WikiGolfEvalOutput]]:
-    """Build an eval-compatible async callable from a variant."""
-    agent = build_agent(variant)
-
-    async def task(inputs: WikiGolfEvalInput) -> WikiGolfEvalOutput:
-        deps = WikiGolfDeps(origin=inputs.origin, destination=inputs.destination)
-        result = await agent.run(
-            variant.user_prompt,
-            deps=deps,
-            usage_limits=UsageLimits(
-                request_limit=MAX_LLM_REQUESTS,
-                tool_calls_limit=MAX_TOOL_CALLS,
-            ),
-        )
-        return WikiGolfEvalOutput(
-            path=deps.path,
-            messages=result.all_messages(),
-        )
-
-    return task
-
-
-def get_git_info() -> tuple[str, str]:
-    """Get the current git SHA and commit subject atomically."""
-    try:
-        output = subprocess.check_output(
-            ["git", "log", "-1", "--pretty=format:%H%n%s"], text=True
-        ).strip()
-        sha, msg = output.split("\n", 1)
-        return sha, msg
-    except Exception:
-        return "unknown", "unknown"
 
 
 async def run_all(
