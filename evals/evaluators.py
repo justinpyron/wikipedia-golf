@@ -12,7 +12,7 @@ from pydantic_evals.evaluators import (
 )
 from pydantic_evals.reporting.analyses import ScalarResult
 
-from agent import estimate_cost
+from agent import estimate_run_cost_usd
 from evals.types import WikiGolfEvalInput, WikiGolfEvalOutput
 
 
@@ -36,6 +36,15 @@ class StepCount(Evaluator):
         return len(ctx.output.path) - 1
 
 
+class RunCostUsd(Evaluator):
+    """Return estimated USD cost for the run from model response usage."""
+
+    def evaluate(
+        self, ctx: EvaluatorContext[WikiGolfEvalInput, WikiGolfEvalOutput]
+    ) -> float:
+        return estimate_run_cost_usd(ctx.output.messages)
+
+
 class AllValidLinksUsed(Evaluator):
     """Check if the agent only attempted to use valid links."""
 
@@ -51,10 +60,11 @@ class AllValidLinksUsed(Evaluator):
         return True
 
 
-# Names match `BaseEvaluator.get_serialization_name()` on ReportCase.
+# Names of evaluator results on case objects
 ASSERTION_REACHED_DESTINATION = ReachedDestination.__name__
 ASSERTION_ALL_VALID_LINKS = AllValidLinksUsed.__name__
 SCORE_STEP_COUNT = StepCount.__name__
+SCORE_RUN_COST_USD = RunCostUsd.__name__
 
 
 @dataclass
@@ -72,7 +82,7 @@ class WikiGolfExperimentMetrics(
         n_attempts = len(cases) + n_failures
 
         durations = [c.task_duration for c in cases]
-        costs = [float(estimate_cost(c.output.messages)) for c in cases]
+        costs = [estimate_run_cost_usd(c.output.messages) for c in cases]
         steps: list[float] = []
         for c in cases:
             sc = c.scores.get(SCORE_STEP_COUNT)
