@@ -394,6 +394,25 @@ app.layout = html.Div(
                                                         ],
                                                         "value": "together:zai-org/GLM-5.1",
                                                     },
+                                                    {
+                                                        "label": [
+                                                            html.Img(
+                                                                src="/assets/logo_google.svg",
+                                                                height=20,
+                                                                style={
+                                                                    "marginRight": "10px"
+                                                                },
+                                                            ),
+                                                            html.Span(
+                                                                "Gemma 4 31B",
+                                                                style={
+                                                                    "fontSize": "14px",
+                                                                    "lineHeight": "1",
+                                                                },
+                                                            ),
+                                                        ],
+                                                        "value": "together:google/gemma-4-31B-it",
+                                                    },
                                                 ],
                                                 value=DEFAULT_MODEL,
                                                 labelStyle={
