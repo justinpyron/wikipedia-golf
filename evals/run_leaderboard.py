@@ -1,7 +1,7 @@
-"""Run Wikipedia Golf evaluations across multiple variants for leaderboard workflows.
+"""Generate a leaderboard by evaluating multiple agent variants.
 
 Usage:
-    uv run python -m evals.leaderboard [-d easy] [-c 25] [--save]
+    uv run python -m evals.run_leaderboard [-d easy] [-c 25] [--save]
 """
 
 import argparse
@@ -125,7 +125,7 @@ def main() -> None:
     parser.add_argument(
         "-d",
         "--dataset",
-        default="easy",
+        default="leaderboard",
         choices=sorted(list(DATASETS.keys())),
     )
     parser.add_argument(
