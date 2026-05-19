@@ -3,7 +3,7 @@
 from dataclasses import dataclass
 
 import numpy as np
-from pydantic_ai.messages import RetryPromptPart
+from pydantic_ai.messages import ModelResponse, RetryPromptPart
 from pydantic_evals.evaluators import (
     Evaluator,
     EvaluatorContext,
@@ -12,8 +12,8 @@ from pydantic_evals.evaluators import (
 )
 from pydantic_evals.reporting.analyses import ScalarResult
 
-from agent import estimate_cost
-from evals.types import WikiGolfEvalInput, WikiGolfEvalOutput
+from agent import estimate_run_cost_usd
+from evals.utils import WikiGolfEvalInput, WikiGolfEvalOutput
 
 
 class ReachedDestination(Evaluator):
@@ -27,8 +27,21 @@ class ReachedDestination(Evaluator):
         return ctx.output.path[-1] == ctx.inputs.destination
 
 
-class StepCount(Evaluator):
-    """Return the number of steps (hops) between origin and destination."""
+class ModelRequestCount(Evaluator):
+    """Return how many LLM requests occurred in the run."""
+
+    def evaluate(
+        self, ctx: EvaluatorContext[WikiGolfEvalInput, WikiGolfEvalOutput]
+    ) -> int:
+        return sum(1 for m in ctx.output.messages if isinstance(m, ModelResponse))
+
+
+class PathLength(Evaluator):
+    """Return the number of edges in the path from origin to destination.
+
+    Counts ``len(path) - 1``: each edge is one legal ``get_links`` navigation
+    from one article to the next.
+    """
 
     def evaluate(
         self, ctx: EvaluatorContext[WikiGolfEvalInput, WikiGolfEvalOutput]
@@ -36,8 +49,8 @@ class StepCount(Evaluator):
         return len(ctx.output.path) - 1
 
 
-class AllValidLinksUsed(Evaluator):
-    """Check if the agent only attempted to use valid links."""
+class NoModelRetries(Evaluator):
+    """Return True iff no RetryPromptPart appears (no ModelRetry in the transcript)."""
 
     def evaluate(
         self, ctx: EvaluatorContext[WikiGolfEvalInput, WikiGolfEvalOutput]
@@ -51,17 +64,28 @@ class AllValidLinksUsed(Evaluator):
         return True
 
 
-# Names match `BaseEvaluator.get_serialization_name()` on ReportCase.
+class RunCostUsd(Evaluator):
+    """Return estimated total USD cost for the run."""
+
+    def evaluate(
+        self, ctx: EvaluatorContext[WikiGolfEvalInput, WikiGolfEvalOutput]
+    ) -> float:
+        return estimate_run_cost_usd(ctx.output.messages)
+
+
+# Names of evaluator results on case objects (importance / presentation order)
 ASSERTION_REACHED_DESTINATION = ReachedDestination.__name__
-ASSERTION_ALL_VALID_LINKS = AllValidLinksUsed.__name__
-SCORE_STEP_COUNT = StepCount.__name__
+SCORE_MODEL_REQUEST_COUNT = ModelRequestCount.__name__
+SCORE_PATH_LENGTH = PathLength.__name__
+ASSERTION_NO_MODEL_RETRIES = NoModelRetries.__name__
+SCORE_RUN_COST_USD = RunCostUsd.__name__
 
 
 @dataclass
 class WikiGolfExperimentMetrics(
     ReportEvaluator[WikiGolfEvalInput, WikiGolfEvalOutput, None]
 ):
-    """Aggregate duration, cost, success rate, and step counts across all dataset cases."""
+    """Aggregate duration, cost, path length, model request counts, and success rates."""
 
     def evaluate(
         self, ctx: ReportEvaluatorContext[WikiGolfEvalInput, WikiGolfEvalOutput, None]
@@ -72,12 +96,18 @@ class WikiGolfExperimentMetrics(
         n_attempts = len(cases) + n_failures
 
         durations = [c.task_duration for c in cases]
-        costs = [float(estimate_cost(c.output.messages)) for c in cases]
-        steps: list[float] = []
+        costs = [estimate_run_cost_usd(c.output.messages) for c in cases]
+        model_request_counts: list[int] = []
         for c in cases:
-            sc = c.scores.get(SCORE_STEP_COUNT)
+            sc = c.scores.get(SCORE_MODEL_REQUEST_COUNT)
             if sc is not None:
-                steps.append(float(sc.value))
+                model_request_counts.append(int(sc.value))
+
+        path_lengths: list[int] = []
+        for c in cases:
+            sc = c.scores.get(SCORE_PATH_LENGTH)
+            if sc is not None:
+                path_lengths.append(int(sc.value))
 
         reached_hits = 0
         for c in cases:
@@ -86,19 +116,37 @@ class WikiGolfExperimentMetrics(
                 reached_hits += 1
         reached_pct = (100.0 * reached_hits / n_attempts) if n_attempts else 0.0
 
-        valid_hits = 0
+        no_retry_hits = 0
         for c in cases:
-            a = c.assertions.get(ASSERTION_ALL_VALID_LINKS)
+            a = c.assertions.get(ASSERTION_NO_MODEL_RETRIES)
             if a is not None and a.value:
-                valid_hits += 1
-        valid_pct = (100.0 * valid_hits / n_attempts) if n_attempts else 0.0
+                no_retry_hits += 1
+        no_retry_pct = (100.0 * no_retry_hits / n_attempts) if n_attempts else 0.0
 
         return [
             ScalarResult(
-                title="Median task duration",
-                value=float(np.median(durations)) if durations else 0.0,
-                unit="s",
-                description="Median task duration over successful cases (seconds).",
+                title="Reached destination rate",
+                value=round(reached_pct, 2),
+                unit="%",
+                description="Share of dataset cases that reached the destination; task failures count as not reached.",
+            ),
+            ScalarResult(
+                title="Median model request count",
+                value=float(np.median(model_request_counts))
+                if model_request_counts
+                else 0.0,
+                description="Median number of LLM requests per successful run (includes retries/tool cycles).",
+            ),
+            ScalarResult(
+                title="Median path length",
+                value=float(np.median(path_lengths)) if path_lengths else 0.0,
+                description="Median hop count (edges on path from origin to destination); not model turns.",
+            ),
+            ScalarResult(
+                title="No model retries rate",
+                value=round(no_retry_pct, 2),
+                unit="%",
+                description="Share of cases with no RetryPromptPart in messages (tool/output ModelRetry); failures count against this.",
             ),
             ScalarResult(
                 title="Median cost",
@@ -107,20 +155,21 @@ class WikiGolfExperimentMetrics(
                 description="Median estimated cost per successful case from model response usage.",
             ),
             ScalarResult(
-                title="Reached destination rate",
-                value=round(reached_pct, 2),
-                unit="%",
-                description="Share of dataset cases that reached the destination; task failures count as not reached.",
+                title="Total cost",
+                value=float(sum(costs)) if costs else 0.0,
+                unit="USD",
+                description="Sum of estimated costs over successful cases from model response usage.",
             ),
             ScalarResult(
-                title="Median step count",
-                value=float(np.median(steps)) if steps else 0.0,
-                description="Median hop count (StepCount) over successful cases.",
+                title="Median task duration",
+                value=float(np.median(durations)) if durations else 0.0,
+                unit="s",
+                description="Median task duration over successful cases (seconds).",
             ),
             ScalarResult(
-                title="All valid links rate",
-                value=round(valid_pct, 2),
-                unit="%",
-                description="Share of cases with no invalid link attempts; task failures count as invalid.",
+                title="Total task duration",
+                value=float(sum(durations)) if durations else 0.0,
+                unit="s",
+                description="Sum of task durations over successful cases (seconds).",
             ),
         ]

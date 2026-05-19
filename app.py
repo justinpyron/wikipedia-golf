@@ -7,7 +7,6 @@ Aesthetic: Augusta-inspired (quiet greens, restrained surfaces).
 import asyncio
 import os
 import time
-from decimal import Decimal
 from urllib.parse import quote
 
 import dash
@@ -18,8 +17,14 @@ from dotenv import load_dotenv
 from pydantic_ai import UsageLimits
 from pydantic_ai.agent import AgentRunResult
 
-from agent import AgentResult, WikiGolfDeps, build_agent, estimate_cost
-from variants import SYSTEM_PROMPT_V1_0, VARIANTS, AgentVariant
+from agent import (
+    AgentResult,
+    AgentVariant,
+    WikiGolfDeps,
+    build_agent,
+    estimate_run_cost_usd,
+)
+from prompts import SYSTEM_PROMPT_V2_0
 from wiki import find_articles
 
 load_dotenv()
@@ -34,14 +39,14 @@ MAX_TOOL_CALLS = 20
 # Maximum number of LLM requests (model turns) allowed per game
 MAX_LLM_REQUESTS = 30
 
+# Budget for output validation retries (e.g. ModelRetry from premature finish)
+MAX_OUTPUT_RETRIES = 3
+
 # Number of search results to display
 SEARCH_RESULTS_LIMIT = 5
 
 # Default LLM model - used as initial value and fallback
-DEFAULT_MODEL = "openai:gpt-5.4-nano"
-
-# Default temperature setting
-DEFAULT_TEMPERATURE = 0.7
+DEFAULT_MODEL = "openai-responses:gpt-5.4-nano-2026-03-17"
 
 # Debounce delay for search-as-you-type (milliseconds)
 SEARCH_DEBOUNCE_MS = 1000
@@ -197,7 +202,7 @@ app.layout = html.Div(
                                                                 },
                                                             ),
                                                         ],
-                                                        "value": "openai:gpt-5.4-nano",
+                                                        "value": "openai-responses:gpt-5.4-nano-2026-03-17",
                                                     },
                                                     {
                                                         "label": [
@@ -216,7 +221,7 @@ app.layout = html.Div(
                                                                 },
                                                             ),
                                                         ],
-                                                        "value": "openai:gpt-5.4-mini",
+                                                        "value": "openai-responses:gpt-5.4-mini-2026-03-17",
                                                     },
                                                     {
                                                         "label": [
@@ -235,7 +240,7 @@ app.layout = html.Div(
                                                                 },
                                                             ),
                                                         ],
-                                                        "value": "openai:gpt-5.4",
+                                                        "value": "openai-responses:gpt-5.4-2026-03-05",
                                                     },
                                                     {
                                                         "label": [
@@ -254,7 +259,7 @@ app.layout = html.Div(
                                                                 },
                                                             ),
                                                         ],
-                                                        "value": "anthropic:claude-haiku-4-5",
+                                                        "value": "anthropic:claude-haiku-4-5-20251001",
                                                     },
                                                     {
                                                         "label": [
@@ -292,7 +297,7 @@ app.layout = html.Div(
                                                                 },
                                                             ),
                                                         ],
-                                                        "value": "google-gla:gemini-3.1-pro-preview",
+                                                        "value": "google:gemini-3.1-pro-preview",
                                                     },
                                                     {
                                                         "label": [
@@ -311,7 +316,7 @@ app.layout = html.Div(
                                                                 },
                                                             ),
                                                         ],
-                                                        "value": "google-gla:gemini-3-flash-preview",
+                                                        "value": "google:gemini-3-flash-preview",
                                                     },
                                                     {
                                                         "label": [
@@ -330,7 +335,7 @@ app.layout = html.Div(
                                                                 },
                                                             ),
                                                         ],
-                                                        "value": "google-gla:gemini-3.1-flash-lite",
+                                                        "value": "google:gemini-3.1-flash-lite",
                                                     },
                                                     {
                                                         "label": [
@@ -403,22 +408,6 @@ app.layout = html.Div(
                                                     "marginTop": "0",
                                                     "marginBottom": "0",
                                                 },
-                                            ),
-                                            html.Div(
-                                                "Temperature",
-                                                className="wg-settings-label",
-                                            ),
-                                            dcc.Slider(
-                                                id="temperature-slider",
-                                                min=0.0,
-                                                max=1.0,
-                                                step=0.1,
-                                                value=DEFAULT_TEMPERATURE,
-                                                marks={
-                                                    i / 10: str(i / 10)
-                                                    for i in range(11)
-                                                },
-                                                allow_direct_input=False,
                                             ),
                                         ],
                                         className="wg-panel-content",
@@ -534,9 +523,8 @@ app.layout = html.Div(
             max_intervals=1,
         ),
         dcc.Store(id="dest-pending-query", data=None),
-        # Settings Stores - defaults come from RadioItems/slider value props
+        # Settings Stores - defaults come from RadioItems value props
         dcc.Store(id="selected-llm", data=None),
-        dcc.Store(id="selected-temperature", data=None),
         # Tee Off Button
         html.Button(
             "Tee Off",
@@ -1021,12 +1009,12 @@ def build_path_elements(path: list[str]) -> list:
     return elements
 
 
-def calculate_cost(result: AgentRunResult) -> Decimal:
-    """Calculate cost from agent run result, returning Decimal."""
+def calculate_cost(result: AgentRunResult) -> float:
+    """Estimate cost from agent run messages (per-response model id from Pydantic AI)."""
     try:
-        return estimate_cost(result.all_messages())
+        return estimate_run_cost_usd(result.all_messages())
     except Exception:
-        return Decimal("0")
+        return 0.0
 
 
 # ============================================================================
@@ -1045,7 +1033,6 @@ def calculate_cost(result: AgentRunResult) -> Decimal:
     State("origin-data", "data"),
     State("dest-data", "data"),
     State("selected-llm", "data"),
-    State("selected-temperature", "data"),
     running=[
         # Show loading spinner while agent runs, hide when complete
         (Output("loading-spinner", "style"), {"display": "block"}, {"display": "none"}),
@@ -1063,7 +1050,6 @@ def run_agent(
     origin_data: dict | None,
     dest_data: dict | None,
     selected_llm: str | None,
-    selected_temperature: float | None,
 ) -> tuple:
     """Run the Wikipedia Golf agent and display results."""
     if n_clicks is None or not origin_data or not dest_data:
@@ -1075,16 +1061,10 @@ def run_agent(
 
         # Use selected settings or defaults
         model = selected_llm or DEFAULT_MODEL
-        temperature = (
-            selected_temperature
-            if selected_temperature is not None
-            else DEFAULT_TEMPERATURE
-        )
         variant = AgentVariant(
             name="user_configured",
             model=model,
-            system_prompt=SYSTEM_PROMPT_V1_0,
-            temperature=temperature,
+            system_prompt=SYSTEM_PROMPT_V2_0,
         )
         agent = build_agent(variant)
 
@@ -1099,12 +1079,13 @@ def run_agent(
                     request_limit=MAX_LLM_REQUESTS,
                     tool_calls_limit=MAX_TOOL_CALLS,
                 ),
+                output_retries=MAX_OUTPUT_RETRIES,
             )
 
         result = asyncio.run(run())
         duration_seconds = time.time() - start_time
 
-        usage = result.usage()
+        usage = result.usage
         total_tokens = usage.total_tokens if usage else 0
         estimated_cost = calculate_cost(result)
 
@@ -1112,7 +1093,7 @@ def run_agent(
             path=deps.path,
             duration_seconds=duration_seconds,
             total_tokens=total_tokens,
-            estimated_cost_usd=float(estimated_cost),
+            estimated_cost_usd=estimated_cost,
         )
 
         if not agent_result.path:
@@ -1210,16 +1191,6 @@ def store_llm_selection(value: str | None) -> str | None:
     return value
 
 
-@callback(
-    Output("selected-temperature", "data"),
-    Input("temperature-slider", "value"),
-    prevent_initial_call=True,
-)
-def store_temperature(value: float | None) -> float | None:
-    """Store temperature setting."""
-    return value
-
-
 # ============================================================================
 # CLIENTSIDE CALLBACK - Loading Counter
 # ============================================================================
@@ -1247,4 +1218,5 @@ app.clientside_callback(
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8080, debug=False)
+    # app.run(host="0.0.0.0", port=8080, debug=False)
+    app.run(host="0.0.0.0", port=8080, debug=True)  # TODO: Remove after testing

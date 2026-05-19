@@ -6,9 +6,8 @@ Usage:
 
 import argparse
 import asyncio
-import subprocess
 import uuid
-from collections.abc import Awaitable, Callable, Mapping
+from collections.abc import Mapping
 from dataclasses import asdict
 from datetime import datetime
 from pathlib import Path
@@ -16,30 +15,14 @@ from pathlib import Path
 import logfire
 import pandas as pd
 from dotenv import load_dotenv
-from pydantic_ai import UsageLimits
 from pydantic_evals.reporting import EvaluationReport
 from pydantic_evals.reporting.analyses import ScalarResult
 
-from agent import WikiGolfDeps, build_agent
 from evals.datasets import DATASETS
-from evals.types import WikiGolfEvalInput, WikiGolfEvalOutput
-from variants import SYSTEM_PROMPT_V1_0, AgentVariant
+from evals.utils import WikiGolfEvalInput, WikiGolfEvalOutput, build_task, get_git_info
+from evals.variants_leaderboard import VARIANTS_LEADERBOARD
 
-LEADERBOARD_VARIANTS: list[AgentVariant] = [
-    AgentVariant(
-        name="leaderboard_dev-gpt-5.4-mini",
-        model="openai:gpt-5.4-mini",
-        system_prompt=SYSTEM_PROMPT_V1_0,
-    ),
-    AgentVariant(
-        name="leaderboard_dev-gpt-5.4-nano",
-        model="openai:gpt-5.4-nano",
-        system_prompt=SYSTEM_PROMPT_V1_0,
-    ),
-]
-LEADERBOARD_MARKDOWN_OUTPUT_DIR = Path(__file__).resolve().parent / "leaderboards"
-MAX_TOOL_CALLS = 20
-MAX_LLM_REQUESTS = 30
+LEADERBOARD_OUTPUT_DIR = Path(__file__).resolve().parent / "leaderboards"
 
 
 load_dotenv()
@@ -58,40 +41,6 @@ def make_leaderboard_run_id() -> str:
     return f"leaderboard_{day}_{uid}"
 
 
-def build_task(variant) -> Callable[[WikiGolfEvalInput], Awaitable[WikiGolfEvalOutput]]:
-    """Build an eval-compatible async callable from a variant."""
-    agent = build_agent(variant)
-
-    async def task(inputs: WikiGolfEvalInput) -> WikiGolfEvalOutput:
-        deps = WikiGolfDeps(origin=inputs.origin, destination=inputs.destination)
-        result = await agent.run(
-            variant.user_prompt,
-            deps=deps,
-            usage_limits=UsageLimits(
-                request_limit=MAX_LLM_REQUESTS,
-                tool_calls_limit=MAX_TOOL_CALLS,
-            ),
-        )
-        return WikiGolfEvalOutput(
-            path=deps.path,
-            messages=result.all_messages(),
-        )
-
-    return task
-
-
-def get_git_info() -> tuple[str, str]:
-    """Get the current git SHA and commit subject atomically."""
-    try:
-        output = subprocess.check_output(
-            ["git", "log", "-1", "--pretty=format:%H%n%s"], text=True
-        ).strip()
-        sha, msg = output.split("\n", 1)
-        return sha, msg
-    except Exception:
-        return "unknown", "unknown"
-
-
 async def run_all(
     dataset_name: str,
     max_concurrency: int,
@@ -103,7 +52,7 @@ async def run_all(
         str, EvaluationReport[WikiGolfEvalInput, WikiGolfEvalOutput, None]
     ] = {}
 
-    for variant in LEADERBOARD_VARIANTS:
+    for variant in VARIANTS_LEADERBOARD.values():
         task = build_task(variant)
         metadata = {
             "leaderboard_run_id": leaderboard_run_id,
@@ -171,7 +120,7 @@ def main() -> None:
     parser.add_argument(
         "--save",
         action="store_true",
-        help="Write the analyses table as Markdown under LEADERBOARD_MARKDOWN_OUTPUT_DIR",
+        help="Write analyses table as JSON under evals/leaderboards/",
     )
     parser.add_argument(
         "-d",
@@ -199,10 +148,13 @@ def main() -> None:
     print()
 
     if args.save:
-        LEADERBOARD_MARKDOWN_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-        out_path = LEADERBOARD_MARKDOWN_OUTPUT_DIR / f"{leaderboard_run_id}.md"
-        out_path.write_text(df.to_markdown(floatfmt=".4g"), encoding="utf-8")
-        print(f"\nWrote Markdown table to {out_path}")
+        LEADERBOARD_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+        json_path = LEADERBOARD_OUTPUT_DIR / f"{leaderboard_run_id}.json"
+        json_path.write_text(
+            df.to_json(orient="split", indent=4, date_format="iso"),
+            encoding="utf-8",
+        )
+        print(f"\nWrote JSON table to: {json_path}")
 
 
 if __name__ == "__main__":
