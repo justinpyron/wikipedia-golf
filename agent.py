@@ -158,7 +158,6 @@ TOKEN_COSTS_PER_1M: dict[str, ModelCost] = {
     "xai:grok-4.3": ModelCost(1.25, 2.50),
     "together:moonshotai/Kimi-K2.6": ModelCost(1.20, 4.50),
     "together:zai-org/GLM-5.1": ModelCost(1.40, 4.40),
-    "together:google/gemma-4-31B-it": ModelCost(0.20, 0.50),
 }
 
 
