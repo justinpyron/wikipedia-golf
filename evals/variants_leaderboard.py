@@ -5,13 +5,13 @@ from prompts import SYSTEM_PROMPT_V1_0
 
 _LEADERBOARD: list[AgentVariant] = [
     AgentVariant(
-        name="leaderboard_dev-gpt-5.4-mini",
-        model="openai-responses:gpt-5.4-mini",
+        name="gpt-5.4-mini",
+        model="openai-responses:gpt-5.4-mini-2026-03-17",
         system_prompt=SYSTEM_PROMPT_V1_0,
     ),
     AgentVariant(
-        name="leaderboard_dev-gpt-5.4-nano",
-        model="openai-responses:gpt-5.4-nano",
+        name="gpt-5.4-nano",
+        model="openai-responses:gpt-5.4-nano-2026-03-17",
         system_prompt=SYSTEM_PROMPT_V1_0,
     ),
 ]

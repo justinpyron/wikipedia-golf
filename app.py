@@ -46,7 +46,7 @@ MAX_OUTPUT_RETRIES = 3
 SEARCH_RESULTS_LIMIT = 5
 
 # Default LLM model - used as initial value and fallback
-DEFAULT_MODEL = "openai-responses:gpt-5.4-nano"
+DEFAULT_MODEL = "openai-responses:gpt-5.4-nano-2026-03-17"
 
 # Debounce delay for search-as-you-type (milliseconds)
 SEARCH_DEBOUNCE_MS = 1000
@@ -202,7 +202,7 @@ app.layout = html.Div(
                                                                 },
                                                             ),
                                                         ],
-                                                        "value": "openai-responses:gpt-5.4-nano",
+                                                        "value": "openai-responses:gpt-5.4-nano-2026-03-17",
                                                     },
                                                     {
                                                         "label": [
@@ -221,7 +221,7 @@ app.layout = html.Div(
                                                                 },
                                                             ),
                                                         ],
-                                                        "value": "openai-responses:gpt-5.4-mini",
+                                                        "value": "openai-responses:gpt-5.4-mini-2026-03-17",
                                                     },
                                                     {
                                                         "label": [
@@ -240,7 +240,7 @@ app.layout = html.Div(
                                                                 },
                                                             ),
                                                         ],
-                                                        "value": "openai-responses:gpt-5.4",
+                                                        "value": "openai-responses:gpt-5.4-2026-03-05",
                                                     },
                                                     {
                                                         "label": [
@@ -259,7 +259,7 @@ app.layout = html.Div(
                                                                 },
                                                             ),
                                                         ],
-                                                        "value": "anthropic:claude-haiku-4-5",
+                                                        "value": "anthropic:claude-haiku-4-5-20251001",
                                                     },
                                                     {
                                                         "label": [
