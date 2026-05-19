@@ -30,15 +30,17 @@ logfire.configure(service_name="wiki-golf-evals", environment="dev")
 
 
 def make_leaderboard_run_id() -> str:
-    """Unique sweep id ``leaderboard_YYYYMMDD_<six_hex>`` (local calendar date).
+    """Unique sweep id ``run_YYYYMMDD_HHhmm_<six_hex>`` (local date and time).
 
     Uses the first six hex nibbles from a UUID4.
 
-    Example: ``leaderboard_20260309_a3f2e1``.
+    Example: ``run_20260309_14h30_a3f2e1``.
     """
-    day = datetime.now().strftime("%Y%m%d")
+    now = datetime.now()
+    day = now.strftime("%Y%m%d")
+    time_part = now.strftime("%Hh%M")
     uid = uuid.uuid4().hex[:6]
-    return f"leaderboard_{day}_{uid}"
+    return f"run_{day}_{time_part}_{uid}"
 
 
 async def run_all(
