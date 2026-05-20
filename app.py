@@ -290,7 +290,7 @@ app.layout = html.Div(
                                                                 },
                                                             ),
                                                             html.Span(
-                                                                "Gemini 3.1",
+                                                                "Gemini 3.1 Pro",
                                                                 style={
                                                                     "fontSize": "14px",
                                                                     "lineHeight": "1",
@@ -309,14 +309,14 @@ app.layout = html.Div(
                                                                 },
                                                             ),
                                                             html.Span(
-                                                                "Gemini 3 Flash",
+                                                                "Gemini 3.5 Flash",
                                                                 style={
                                                                     "fontSize": "14px",
                                                                     "lineHeight": "1",
                                                                 },
                                                             ),
                                                         ],
-                                                        "value": "google:gemini-3-flash-preview",
+                                                        "value": "google:gemini-3.5-flash",
                                                     },
                                                     {
                                                         "label": [

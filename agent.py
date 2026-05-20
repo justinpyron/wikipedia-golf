@@ -153,7 +153,7 @@ TOKEN_COSTS_PER_1M: dict[str, ModelCost] = {
     "anthropic:claude-haiku-4-5-20251001": ModelCost(1.00, 5.00),
     "anthropic:claude-sonnet-4-6": ModelCost(3.00, 15.00),
     "google:gemini-3.1-flash-lite": ModelCost(0.25, 1.50),
-    "google:gemini-3-flash-preview": ModelCost(0.50, 3.00),
+    "google:gemini-3.5-flash": ModelCost(1.50, 9.00),
     "google:gemini-3.1-pro-preview": ModelCost(2.00, 12.00),
     "xai:grok-4.3": ModelCost(1.25, 2.50),
     "together:moonshotai/Kimi-K2.6": ModelCost(1.20, 4.50),
