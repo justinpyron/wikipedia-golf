@@ -62,14 +62,21 @@ async def run_all(
             "git_sha": sha,
             "git_commit_message": msg,
         }
-        report = await dataset.evaluate(
-            task,
-            name=variant.name,
-            metadata=metadata,
-            max_concurrency=max_concurrency,
-        )
+        try:
+            report = await dataset.evaluate(
+                task,
+                name=variant.name,
+                metadata=metadata,
+                max_concurrency=max_concurrency,
+            )
+        except Exception as e:
+            print(f"FAILED experiment {variant.name!r}: {e}")
+            continue
         results[variant.name] = report
-        print(f"Finished experiment {variant.name!r} ({len(report.cases)} cases).")
+        print(
+            f"Finished experiment {variant.name!r} "
+            f"({len(report.cases)} cases, {len(report.failures)} failures)."
+        )
 
     return results
 
