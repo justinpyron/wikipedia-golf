@@ -13,7 +13,7 @@ from evals.evaluators import (
 from evals.utils import WikiGolfEvalInput, WikiGolfEvalOutput
 
 dataset: Dataset[WikiGolfEvalInput, WikiGolfEvalOutput] = Dataset(
-    name="full",
+    name="leaderboard",
     cases=[
         Case(
             name="case_1",
