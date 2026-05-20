@@ -207,11 +207,7 @@ def build_scorecard_markdown(
         [
             f"# {title}",
             "",
-            "## Leaderboard",
-            "",
             table_markdown,
-            "",
-            "## Cost vs. completion",
             "",
             f"![{plot_filename}]({plot_filename})",
             "",
