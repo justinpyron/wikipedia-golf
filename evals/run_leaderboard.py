@@ -23,6 +23,7 @@ from evals.utils import WikiGolfEvalInput, WikiGolfEvalOutput, build_task, get_g
 from evals.variants_leaderboard import VARIANTS_LEADERBOARD
 
 LEADERBOARD_OUTPUT_DIR = Path(__file__).resolve().parent / "leaderboards"
+MAX_CONCURRENCY = 10
 
 
 load_dotenv()
@@ -141,8 +142,8 @@ def main() -> None:
         "-c",
         "--max-concurrency",
         type=int,
-        default=10,
-        help="Max number of concurrent eval cases (default: 10)",
+        default=MAX_CONCURRENCY,
+        help=f"Max number of concurrent eval cases (default: {MAX_CONCURRENCY})",
     )
     args = parser.parse_args()
 
