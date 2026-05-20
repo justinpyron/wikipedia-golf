@@ -173,7 +173,7 @@ dataset: Dataset[WikiGolfEvalInput, WikiGolfEvalOutput] = Dataset(
             name="case_23",
             inputs=WikiGolfEvalInput(
                 origin="Woodland",
-                destination="Rutgers_Law_School",
+                destination="Mean_squared_error",
             ),
         ),
         Case(
