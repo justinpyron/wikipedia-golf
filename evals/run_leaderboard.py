@@ -23,6 +23,7 @@ from evals.utils import WikiGolfEvalInput, WikiGolfEvalOutput, build_task, get_g
 from evals.variants_leaderboard import VARIANTS_LEADERBOARD
 
 LEADERBOARD_OUTPUT_DIR = Path(__file__).resolve().parent / "leaderboards"
+MAX_CONCURRENCY = 10
 
 
 load_dotenv()
@@ -62,14 +63,21 @@ async def run_all(
             "git_sha": sha,
             "git_commit_message": msg,
         }
-        report = await dataset.evaluate(
-            task,
-            name=variant.name,
-            metadata=metadata,
-            max_concurrency=max_concurrency,
-        )
+        try:
+            report = await dataset.evaluate(
+                task,
+                name=variant.name,
+                metadata=metadata,
+                max_concurrency=max_concurrency,
+            )
+        except Exception as e:
+            print(f"FAILED experiment {variant.name!r}: {e}")
+            continue
         results[variant.name] = report
-        print(f"Finished experiment {variant.name!r} ({len(report.cases)} cases).")
+        print(
+            f"Finished experiment {variant.name!r} "
+            f"({len(report.cases)} cases, {len(report.failures)} failures)."
+        )
 
     return results
 
@@ -134,8 +142,8 @@ def main() -> None:
         "-c",
         "--max-concurrency",
         type=int,
-        default=25,
-        help="Max number of concurrent eval cases (default: 25)",
+        default=MAX_CONCURRENCY,
+        help=f"Max number of concurrent eval cases (default: {MAX_CONCURRENCY})",
     )
     args = parser.parse_args()
 

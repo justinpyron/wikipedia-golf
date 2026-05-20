@@ -13,7 +13,7 @@ from evals.evaluators import (
 from evals.utils import WikiGolfEvalInput, WikiGolfEvalOutput
 
 dataset: Dataset[WikiGolfEvalInput, WikiGolfEvalOutput] = Dataset(
-    name="full",
+    name="leaderboard",
     cases=[
         Case(
             name="case_1",
@@ -153,6 +153,41 @@ dataset: Dataset[WikiGolfEvalInput, WikiGolfEvalOutput] = Dataset(
             inputs=WikiGolfEvalInput(
                 origin="Cambrian_explosion",
                 destination="Tuxedo_Junction",
+            ),
+        ),
+        Case(
+            name="case_21",
+            inputs=WikiGolfEvalInput(
+                origin="Romer_v._Evans",
+                destination="Maryland_and_Virginia_Rifle_Regiment",
+            ),
+        ),
+        Case(
+            name="case_22",
+            inputs=WikiGolfEvalInput(
+                origin="CSI:_Crime_Scene_Investigation",
+                destination="Baeolophus",
+            ),
+        ),
+        Case(
+            name="case_23",
+            inputs=WikiGolfEvalInput(
+                origin="Woodland",
+                destination="Mean_squared_error",
+            ),
+        ),
+        Case(
+            name="case_24",
+            inputs=WikiGolfEvalInput(
+                origin="International_Union_for_Conservation_of_Nature",
+                destination="Early_Christianity",
+            ),
+        ),
+        Case(
+            name="case_25",
+            inputs=WikiGolfEvalInput(
+                origin="Elevation",
+                destination="Australian_English",
             ),
         ),
     ],
