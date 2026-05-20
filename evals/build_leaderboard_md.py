@@ -1,8 +1,9 @@
 """Build a markdown leaderboard scorecard from a saved eval JSON table.
 
 Usage:
-    uv run python -m evals.build_leaderboard_md evals/leaderboards/run_....json
-    uv run python -m evals.build_leaderboard_md run_20260520_10h46_0a4cea.json
+    uv run python -m evals.build_leaderboard_md run_20260520_10h46_0a4cea
+
+Expects ``evals/leaderboards/<run_id>.json`` (as written by ``run_leaderboard --save``).
 """
 
 from __future__ import annotations
@@ -212,19 +213,6 @@ def build_scorecard_markdown(
     )
 
 
-def resolve_json_path(path_arg: str) -> Path:
-    """Accept a full path or a filename under ``evals/leaderboards/``."""
-    path = Path(path_arg)
-    if path.exists():
-        return path.resolve()
-    candidate = LEADERBOARD_OUTPUT_DIR / path_arg
-    if candidate.exists():
-        return candidate.resolve()
-    raise FileNotFoundError(
-        f"Leaderboard JSON not found: {path_arg!r} " f"(also tried {candidate})"
-    )
-
-
 def default_output_paths(json_path: Path) -> tuple[Path, Path]:
     """Derive ``.md`` and ``.png`` paths from the JSON stem in the same directory."""
     stem = json_path.stem
@@ -261,12 +249,15 @@ def main() -> None:
         description="Build a markdown leaderboard scorecard from a saved eval JSON"
     )
     parser.add_argument(
-        "json_path",
-        help="Path to leaderboard JSON (or filename under evals/leaderboards/)",
+        "run_id",
+        help="Leaderboard run id (e.g. run_20260520_10h46_0a4cea)",
     )
     args = parser.parse_args()
 
-    json_path = resolve_json_path(args.json_path)
+    json_path = LEADERBOARD_OUTPUT_DIR / f"{args.run_id}.json"
+    if not json_path.is_file():
+        raise SystemExit(f"Leaderboard JSON not found: {json_path}")
+
     md_path, plot_path = build_leaderboard_scorecard(json_path)
     print(f"Wrote markdown scorecard: {md_path}")
     print(f"Wrote plot: {plot_path}")
