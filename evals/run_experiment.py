@@ -37,8 +37,8 @@ def main() -> None:
         "-c",
         "--max-concurrency",
         type=int,
-        default=25,
-        help="Max number of concurrent eval cases (default: 25)",
+        default=10,
+        help="Max number of concurrent eval cases (default: 10)",
     )
     args = parser.parse_args()
 

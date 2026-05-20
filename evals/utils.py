@@ -1,5 +1,6 @@
 """Shared types and helpers for Wikipedia Golf evaluations."""
 
+import asyncio
 import subprocess
 from collections.abc import Awaitable, Callable
 
@@ -9,8 +10,9 @@ from pydantic_ai.messages import ModelMessage
 
 from agent import AgentVariant, WikiGolfDeps, build_agent
 
-MAX_TOOL_CALLS = 20  # page visits allowed per game
-MAX_LLM_REQUESTS = 30  # model turns allowed per game
+MAX_TOOL_CALLS = 15  # page visits allowed per game
+MAX_LLM_REQUESTS = 20  # model turns allowed per game
+CASE_TIMEOUT_SECONDS = 600  # wall-clock limit per eval case (10 minutes)
 
 
 class WikiGolfEvalInput(BaseModel):
@@ -31,13 +33,16 @@ def build_task(
 
     async def task(inputs: WikiGolfEvalInput) -> WikiGolfEvalOutput:
         deps = WikiGolfDeps(origin=inputs.origin, destination=inputs.destination)
-        result = await agent.run(
-            variant.user_prompt,
-            deps=deps,
-            usage_limits=UsageLimits(
-                request_limit=MAX_LLM_REQUESTS,
-                tool_calls_limit=MAX_TOOL_CALLS,
+        result = await asyncio.wait_for(
+            agent.run(
+                variant.user_prompt,
+                deps=deps,
+                usage_limits=UsageLimits(
+                    request_limit=MAX_LLM_REQUESTS,
+                    tool_calls_limit=MAX_TOOL_CALLS,
+                ),
             ),
+            timeout=CASE_TIMEOUT_SECONDS,
         )
         return WikiGolfEvalOutput(
             path=deps.path,
