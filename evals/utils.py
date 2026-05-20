@@ -12,7 +12,7 @@ from agent import AgentVariant, WikiGolfDeps, build_agent
 
 MAX_TOOL_CALLS = 15  # page visits allowed per game
 MAX_LLM_REQUESTS = 20  # model turns allowed per game
-CASE_TIMEOUT_SECONDS = 600  # wall-clock limit per eval case (10 minutes)
+CASE_TIMEOUT_SECONDS = 300  # wall-clock limit per eval case (5 minutes)
 
 
 class WikiGolfEvalInput(BaseModel):
