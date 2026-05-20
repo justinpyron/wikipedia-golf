@@ -17,6 +17,7 @@ import seaborn as sns
 
 LEADERBOARD_OUTPUT_DIR = Path(__file__).resolve().parent / "leaderboards"
 AGENT_COLUMN = "Agent"
+RANK_COLUMN_LABEL = "Rank"
 
 # Source column -> display name for the markdown table (insertion order = column order).
 TABLE_COLUMNS: dict[str, str] = {
@@ -93,6 +94,7 @@ def make_table_markdown(df: pd.DataFrame, *, round_digits: int = 3) -> str:
         .round(round_digits)
         .rename(columns=TABLE_COLUMNS)
     )
+    table_df.insert(0, RANK_COLUMN_LABEL, range(1, len(table_df) + 1))
     return table_df.to_markdown(index=False)
 
 
@@ -236,11 +238,10 @@ def build_leaderboard_scorecard(json_path: Path) -> tuple[Path, Path]:
     table_md = make_table_markdown(df)
     save_leaderboard_plot(df, out_plot)
 
-    plot_filename = out_plot.name
     md_body = build_scorecard_markdown(
         title=scorecard_title,
         table_markdown=table_md,
-        plot_filename=plot_filename,
+        plot_filename=out_plot.name,
     )
     out_md.parent.mkdir(parents=True, exist_ok=True)
     out_md.write_text(md_body, encoding="utf-8")
