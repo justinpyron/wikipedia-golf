@@ -1,0 +1,276 @@
+"""Build a markdown leaderboard scorecard from a saved eval JSON table.
+
+Usage:
+    uv run python -m evals.build_leaderboard_md evals/leaderboards/run_....json
+    uv run python -m evals.build_leaderboard_md run_20260520_10h46_0a4cea.json
+"""
+
+from __future__ import annotations
+
+import argparse
+from pathlib import Path
+
+import matplotlib.pyplot as plt
+import pandas as pd
+import seaborn as sns
+
+LEADERBOARD_OUTPUT_DIR = Path(__file__).resolve().parent / "leaderboards"
+AGENT_COLUMN = "Agent"
+
+DEFAULT_TABLE_COLUMNS = [
+    "Reached destination rate",
+    "Cost (median)",
+]
+DEFAULT_SORT_ASCENDING = [False, True]
+
+DEFAULT_PLOT_X = "Cost (median)"
+DEFAULT_PLOT_Y = "Reached destination rate"
+DEFAULT_PLOT_X_LABEL = "Run cost (median)"
+DEFAULT_PLOT_Y_LABEL = "Completion rate"
+DEFAULT_REVERSE_X_AXIS = True
+
+VIBRANT_PALETTE = [
+    "#FF4C4C",
+    "#4287f5",
+    "#22c55e",
+    "#edbe2e",
+    "#a637ea",
+    "#FF8C00",
+    "#E040FB",
+    "#1DE9B6",
+    "#536dfe",
+    "#fb3586",
+    "#31caff",
+    "#f2711c",
+    "#05c46b",
+    "#686de0",
+    "#fa8231",
+]
+
+
+def load_leaderboard_df(json_path: Path) -> pd.DataFrame:
+    """Load a ``orient='split'`` leaderboard JSON and add an ``Agent`` column."""
+    df = pd.read_json(json_path, orient="split")
+    if df.index.name != "variant":
+        df.index.name = "variant"
+    return df.reset_index(names=AGENT_COLUMN)
+
+
+def _require_columns(df: pd.DataFrame, columns: list[str], context: str) -> None:
+    missing = [c for c in columns if c not in df.columns]
+    if missing:
+        available = ", ".join(df.columns)
+        raise ValueError(
+            f"{context}: missing column(s) {missing!r}. Available: {available}"
+        )
+
+
+def make_table_markdown(
+    df: pd.DataFrame,
+    *,
+    table_columns: list[str] | None = None,
+    sort_ascending: list[bool] | None = None,
+    round_digits: int = 3,
+) -> str:
+    """Return a sorted markdown table for the scorecard."""
+    table_columns = table_columns or list(DEFAULT_TABLE_COLUMNS)
+    sort_ascending = sort_ascending or list(DEFAULT_SORT_ASCENDING)
+
+    if len(table_columns) != len(sort_ascending):
+        raise ValueError("table_columns and sort_ascending must have the same length")
+
+    _require_columns(df, table_columns, "table")
+
+    table_df = (
+        df.sort_values(by=table_columns, ascending=sort_ascending)[
+            [AGENT_COLUMN] + table_columns
+        ]
+        .reset_index(drop=True)
+        .round(round_digits)
+    )
+    return table_df.to_markdown(index=False)
+
+
+def save_leaderboard_plot(
+    df: pd.DataFrame,
+    output_path: Path,
+    *,
+    x: str = DEFAULT_PLOT_X,
+    y: str = DEFAULT_PLOT_Y,
+    reverse_x_axis: bool = DEFAULT_REVERSE_X_AXIS,
+    reverse_y_axis: bool = False,
+    x_label: str | None = DEFAULT_PLOT_X_LABEL,
+    y_label: str | None = DEFAULT_PLOT_Y_LABEL,
+) -> None:
+    """Save a scatter plot of two leaderboard metrics."""
+    _require_columns(df, [x, y], "plot")
+
+    sns.set_theme(
+        style="white",
+        context="notebook",
+        font_scale=1.2,
+        rc={
+            "axes.edgecolor": "#22223b",
+            "axes.linewidth": 1.2,
+            "axes.labelweight": "bold",
+            "axes.labelsize": 14,
+            "axes.titlesize": 16,
+            "xtick.labelsize": 12,
+            "ytick.labelsize": 12,
+        },
+    )
+
+    agent_count = df[AGENT_COLUMN].nunique() if AGENT_COLUMN in df.columns else len(df)
+    repeated_palette = (VIBRANT_PALETTE * ((agent_count // len(VIBRANT_PALETTE)) + 1))[
+        :agent_count
+    ]
+
+    fig, ax = plt.subplots(figsize=(11, 6.5))
+    ax.grid(visible=False, axis="both")
+
+    sns.scatterplot(
+        data=df,
+        x=x,
+        y=y,
+        s=270,
+        marker="o",
+        linewidth=2.0,
+        edgecolor="#1a1a1a",
+        hue=AGENT_COLUMN if AGENT_COLUMN in df.columns else None,
+        palette=repeated_palette if AGENT_COLUMN in df.columns else VIBRANT_PALETTE,
+        legend=False,
+        alpha=1.0,
+        ax=ax,
+    )
+
+    ax.grid(visible=True, linestyle="--", linewidth=0.5, alpha=1, axis="both")
+
+    for _, row in df.iterrows():
+        text = ax.text(
+            row[x],
+            row[y],
+            str(row[AGENT_COLUMN]),
+            fontsize=10,
+            fontweight="medium",
+            ha="left",
+            va="bottom",
+            color="#22223b",
+            alpha=0.97,
+            backgroundcolor="white",
+            zorder=5,
+        )
+        text.set_bbox(
+            dict(
+                facecolor="white",
+                edgecolor="none",
+                boxstyle="round,pad=0.16",
+                alpha=0.75,
+            )
+        )
+
+    ax.set_xlabel(x_label if x_label is not None else x, fontsize=14, labelpad=10)
+    ax.set_ylabel(y_label if y_label is not None else y, fontsize=14, labelpad=10)
+
+    for spine in ["left", "bottom"]:
+        ax.spines[spine].set_visible(True)
+        ax.spines[spine].set_color("#22223b")
+        ax.spines[spine].set_linewidth(1.1)
+    for spine in ["right", "top"]:
+        ax.spines[spine].set_visible(False)
+
+    if reverse_x_axis:
+        ax.invert_xaxis()
+    if reverse_y_axis:
+        ax.invert_yaxis()
+
+    fig.tight_layout()
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(output_path, dpi=150, bbox_inches="tight")
+    plt.close(fig)
+
+
+def build_scorecard_markdown(
+    *,
+    title: str,
+    table_markdown: str,
+    plot_filename: str,
+) -> str:
+    """Combine table and plot reference into one markdown document."""
+    return "\n".join(
+        [
+            f"# {title}",
+            "",
+            "## Leaderboard",
+            "",
+            table_markdown,
+            "",
+            "## Cost vs. completion",
+            "",
+            f"![{plot_filename}]({plot_filename})",
+            "",
+        ]
+    )
+
+
+def resolve_json_path(path_arg: str) -> Path:
+    """Accept a full path or a filename under ``evals/leaderboards/``."""
+    path = Path(path_arg)
+    if path.exists():
+        return path.resolve()
+    candidate = LEADERBOARD_OUTPUT_DIR / path_arg
+    if candidate.exists():
+        return candidate.resolve()
+    raise FileNotFoundError(
+        f"Leaderboard JSON not found: {path_arg!r} " f"(also tried {candidate})"
+    )
+
+
+def default_output_paths(json_path: Path) -> tuple[Path, Path]:
+    """Derive ``.md`` and ``.png`` paths from the JSON stem in the same directory."""
+    stem = json_path.stem
+    out_dir = json_path.parent
+    return out_dir / f"{stem}.md", out_dir / f"{stem}.png"
+
+
+def build_leaderboard_scorecard(json_path: Path) -> tuple[Path, Path]:
+    """Load JSON, write plot PNG and combined markdown scorecard."""
+    out_md, out_plot = default_output_paths(json_path)
+
+    df = load_leaderboard_df(json_path)
+    if df.empty:
+        raise ValueError(f"Leaderboard table is empty: {json_path}")
+
+    scorecard_title = f"Leaderboard — {json_path.stem}"
+    table_md = make_table_markdown(df)
+    save_leaderboard_plot(df, out_plot)
+
+    plot_filename = out_plot.name
+    md_body = build_scorecard_markdown(
+        title=scorecard_title,
+        table_markdown=table_md,
+        plot_filename=plot_filename,
+    )
+    out_md.parent.mkdir(parents=True, exist_ok=True)
+    out_md.write_text(md_body, encoding="utf-8")
+
+    return out_md, out_plot
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="Build a markdown leaderboard scorecard from a saved eval JSON"
+    )
+    parser.add_argument(
+        "json_path",
+        help="Path to leaderboard JSON (or filename under evals/leaderboards/)",
+    )
+    args = parser.parse_args()
+
+    json_path = resolve_json_path(args.json_path)
+    md_path, plot_path = build_leaderboard_scorecard(json_path)
+    print(f"Wrote markdown scorecard: {md_path}")
+    print(f"Wrote plot: {plot_path}")
+
+
+if __name__ == "__main__":
+    main()
