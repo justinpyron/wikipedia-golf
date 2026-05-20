@@ -18,11 +18,18 @@ import seaborn as sns
 LEADERBOARD_OUTPUT_DIR = Path(__file__).resolve().parent / "leaderboards"
 AGENT_COLUMN = "Agent"
 
-DEFAULT_TABLE_COLUMNS = [
-    "Reached destination rate",
-    "Cost (median)",
-]
-DEFAULT_SORT_ASCENDING = [False, True]
+# Source column -> display name for the markdown table (insertion order = column order).
+TABLE_COLUMNS: dict[str, str] = {
+    AGENT_COLUMN: "Agent",
+    "Reached destination rate": "Completion rate",
+    "Cost (median)": "Run cost (median)",
+}
+
+# Source column -> sort ascending for the markdown table (insertion order = sort priority).
+TABLE_SORT_ASCENDING: dict[str, bool] = {
+    "Reached destination rate": False,
+    "Cost (median)": True,
+}
 
 DEFAULT_PLOT_X = "Cost (median)"
 DEFAULT_PLOT_Y = "Reached destination rate"
@@ -66,28 +73,25 @@ def _require_columns(df: pd.DataFrame, columns: list[str], context: str) -> None
         )
 
 
-def make_table_markdown(
-    df: pd.DataFrame,
-    *,
-    table_columns: list[str] | None = None,
-    sort_ascending: list[bool] | None = None,
-    round_digits: int = 3,
-) -> str:
+def make_table_markdown(df: pd.DataFrame, *, round_digits: int = 3) -> str:
     """Return a sorted markdown table for the scorecard."""
-    table_columns = table_columns or list(DEFAULT_TABLE_COLUMNS)
-    sort_ascending = sort_ascending or list(DEFAULT_SORT_ASCENDING)
+    source_columns = list(TABLE_COLUMNS.keys())
+    sort_columns = list(TABLE_SORT_ASCENDING.keys())
+    sort_ascending = list(TABLE_SORT_ASCENDING.values())
 
-    if len(table_columns) != len(sort_ascending):
-        raise ValueError("table_columns and sort_ascending must have the same length")
+    unknown_sort = set(sort_columns) - set(source_columns)
+    if unknown_sort:
+        raise ValueError(
+            f"TABLE_SORT_ASCENDING keys must appear in TABLE_COLUMNS: {unknown_sort!r}"
+        )
 
-    _require_columns(df, table_columns, "table")
+    _require_columns(df, source_columns, "table")
 
     table_df = (
-        df.sort_values(by=table_columns, ascending=sort_ascending)[
-            [AGENT_COLUMN] + table_columns
-        ]
+        df.sort_values(by=sort_columns, ascending=sort_ascending)[source_columns]
         .reset_index(drop=True)
         .round(round_digits)
+        .rename(columns=TABLE_COLUMNS)
     )
     return table_df.to_markdown(index=False)
 
