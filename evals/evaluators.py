@@ -131,14 +131,26 @@ class WikiGolfExperimentMetrics(
                 description="Share of dataset cases that reached the destination; task failures count as not reached.",
             ),
             ScalarResult(
-                title="Median model request count",
+                title="Model request count (mean)",
+                value=float(np.mean(model_request_counts))
+                if model_request_counts
+                else 0.0,
+                description="Mean number of LLM requests per successful run.",
+            ),
+            ScalarResult(
+                title="Model request count (median)",
                 value=float(np.median(model_request_counts))
                 if model_request_counts
                 else 0.0,
-                description="Median number of LLM requests per successful run (includes retries/tool cycles).",
+                description="Median number of LLM requests per successful run.",
             ),
             ScalarResult(
-                title="Median path length",
+                title="Path length (mean)",
+                value=float(np.mean(path_lengths)) if path_lengths else 0.0,
+                description="Mean hop count (edges on path from origin to destination); not model turns.",
+            ),
+            ScalarResult(
+                title="Path length (median)",
                 value=float(np.median(path_lengths)) if path_lengths else 0.0,
                 description="Median hop count (edges on path from origin to destination); not model turns.",
             ),
@@ -149,25 +161,25 @@ class WikiGolfExperimentMetrics(
                 description="Share of cases with no RetryPromptPart in messages (tool/output ModelRetry); failures count against this.",
             ),
             ScalarResult(
-                title="Median cost",
+                title="Cost (median)",
                 value=float(np.median(costs)) if costs else 0.0,
                 unit="USD",
                 description="Median estimated cost per successful case from model response usage.",
             ),
             ScalarResult(
-                title="Total cost",
+                title="Cost (total)",
                 value=float(sum(costs)) if costs else 0.0,
                 unit="USD",
                 description="Sum of estimated costs over successful cases from model response usage.",
             ),
             ScalarResult(
-                title="Median task duration",
+                title="Task duration (median)",
                 value=float(np.median(durations)) if durations else 0.0,
                 unit="s",
                 description="Median task duration over successful cases (seconds).",
             ),
             ScalarResult(
-                title="Total task duration",
+                title="Task duration (total)",
                 value=float(sum(durations)) if durations else 0.0,
                 unit="s",
                 description="Sum of task durations over successful cases (seconds).",
