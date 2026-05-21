@@ -64,6 +64,39 @@ class ModelOption:
 
 APP_MODELS: list[ModelOption] = [
     ModelOption(
+        id="google:gemini-3.1-flash-lite",
+        variant=AgentVariant(
+            name="Gemini 3.1 Flash Lite (medium thinking)",
+            model="google:gemini-3.1-flash-lite",
+            system_prompt=SYSTEM_PROMPT_V2_0,
+            thinking="medium",
+        ),
+        logo="logo_gemini.svg",
+        label="Gemini 3.1 Flash Lite (medium thinking)",
+    ),
+    ModelOption(
+        id="google:gemini-3.5-flash",
+        variant=AgentVariant(
+            name="Gemini 3.5 Flash (medium thinking)",
+            model="google:gemini-3.5-flash",
+            system_prompt=SYSTEM_PROMPT_V2_0,
+            thinking="medium",
+        ),
+        logo="logo_gemini.svg",
+        label="Gemini 3.5 Flash (medium thinking)",
+    ),
+    ModelOption(
+        id="google:gemini-3.1-pro-preview",
+        variant=AgentVariant(
+            name="Gemini 3.1 Pro (medium thinking)",
+            model="google:gemini-3.1-pro-preview",
+            system_prompt=SYSTEM_PROMPT_V2_0,
+            thinking="medium",
+        ),
+        logo="logo_gemini.svg",
+        label="Gemini 3.1 Pro (medium thinking)",
+    ),
+    ModelOption(
         id="openai-responses:gpt-5.4-nano-2026-03-17",
         variant=AgentVariant(
             name="GPT-5.4-nano (medium thinking)",
@@ -97,37 +130,26 @@ APP_MODELS: list[ModelOption] = [
         label="GPT-5.4 (medium thinking)",
     ),
     ModelOption(
-        id="google:gemini-3.1-flash-lite",
+        id="anthropic:claude-haiku-4-5-20251001",
         variant=AgentVariant(
-            name="Gemini 3.1 Flash Lite (medium thinking)",
-            model="google:gemini-3.1-flash-lite",
+            name="Claude Haiku 4.5 (low thinking)",
+            model="anthropic:claude-haiku-4-5-20251001",
             system_prompt=SYSTEM_PROMPT_V2_0,
-            thinking="medium",
+            thinking="low",
         ),
-        logo="logo_gemini.svg",
-        label="Gemini 3.1 Flash Lite (medium thinking)",
+        logo="logo_claude.svg",
+        label="Claude Haiku 4.5 (low thinking)",
     ),
     ModelOption(
-        id="google:gemini-3.5-flash",
+        id="anthropic:claude-sonnet-4-6",
         variant=AgentVariant(
-            name="Gemini 3.5 Flash (medium thinking)",
-            model="google:gemini-3.5-flash",
+            name="Claude Sonnet 4.6 (medium thinking)",
+            model="anthropic:claude-sonnet-4-6",
             system_prompt=SYSTEM_PROMPT_V2_0,
             thinking="medium",
         ),
-        logo="logo_gemini.svg",
-        label="Gemini 3.5 Flash (medium thinking)",
-    ),
-    ModelOption(
-        id="google:gemini-3.1-pro-preview",
-        variant=AgentVariant(
-            name="Gemini 3.1 Pro (medium thinking)",
-            model="google:gemini-3.1-pro-preview",
-            system_prompt=SYSTEM_PROMPT_V2_0,
-            thinking="medium",
-        ),
-        logo="logo_gemini.svg",
-        label="Gemini 3.1 Pro (medium thinking)",
+        logo="logo_claude.svg",
+        label="Claude Sonnet 4.6 (medium thinking)",
     ),
     ModelOption(
         id="xai:grok-4.3",
