@@ -1,10 +1,6 @@
 # wikipedia-golf
 
-AI agent that plays [Wikipedia Golf](https://en.wikipedia.org/wiki/Wikipedia:Wiki_Game)—navigate from one article to another using the fewest links. A **Dash** web app sets start/end articles and runs a **pydantic-ai** agent that fetches pages via the **Wikimedia REST API**.
-
-**What is Wikipedia Golf?**
-
-Pick an origin and destination article. Each hop must follow a link on the current page. Fewer hops wins. In this app, an LLM agent plays the game; you choose the articles and model, then watch the path, timing, and estimated cost.
+AI agent that plays [Wikipedia Golf](https://en.wikipedia.org/wiki/Wikipedia:Wiki_Game): the game where you navigate from one article to another using the fewest links.
 
 # How it works
 
