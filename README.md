@@ -19,12 +19,13 @@ Inference runs in-process with the Dash app (no separate backend service).
 
 ```
 ├── README.md
-├── app.py                      # Dash web app
-├── agent.py                    # Agent factory, tool, cost estimation
-├── wiki.py                     # Wikipedia REST client
-├── prompts.py                  # Versioned system prompts
-├── assets/                     # CSS, logos, favicons
-├── evals/                      # Benchmarks and leaderboard runs
+├── app.py                                  # Dash web app
+├── agent.py                                # Agent factory, tool, cost estimation
+├── wiki.py                                 # Wikipedia REST client
+├── prompts.py                              # Versioned system prompts
+├── assets/                                 # CSS, logos, favicons
+├── evals/                                  # Benchmarks and leaderboard runs
+├── .github/workflows/build-and-deploy.yml  # Cloud Run deploy
 ├── Dockerfile
 ├── pyproject.toml / uv.lock
 ```
@@ -47,9 +48,9 @@ uv sync
 
 # Configuration
 
-Create a `.env` in the project root (see `.gitignore`). Set API keys for the providers you use:
+Set API keys for the providers you use:
 
-| Variable | Provider |
+| Env Variable | Provider |
 |----------|----------|
 | `OPENAI_API_KEY` | OpenAI |
 | `ANTHROPIC_API_KEY` | Anthropic |
