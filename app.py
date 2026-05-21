@@ -161,14 +161,15 @@ app.layout = html.Div(
                                                         className="wg-about-link",
                                                     ),
                                                     html.A(
-                                                        html.B("View the GitHub →"),
+                                                        html.B("GitHub →"),
                                                         href="https://github.com/justinpyron/wikipedia-golf",
                                                         target="_blank",
                                                         className="wg-about-link",
                                                     ),
                                                     html.A(
-                                                        html.B("See the leaderboard →"),
+                                                        html.B("Model leaderboard →"),
                                                         href="https://github.com/justinpyron/wikipedia-golf/blob/main/evals/leaderboards/run_20260520_10h46_0a4cea.md",
+                                                        target="_blank",
                                                         className="wg-about-link",
                                                     ),
                                                 ],
