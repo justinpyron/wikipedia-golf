@@ -1165,5 +1165,4 @@ app.clientside_callback(
 
 
 if __name__ == "__main__":
-    # app.run(host="0.0.0.0", port=8080, debug=False)
-    app.run(host="0.0.0.0", port=8080, debug=True)  # TODO: Remove after testing
+    app.run(host="0.0.0.0", port=8080, debug=False)
