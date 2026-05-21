@@ -7,6 +7,7 @@ Aesthetic: Augusta-inspired (quiet greens, restrained surfaces).
 import asyncio
 import os
 import time
+from dataclasses import dataclass
 from urllib.parse import quote
 
 import dash
@@ -45,15 +46,141 @@ MAX_OUTPUT_RETRIES = 3
 # Number of search results to display
 SEARCH_RESULTS_LIMIT = 5
 
-# Default LLM model - used as initial value and fallback
-DEFAULT_MODEL = "openai-responses:gpt-5.4-nano-2026-03-17"
-
 # Debounce delay for search-as-you-type (milliseconds)
 SEARCH_DEBOUNCE_MS = 1000
 
 # ============================================================================
+# MODEL OPTIONS
+# ============================================================================
+
+
+@dataclass(frozen=True)
+class ModelOption:
+    id: str
+    variant: AgentVariant
+    logo: str
+    label: str
+
+
+APP_MODELS: list[ModelOption] = [
+    ModelOption(
+        id="openai-responses:gpt-5.4-nano-2026-03-17",
+        variant=AgentVariant(
+            name="GPT-5.4-nano (medium thinking)",
+            model="openai-responses:gpt-5.4-nano-2026-03-17",
+            system_prompt=SYSTEM_PROMPT_V2_0,
+            thinking="medium",
+        ),
+        logo="logo_openai.svg",
+        label="GPT-5.4 Nano (medium thinking)",
+    ),
+    ModelOption(
+        id="openai-responses:gpt-5.4-mini-2026-03-17",
+        variant=AgentVariant(
+            name="GPT-5.4-mini (medium thinking)",
+            model="openai-responses:gpt-5.4-mini-2026-03-17",
+            system_prompt=SYSTEM_PROMPT_V2_0,
+            thinking="medium",
+        ),
+        logo="logo_openai.svg",
+        label="GPT-5.4 Mini (medium thinking)",
+    ),
+    ModelOption(
+        id="openai-responses:gpt-5.4-2026-03-05",
+        variant=AgentVariant(
+            name="GPT-5.4 (medium thinking)",
+            model="openai-responses:gpt-5.4-2026-03-05",
+            system_prompt=SYSTEM_PROMPT_V2_0,
+            thinking="medium",
+        ),
+        logo="logo_openai.svg",
+        label="GPT-5.4 (medium thinking)",
+    ),
+    ModelOption(
+        id="google:gemini-3.1-flash-lite",
+        variant=AgentVariant(
+            name="Gemini 3.1 Flash Lite (medium thinking)",
+            model="google:gemini-3.1-flash-lite",
+            system_prompt=SYSTEM_PROMPT_V2_0,
+            thinking="medium",
+        ),
+        logo="logo_gemini.svg",
+        label="Gemini 3.1 Flash Lite (medium thinking)",
+    ),
+    ModelOption(
+        id="google:gemini-3.5-flash",
+        variant=AgentVariant(
+            name="Gemini 3.5 Flash (medium thinking)",
+            model="google:gemini-3.5-flash",
+            system_prompt=SYSTEM_PROMPT_V2_0,
+            thinking="medium",
+        ),
+        logo="logo_gemini.svg",
+        label="Gemini 3.5 Flash (medium thinking)",
+    ),
+    ModelOption(
+        id="google:gemini-3.1-pro-preview",
+        variant=AgentVariant(
+            name="Gemini 3.1 Pro (medium thinking)",
+            model="google:gemini-3.1-pro-preview",
+            system_prompt=SYSTEM_PROMPT_V2_0,
+            thinking="medium",
+        ),
+        logo="logo_gemini.svg",
+        label="Gemini 3.1 Pro (medium thinking)",
+    ),
+    ModelOption(
+        id="xai:grok-4.3",
+        variant=AgentVariant(
+            name="Grok 4.3 (default thinking)",
+            model="xai:grok-4.3",
+            system_prompt=SYSTEM_PROMPT_V2_0,
+        ),
+        logo="logo_grok.svg",
+        label="Grok 4.3 (default thinking)",
+    ),
+    ModelOption(
+        id="together:zai-org/GLM-5.1",
+        variant=AgentVariant(
+            name="GLM 5.1 (default thinking)",
+            model="together:zai-org/GLM-5.1",
+            system_prompt=SYSTEM_PROMPT_V2_0,
+        ),
+        logo="logo_zai.svg",
+        label="GLM 5.1 (default thinking)",
+    ),
+    ModelOption(
+        id="together:moonshotai/Kimi-K2.6",
+        variant=AgentVariant(
+            name="Kimi K2.6 (default thinking)",
+            model="together:moonshotai/Kimi-K2.6",
+            system_prompt=SYSTEM_PROMPT_V2_0,
+        ),
+        logo="logo_moonshotai.svg",
+        label="Kimi K2.6 (default thinking)",
+    ),
+]
+
+VARIANTS_BY_ID = {model.id: model.variant for model in APP_MODELS}
+DEFAULT_MODEL_ID = "google:gemini-3.1-flash-lite"
+
+# ============================================================================
 # STYLES & THEME
 # ============================================================================
+
+
+def _model_radio_label(logo: str, label: str) -> list:
+    return [
+        html.Img(
+            src=f"/assets/{logo}",
+            height=20,
+            style={"marginRight": "10px"},
+        ),
+        html.Span(
+            label,
+            style={"fontSize": "14px", "lineHeight": "1"},
+        ),
+    ]
 
 
 def create_selected_display(
@@ -192,216 +319,14 @@ app.layout = html.Div(
                                                 id="llm-radio",
                                                 options=[
                                                     {
-                                                        "label": [
-                                                            html.Img(
-                                                                src="/assets/logo_openai.svg",
-                                                                height=20,
-                                                                style={
-                                                                    "marginRight": "10px"
-                                                                },
-                                                            ),
-                                                            html.Span(
-                                                                "GPT-5.4 Nano",
-                                                                style={
-                                                                    "fontSize": "14px",
-                                                                    "lineHeight": "1",
-                                                                },
-                                                            ),
-                                                        ],
-                                                        "value": "openai-responses:gpt-5.4-nano-2026-03-17",
-                                                    },
-                                                    {
-                                                        "label": [
-                                                            html.Img(
-                                                                src="/assets/logo_openai.svg",
-                                                                height=20,
-                                                                style={
-                                                                    "marginRight": "10px"
-                                                                },
-                                                            ),
-                                                            html.Span(
-                                                                "GPT-5.4 Mini",
-                                                                style={
-                                                                    "fontSize": "14px",
-                                                                    "lineHeight": "1",
-                                                                },
-                                                            ),
-                                                        ],
-                                                        "value": "openai-responses:gpt-5.4-mini-2026-03-17",
-                                                    },
-                                                    {
-                                                        "label": [
-                                                            html.Img(
-                                                                src="/assets/logo_openai.svg",
-                                                                height=20,
-                                                                style={
-                                                                    "marginRight": "10px"
-                                                                },
-                                                            ),
-                                                            html.Span(
-                                                                "GPT-5.4",
-                                                                style={
-                                                                    "fontSize": "14px",
-                                                                    "lineHeight": "1",
-                                                                },
-                                                            ),
-                                                        ],
-                                                        "value": "openai-responses:gpt-5.4-2026-03-05",
-                                                    },
-                                                    {
-                                                        "label": [
-                                                            html.Img(
-                                                                src="/assets/logo_claude.svg",
-                                                                height=20,
-                                                                style={
-                                                                    "marginRight": "10px"
-                                                                },
-                                                            ),
-                                                            html.Span(
-                                                                "Claude Haiku 4.5",
-                                                                style={
-                                                                    "fontSize": "14px",
-                                                                    "lineHeight": "1",
-                                                                },
-                                                            ),
-                                                        ],
-                                                        "value": "anthropic:claude-haiku-4-5-20251001",
-                                                    },
-                                                    {
-                                                        "label": [
-                                                            html.Img(
-                                                                src="/assets/logo_claude.svg",
-                                                                height=20,
-                                                                style={
-                                                                    "marginRight": "10px"
-                                                                },
-                                                            ),
-                                                            html.Span(
-                                                                "Claude Sonnet 4.6",
-                                                                style={
-                                                                    "fontSize": "14px",
-                                                                    "lineHeight": "1",
-                                                                },
-                                                            ),
-                                                        ],
-                                                        "value": "anthropic:claude-sonnet-4-6",
-                                                    },
-                                                    {
-                                                        "label": [
-                                                            html.Img(
-                                                                src="/assets/logo_gemini.svg",
-                                                                height=20,
-                                                                style={
-                                                                    "marginRight": "10px"
-                                                                },
-                                                            ),
-                                                            html.Span(
-                                                                "Gemini 3.1 Pro",
-                                                                style={
-                                                                    "fontSize": "14px",
-                                                                    "lineHeight": "1",
-                                                                },
-                                                            ),
-                                                        ],
-                                                        "value": "google:gemini-3.1-pro-preview",
-                                                    },
-                                                    {
-                                                        "label": [
-                                                            html.Img(
-                                                                src="/assets/logo_gemini.svg",
-                                                                height=20,
-                                                                style={
-                                                                    "marginRight": "10px"
-                                                                },
-                                                            ),
-                                                            html.Span(
-                                                                "Gemini 3.5 Flash",
-                                                                style={
-                                                                    "fontSize": "14px",
-                                                                    "lineHeight": "1",
-                                                                },
-                                                            ),
-                                                        ],
-                                                        "value": "google:gemini-3.5-flash",
-                                                    },
-                                                    {
-                                                        "label": [
-                                                            html.Img(
-                                                                src="/assets/logo_gemini.svg",
-                                                                height=20,
-                                                                style={
-                                                                    "marginRight": "10px"
-                                                                },
-                                                            ),
-                                                            html.Span(
-                                                                "Gemini 3.1 Flash Lite",
-                                                                style={
-                                                                    "fontSize": "14px",
-                                                                    "lineHeight": "1",
-                                                                },
-                                                            ),
-                                                        ],
-                                                        "value": "google:gemini-3.1-flash-lite",
-                                                    },
-                                                    {
-                                                        "label": [
-                                                            html.Img(
-                                                                src="/assets/logo_grok.svg",
-                                                                height=20,
-                                                                style={
-                                                                    "marginRight": "10px"
-                                                                },
-                                                            ),
-                                                            html.Span(
-                                                                "Grok 4.3",
-                                                                style={
-                                                                    "fontSize": "14px",
-                                                                    "lineHeight": "1",
-                                                                },
-                                                            ),
-                                                        ],
-                                                        "value": "xai:grok-4.3",
-                                                    },
-                                                    {
-                                                        "label": [
-                                                            html.Img(
-                                                                src="/assets/logo_moonshotai.svg",
-                                                                height=20,
-                                                                style={
-                                                                    "marginRight": "10px"
-                                                                },
-                                                            ),
-                                                            html.Span(
-                                                                "Kimi K2.6",
-                                                                style={
-                                                                    "fontSize": "14px",
-                                                                    "lineHeight": "1",
-                                                                },
-                                                            ),
-                                                        ],
-                                                        "value": "together:moonshotai/Kimi-K2.6",
-                                                    },
-                                                    {
-                                                        "label": [
-                                                            html.Img(
-                                                                src="/assets/logo_zai.svg",
-                                                                height=20,
-                                                                style={
-                                                                    "marginRight": "10px"
-                                                                },
-                                                            ),
-                                                            html.Span(
-                                                                "GLM 5.1",
-                                                                style={
-                                                                    "fontSize": "14px",
-                                                                    "lineHeight": "1",
-                                                                },
-                                                            ),
-                                                        ],
-                                                        "value": "together:zai-org/GLM-5.1",
-                                                    },
+                                                        "label": _model_radio_label(
+                                                            model.logo, model.label
+                                                        ),
+                                                        "value": model.id,
+                                                    }
+                                                    for model in APP_MODELS
                                                 ],
-                                                value=DEFAULT_MODEL,
+                                                value=DEFAULT_MODEL_ID,
                                                 labelStyle={
                                                     "display": "flex",
                                                     "alignItems": "center",
@@ -1065,13 +990,7 @@ def run_agent(
         origin_key = origin_data.get("key")
         dest_key = dest_data.get("key")
 
-        # Use selected settings or defaults
-        model = selected_llm or DEFAULT_MODEL
-        variant = AgentVariant(
-            name="user_configured",
-            model=model,
-            system_prompt=SYSTEM_PROMPT_V2_0,
-        )
+        variant = VARIANTS_BY_ID[selected_llm or DEFAULT_MODEL_ID]
         agent = build_agent(variant)
 
         deps = WikiGolfDeps(origin=origin_key, destination=dest_key)
