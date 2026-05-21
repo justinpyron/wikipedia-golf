@@ -166,6 +166,11 @@ app.layout = html.Div(
                                                         target="_blank",
                                                         className="wg-about-link",
                                                     ),
+                                                    html.A(
+                                                        html.B("See the leaderboard →"),
+                                                        href="https://github.com/justinpyron/wikipedia-golf/blob/main/evals/leaderboards/run_20260520_10h46_0a4cea.md",
+                                                        className="wg-about-link",
+                                                    ),
                                                 ],
                                                 className="wg-about-links",
                                             ),
